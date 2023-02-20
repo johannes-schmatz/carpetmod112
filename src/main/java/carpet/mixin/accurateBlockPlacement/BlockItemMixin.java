@@ -19,12 +19,18 @@ import org.spongepowered.asm.mixin.injection.Redirect;
     PlaceableItem.class
 })
 public class BlockItemMixin {
-    @Redirect(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getPlacementState(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;FFFILnet/minecraft/entity/LivingEntity;)Lnet/minecraft/block/BlockState;"))
+    @Redirect(
+            method = "use",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/Block;getStateFromData(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;FFFILnet/minecraft/entity/LivingEntity;)Lnet/minecraft/block/BlockState;"
+            )
+    )
     private BlockState getStateForPlacement(Block block, World world, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, int meta, LivingEntity placer) {
         if(CarpetSettings.accurateBlockPlacement && hitX > 1) {
             BlockState carpetState = BlockRotator.alternativeBlockPlacement(block, world, pos, facing, hitX, hitY, hitZ, meta, placer);
             if (carpetState != null) return carpetState;
         }
-        return block.getPlacementState(world, pos, facing, hitX % 2.0F, hitY, hitZ, meta, placer);
+        return block.getStateFromData(world, pos, facing, hitX % 2.0F, hitY, hitZ, meta, placer);
     }
 }

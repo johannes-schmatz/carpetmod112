@@ -19,7 +19,7 @@ import net.minecraft.scoreboard.ScoreboardPlayerScore;
 
 @Mixin(ScoreboardPlayerScore.class)
 public class ScoreboardPlayerScoreMixin implements ExtendedScore {
-    @Shadow public static @Final @Mutable Comparator<ScoreboardPlayerScore> field_26713 = (a, b) -> {
+    @Shadow public static @Final @Mutable Comparator<ScoreboardPlayerScore> field_5683 = (a, b) -> {
         int comparePoint = Integer.compare(((ExtendedScore) a).getScorePointsDelta(), ((ExtendedScore) b).getScorePointsDelta());
         return comparePoint == 0 ? b.getPlayerName().compareToIgnoreCase(a.getPlayerName()) : comparePoint;
     };

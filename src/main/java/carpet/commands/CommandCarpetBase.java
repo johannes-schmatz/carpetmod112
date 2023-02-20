@@ -2,22 +2,22 @@ package carpet.commands;
 
 import carpet.CarpetSettings;
 import carpet.utils.Messenger;
-import net.minecraft.class_1999;
+import net.minecraft.command.AbstractCommand;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import java.util.List;
 
-public abstract class CommandCarpetBase extends class_1999
+public abstract class CommandCarpetBase extends AbstractCommand
 {
     @Override
-    public boolean method_29271(MinecraftServer server, CommandSource sender) {
+    public boolean method_3278(MinecraftServer server, CommandSource sender) {
         return true;
     }
 
     @Override
-    public int method_28700() {
+    public int getPermissionLevel() {
         return 0;
     }
 
@@ -26,11 +26,11 @@ public abstract class CommandCarpetBase extends class_1999
     {
         if (sender instanceof PlayerEntity)
         {
-            for (Text t: texts) sender.sendSystemMessage(t);
+            for (Text t: texts) sender.sendMessage(t);
         }
         else
         {
-            for (Text t: texts) method_28710(sender, this, t.method_32275());
+            for (Text t: texts) run(sender, this, t.asUnformattedString());
         }
     }
     public boolean command_enabled(String command_name, CommandSource sender)

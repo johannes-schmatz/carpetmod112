@@ -9,7 +9,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Entity.class)
 public class EntityMixin {
-    @Redirect(method = "getHorizontalFacing", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Direction;fromHorizontal(I)Lnet/minecraft/util/math/Direction;"))
+    @Redirect(
+            method = "getHorizontalDirection",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/math/Direction;fromHorizontal(I)Lnet/minecraft/util/math/Direction;"
+            )
+    )
     private Direction byHorizontalIndex(int index) {
         Direction facing = Direction.fromHorizontal(index);
         if (BlockRotator.flippinEligibility((Entity) (Object) this)) return facing.getOpposite();

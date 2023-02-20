@@ -2,15 +2,15 @@ package carpet.mixin.playerSkullsByChargedCreeper;
 
 import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.class_6223;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,19 +24,22 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     }
 
     // Allows players to drop their skulls when blown up by charged creeper CARPET-XCOM
-    @Inject(method = "onDeath", at = @At("RETURN"))
+    @Inject(
+            method = "onKilled",
+            at = @At("RETURN")
+    )
     private void dropSkullByChargedCreeper(DamageSource cause, CallbackInfo ci) {
         if (!CarpetSettings.playerSkullsByChargedCreeper) return;
         Entity entity = cause.getAttacker();
         if (!(entity instanceof CreeperEntity)) return;
         CreeperEntity creeper = (CreeperEntity) entity;
-        if (!creeper.shouldRenderOverlay() || !creeper.shouldDropHead()) return;
+        if (!creeper.method_3074() || !creeper.shouldDropHead()) return;
         creeper.onHeadDropped();
         try {
             ItemStack skull = new ItemStack(Items.SKULL, 1, 3);
-            skull.setTag(StringNbtReader.parse(String.format("{SkullOwner:\"%s\"}", getName().toLowerCase())));
-            this.dropStack(skull, 0.0F);
-        } catch (class_6223 e) {
+            skull.setNbt(StringNbtReader.parse(String.format("{SkullOwner:\"%s\"}", getTranslationKey().toLowerCase())));
+            this.dropItem(skull, 0.0F);
+        } catch (NbtException e) {
             e.printStackTrace();
         }
     }

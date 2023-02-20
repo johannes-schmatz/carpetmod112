@@ -12,20 +12,34 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.recipe.RecipeManager;
 
-@Mixin(RecipeManager.class)
+import net.minecraft.recipe.RecipeDispatcher;
+
+@Mixin(RecipeDispatcher.class)
 public abstract class RecipeManagerMixin {
-    @Shadow private static boolean method_25727() { throw new AbstractMethodError(); }
+    @Shadow private static boolean method_14261() { throw new AbstractMethodError(); }
 
-    @Redirect(method = "method_25719", at = @At(value = "INVOKE", target = "Lnet/minecraft/recipe/RecipeManager;method_25727()Z"))
+    @Redirect(
+            method = "setup",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/recipe/RecipeDispatcher;method_14261()Z"
+            )
+    )
     private static boolean registerCustomRecipes() throws IOException {
-        boolean result = method_25727();
+        boolean result = method_14261();
         result = CustomCrafting.registerCustomRecipes(result);
         return result;
     }
 
-    @Redirect(method = "method_25727", at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;iterator()Ljava/util/Iterator;", remap = false))
+    @Redirect(
+            method = "method_14261",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/stream/Stream;iterator()Ljava/util/Iterator;",
+                    remap = false
+            )
+    )
     private static Iterator<Path> sortFiles(Stream<Path> stream) {
         TreeSet<Path> set = stream.collect(Collectors.toCollection(() -> new TreeSet<>((a, b) -> b.toString().compareTo(a.toString()))));
         return set.iterator();

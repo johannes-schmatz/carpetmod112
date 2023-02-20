@@ -11,7 +11,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerNetworkIo.class)
 public class ServerNetworkIoMixin {
     // Earlier than MinecraftServer.<init>()V @RETURN
-    @Inject(method = "<init>", at = @At("RETURN"))
+    @Inject(
+            method = "<init>",
+            at = @At("RETURN")
+    )
     private void init(MinecraftServer server, CallbackInfo ci) {
         CarpetServer.init(server);
     }

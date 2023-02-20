@@ -12,14 +12,20 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
-    @Redirect(method = "tickWorlds", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;tickTime()V"))
+    @Redirect(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;tick()V"
+            )
+    )
     private void fixUpdateSuppressionCrashTick(ServerWorld worldServer) {
         if (!CarpetSettings.updateSuppressionCrashFix) {
-            worldServer.tickTime();
+            worldServer.tick();
             return;
         }
         try {
-            worldServer.tickTime();
+            worldServer.tick();
         } catch (CrashException e) {
             if (!(e.getReport().getCause() instanceof ThrowableSuppression)) throw e;
             logUpdateSuppression("world tick");
@@ -28,14 +34,20 @@ public class MinecraftServerMixin {
         }
     }
 
-    @Redirect(method = "tickWorlds", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;tickBlockEntities()V"))
+    @Redirect(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;tickEntities()V"
+            )
+    )
     private void fixUpdateSuppressionCrashTickEntities(ServerWorld worldServer) {
         if (!CarpetSettings.updateSuppressionCrashFix) {
-            worldServer.tickBlockEntities();
+            worldServer.tickEntities();
             return;
         }
         try {
-            worldServer.tickBlockEntities();
+            worldServer.tickEntities();
         } catch (CrashException e) {
             if (!(e.getReport().getCause() instanceof ThrowableSuppression)) throw e;
             logUpdateSuppression("update entities");

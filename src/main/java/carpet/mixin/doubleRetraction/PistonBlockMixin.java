@@ -17,7 +17,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class PistonBlockMixin {
     @Shadow @Final public static BooleanProperty EXTENDED;
 
-    @Inject(method = "method_27136", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;addBlockAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V", ordinal = 1))
+    @Inject(
+            method = "tryMove",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;addBlockAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V",
+                    ordinal = 1
+            )
+    )
     private void onRetract(World worldIn, BlockPos pos, BlockState state, CallbackInfo ci) {
         if (CarpetSettings.doubleRetraction) {
             worldIn.setBlockState(pos, state.with(EXTENDED, false), 2);

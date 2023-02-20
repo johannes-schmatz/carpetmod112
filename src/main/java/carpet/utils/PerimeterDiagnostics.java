@@ -3,9 +3,10 @@ package carpet.utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.Material;
-import net.minecraft.class_2278;
-import net.minecraft.entity.SpawnGroup;
+import net.minecraft.block.material.Material;
+import net.minecraft.entity.EntityCategory;
+import net.minecraft.entity.EntityLocations;
+import net.minecraft.entity.MobSpawnerHelper;
 import net.minecraft.entity.mob.AmbientEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
@@ -13,7 +14,6 @@ import net.minecraft.entity.mob.WaterCreatureEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.SpawnHelper;
 import net.minecraft.world.biome.Biome;
 
 import java.util.ArrayList;
@@ -34,9 +34,9 @@ public class PerimeterDiagnostics
     }
     private Biome.SpawnEntry sle;
     private ServerWorld worldServer;
-    private SpawnGroup ctype;
+    private EntityCategory ctype;
     private MobEntity el;
-    private PerimeterDiagnostics(ServerWorld server, SpawnGroup ctype, MobEntity el)
+    private PerimeterDiagnostics(ServerWorld server, EntityCategory ctype, MobEntity el)
     {
         this.sle = null;
         this.worldServer = server;
@@ -59,28 +59,28 @@ public class PerimeterDiagnostics
         //int specific_spawns = 0;
         boolean add_water = false;
         boolean add_ground = false;
-        SpawnGroup ctype = null;
+        EntityCategory ctype = null;
 
         if (el != null)
         {
             if (el instanceof WaterCreatureEntity)
             {
                 add_water = true;
-                ctype = SpawnGroup.WATER_CREATURE;
+                ctype = EntityCategory.AQUATIC;
             }
             else if (el instanceof AnimalEntity)
             {
                 add_ground = true;
-                ctype = SpawnGroup.CREATURE;
+                ctype = EntityCategory.PASSIVE;
             }
             else if (el instanceof Monster)
             {
                 add_ground = true;
-                ctype = SpawnGroup.MONSTER;
+                ctype = EntityCategory.MONSTER;
             }
             else if (el instanceof AmbientEntity)
             {
-                ctype = SpawnGroup.AMBIENT;
+                ctype = EntityCategory.AMBIENT;
             }
         }
         PerimeterDiagnostics diagnostic = new PerimeterDiagnostics(worldserver,ctype,el);
@@ -109,7 +109,7 @@ public class PerimeterDiagnostics
                     BlockState iblockstate_down = worldserver.getBlockState(pos.down());
                     BlockState iblockstate_up = worldserver.getBlockState(pos.up());
 
-                    if ( iblockstate.getMaterial() == Material.WATER && iblockstate_down.getMaterial() == Material.WATER && !iblockstate_up.isSolidBlock())
+                    if ( iblockstate.getMaterial() == Material.WATER && iblockstate_down.getMaterial() == Material.WATER && !iblockstate_up.method_11734())
                     {
                         result.liquid++;
                         if (add_water && diagnostic.check_entity_spawn(pos))
@@ -123,11 +123,11 @@ public class PerimeterDiagnostics
                     }
                     else
                     {
-                        if (iblockstate_down.isOpaqueFullCube())
+                        if (iblockstate_down.method_11739())
                         {
                             Block block = iblockstate_down.getBlock();
                             boolean flag = block != Blocks.BEDROCK && block != Blocks.BARRIER;
-                            if( flag && SpawnHelper.method_26211(iblockstate) && SpawnHelper.method_26211(iblockstate_up))
+                            if( flag && MobSpawnerHelper.method_11496(iblockstate) && MobSpawnerHelper.method_11496(iblockstate_up))
                             {
                                 result.ground ++;
                                 if (add_ground && diagnostic.check_entity_spawn(pos))
@@ -154,27 +154,27 @@ public class PerimeterDiagnostics
 
     private boolean check_entity_spawn(BlockPos pos)
     {
-        if (sle == null || !worldServer.method_33469(ctype, sle, pos))
+        if (sle == null || !worldServer.method_10753(ctype, sle, pos))
         {
             sle = null;
-            for (Biome.SpawnEntry sle: worldServer.getChunkManager().method_33449(ctype, pos))
+            for (Biome.SpawnEntry sle: worldServer.getChunkProvider().method_12775(ctype, pos))
             {
-                if (el.getClass() == sle.mob)
+                if (el.getClass() == sle.entity)
                 {
                     this.sle = sle;
                     break;
                 }
             }
-            if (sle == null || !worldServer.method_33469(ctype, sle, pos))
+            if (sle == null || !worldServer.method_10753(ctype, sle, pos))
             {
                 return false;
             }
         }
 
-        if (SpawnHelper.method_26213(class_2278.method_34819(sle.mob), worldServer, pos))
+        if (MobSpawnerHelper.isSpawnable(EntityLocations.getLocation(sle.entity), worldServer, pos))
         {
             el.refreshPositionAndAngles((float)pos.getX() + 0.5F, (float)pos.getY(), (float)pos.getZ()+0.5F, 0.0F, 0.0F);
-            return el.canMobSpawn() && el.canSpawn();
+            return el.canSpawn() && el.canSpawn();
         }
         return false;
     }

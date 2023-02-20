@@ -13,12 +13,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientConnection.class)
 public class NetworkManagerMixin {
-    @Inject(method = "channelRead0", at = @At("HEAD"))
+    @Inject(
+            method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/Packet;)V",
+            at = @At("HEAD")
+    )
     private void onReceive(ChannelHandlerContext p_channelRead0_1_, Packet<?> p_channelRead0_2_, CallbackInfo ci) {
         PacketCounter.totalIn++;
     }
 
-    @Inject(method = "method_32196", at = @At("HEAD"))
+    @Inject(
+            method = "sendImmediately",
+            at = @At("HEAD")
+    )
     private void onSend(Packet<?> inPacket, GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {
         PacketCounter.totalOut++;
     }

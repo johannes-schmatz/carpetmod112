@@ -7,7 +7,7 @@ import narcolepticfrog.rsmm.meterable.IsPoweredHelper;
 import narcolepticfrog.rsmm.network.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -58,7 +58,7 @@ public class MeterGroup implements RSMMSPacketHandler {
      * Gets the {@code EntityPlayerMP} instance from their uuid.
      */
     public ServerPlayerEntity getPlayerFromUUID(UUID uuid) {
-        Entity playerEntity = server.getMinecraftServer().getPlayerByUuid(uuid);
+        Entity playerEntity = server.getMinecraftServer().getEntity(uuid);
         if (playerEntity != null && playerEntity instanceof ServerPlayerEntity) {
             return (ServerPlayerEntity)playerEntity;
         }
@@ -110,7 +110,7 @@ public class MeterGroup implements RSMMSPacketHandler {
 
     public void broadcastToSubscribers(RSMMCPacket packet) {
         for (UUID playerUUID : subscribedPlayers) {
-            Entity playerEntity = server.getMinecraftServer().getPlayerByUuid(playerUUID);
+            Entity playerEntity = server.getMinecraftServer().getEntity(playerUUID);
             if (playerEntity != null && playerEntity instanceof ServerPlayerEntity) {
                 server.sendToPlayer((ServerPlayerEntity)playerEntity, packet);
             }
@@ -140,7 +140,7 @@ public class MeterGroup implements RSMMSPacketHandler {
      * Should be called at the start of each tick.
      */
     public void onTickStart(int tick) {
-        currentTick = server.getMinecraftServer().getWorldById(0).getTime();
+        currentTick = server.getMinecraftServer().getWorld(0).getLastUpdateTime();
         subtickIndex = 0;
     }
 
@@ -168,7 +168,7 @@ public class MeterGroup implements RSMMSPacketHandler {
     }
 
     public void onPistonPush(World w, BlockPos pos, Direction direction) {
-        int dim = w.dimension.getType().getRawId();
+        int dim = w.dimension.getDimensionType().getId();
         DimPos dimpos = new DimPos(dim, pos);
         if (dimpos2index.containsKey(dimpos)) {
             int meterId = dimpos2index.get(dimpos);
@@ -190,7 +190,7 @@ public class MeterGroup implements RSMMSPacketHandler {
     }
 
     public void onStateChange(World w, BlockPos pos) {
-        int dim = w.dimension.getType().getRawId();
+        int dim = w.dimension.getDimensionType().getId();
         DimPos dimpos = new DimPos(dim, pos);
         if (dimpos2index.containsKey(dimpos)) {
             int meterId = dimpos2index.get(dimpos);
@@ -218,7 +218,7 @@ public class MeterGroup implements RSMMSPacketHandler {
             String name = "Meter " + (meterNameIndex++);
             int color = ColorUtils.nextColor();
             boolean movable = packet.isMovable();
-            World w = server.getMinecraftServer().getWorldById(dimpos.getDim());
+            World w = server.getMinecraftServer().getWorld(dimpos.getDim());
             BlockState blockState = w.getBlockState(dimpos.getPos());
             boolean powered = IsPoweredHelper.isPowered(blockState, w, dimpos.getPos());
 

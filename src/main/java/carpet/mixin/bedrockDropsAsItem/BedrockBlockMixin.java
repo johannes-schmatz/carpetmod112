@@ -14,7 +14,11 @@ import java.util.Random;
 
 @Mixin(BedrockBlock.class)
 public class BedrockBlockMixin {
-    @Inject(method = "method_26404", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "getDropItem",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void dropAsItem(BlockState state, Random rand, int fortune, CallbackInfoReturnable<Item> cir) {
         if (CarpetSettings.bedrockDropsAsItem) cir.setReturnValue(Item.fromBlock((Block) (Object) this));
     }

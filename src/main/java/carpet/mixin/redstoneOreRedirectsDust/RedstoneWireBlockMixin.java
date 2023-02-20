@@ -14,14 +14,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(RedstoneWireBlock.class)
 public class RedstoneWireBlockMixin {
-    @Inject(method = "getWeakRedstonePower", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "getWeakRedstonePower",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void getWeakPowerFromOre(BlockState blockState, BlockView blockAccess, BlockPos pos, Direction side, CallbackInfoReturnable<Integer> cir) {
         if (CarpetSettings.redstoneOreRedirectsDust) {
             cir.setReturnValue(RedstoneOreRedirectHelper.getWeakPowerCM((RedstoneWireBlock) (Object) this, blockState, blockAccess, pos, side));
         }
     }
 
-    @Inject(method = "method_26764", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "connectsTo(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;)Z",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private static void canConnectToOre(BlockState blockState, Direction side, CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.redstoneOreRedirectsDust) {
             cir.setReturnValue(RedstoneOreRedirectHelper.canConnectToCM(blockState, side));

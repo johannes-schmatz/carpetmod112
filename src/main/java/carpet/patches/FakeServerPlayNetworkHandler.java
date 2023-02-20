@@ -2,7 +2,7 @@ package carpet.patches;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
@@ -17,7 +17,7 @@ public class FakeServerPlayNetworkHandler extends ServerPlayNetworkHandler {
     }
 
     @Override
-    public void disconnect(Text textComponent) {
+    public void method_14977(Text textComponent) {
         player.kill();
     }
 }

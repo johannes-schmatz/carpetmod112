@@ -42,7 +42,7 @@ public class SubtickTime implements Comparable<SubtickTime> {
     }
 
     public void writeToBuffer(PacketByteBuf buffer) {
-        buffer.writeVarLong(tick);
+        buffer.method_10608(tick);
         buffer.writeInt(subtickIndex);
     }
 

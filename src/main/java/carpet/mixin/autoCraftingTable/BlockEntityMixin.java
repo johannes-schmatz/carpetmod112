@@ -10,10 +10,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(BlockEntity.class)
 public abstract class BlockEntityMixin {
-    @Shadow private static void method_26929(String id, Class<? extends BlockEntity> clazz) {}
+    @Shadow private static void addBlockEntity(String id, Class<? extends BlockEntity> clazz) {}
 
-    @Inject(method = "<clinit>()V", at = @At("RETURN"))
+    @Inject(
+            method = "<clinit>",
+            at = @At("RETURN")
+    )
     private static void registerAutoCraftingTable(CallbackInfo ci) {
-        method_26929("crafting_table", CraftingTableBlockEntity.class);
+        addBlockEntity("crafting_table", CraftingTableBlockEntity.class);
     }
 }

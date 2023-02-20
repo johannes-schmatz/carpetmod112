@@ -25,22 +25,28 @@ public abstract class ServerWorldMixin extends World implements WorldWithBlockEv
         super(levelProperties, levelProperties2, dimension, profiler, isClient);
     }
 
-    @Inject(method = "method_26064", at = @At("RETURN"))
+    @Inject(
+            method = "getWorld",
+            at = @At("RETURN")
+    )
     private void onInit(CallbackInfoReturnable<World> cir) {
         initBlockEventSerializer();
     }
 
-    @Inject(method = "addBlockAction", at = @At("RETURN"))
+    @Inject(
+            method = "addBlockAction",
+            at = @At("RETURN")
+    )
     private void onAddBlockEvent(BlockPos pos, Block blockIn, int eventID, int eventParam, CallbackInfo ci) {
         if(CarpetSettings.blockEventSerializer) blockEventSerializer.markDirty();
     }
 
     protected void initBlockEventSerializer() {
-        blockEventSerializer = (ScheduledBlockEventSerializer)this.field_23593.method_28353(ScheduledBlockEventSerializer.class, "blockEvents");
+        blockEventSerializer = (ScheduledBlockEventSerializer)this.persistentStateManager.getOrCreate(ScheduledBlockEventSerializer.class, "blockEvents");
 
         if (blockEventSerializer == null) {
             blockEventSerializer = new ScheduledBlockEventSerializer();
-            this.field_23593.method_28355("blockEvents", blockEventSerializer);
+            this.persistentStateManager.replace("blockEvents", blockEventSerializer);
         }
 
         blockEventSerializer.setBlockEvents((ServerWorld) (Object) this);

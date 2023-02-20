@@ -15,9 +15,13 @@ public abstract class MobEntityMixin extends LivingEntity {
         super(worldIn);
     }
 
-    @Inject(method = "playAmbientSound", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "playAmbientSound",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void easterEgg(CallbackInfo ci) {
-        String name = Formatting.strip(getName());
+        String name = Formatting.strip(getTranslationKey());
         if ("Xcom".equalsIgnoreCase(name) || "gnembon".equalsIgnoreCase(name)) ci.cancel();
     }
 }

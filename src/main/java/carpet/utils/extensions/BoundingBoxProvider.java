@@ -1,8 +1,8 @@
 package carpet.utils.extensions;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtList;
 
 public interface BoundingBoxProvider {
-    ListTag getBoundingBoxes(Entity entity);
+    NbtList getBoundingBoxes(Entity entity);
 }

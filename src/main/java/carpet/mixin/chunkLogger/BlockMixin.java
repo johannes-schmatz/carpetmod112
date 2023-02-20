@@ -14,12 +14,18 @@ import java.util.Random;
 
 @Mixin(Block.class)
 public class BlockMixin {
-    @Inject(method = "randomTick", at = @At("HEAD"))
+    @Inject(
+            method = "onRandomTick",
+            at = @At("HEAD")
+    )
     private void preRandomTick(World worldIn, BlockPos pos, BlockState state, Random random, CallbackInfo ci) {
         CarpetClientChunkLogger.setReason(() -> "Randomtick block: " + state.getBlock().getTranslatedName());
     }
 
-    @Inject(method = "randomTick", at = @At("RETURN"))
+    @Inject(
+            method = "onRandomTick",
+            at = @At("RETURN")
+    )
     private void postRandomTick(World worldIn, BlockPos pos, BlockState state, Random random, CallbackInfo ci) {
         CarpetClientChunkLogger.resetReason();
     }

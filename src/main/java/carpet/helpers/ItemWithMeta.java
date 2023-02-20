@@ -8,16 +8,16 @@ public class ItemWithMeta {
     public final int metadata;
 
     public ItemWithMeta(ItemStack stack) {
-        this(stack.getItem(), stack.getMetadata());
+        this(stack.getItem(), stack.getDamage());
     }
 
     public ItemWithMeta(Item item, int metadata) {
         this.item = item;
-        this.metadata = item.hasVariants() ? metadata : 0;
+        this.metadata = item.hasSubTypes() ? metadata : 0;
     }
 
     public String getDisplayName() {
-        return new ItemStack(item, 1, metadata).getName();
+        return new ItemStack(item, 1, metadata).getTranslationKey();
     }
 
     @Override

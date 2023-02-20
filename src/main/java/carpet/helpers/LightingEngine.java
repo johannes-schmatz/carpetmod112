@@ -132,7 +132,7 @@ public class LightingEngine {
     }
 
     /**
-     * Schedules a light update for the specified light type and position to be processed later by {@link #procLightUpdates(EnumSkyBlock)}
+     * Schedules a light update for the specified light type and position to be processed later by {@link #procLightUpdates(LightType)}
      */
     public void scheduleLightUpdate(final LightType lightType, final BlockPos pos) {
         this.scheduleLightUpdate(lightType, posToLong(pos));
@@ -153,7 +153,7 @@ public class LightingEngine {
     }
 
     /**
-     * Calls {@link #procLightUpdates(EnumSkyBlock)} for both light types
+     * Calls {@link #procLightUpdates(LightType)} for both light types
      */
     public void procLightUpdates() {
         this.procLightUpdates(LightType.SKY);
@@ -285,7 +285,7 @@ public class LightingEngine {
 
                 if (oldLight == curLight) //only process this if nothing else has happened at this position since scheduling
                 {
-                    this.world.method_26142(this.curPos);
+                    this.world.onLightUpdate(this.curPos);
 
                     if (curLight > 1) {
                         this.spreadLightFromCur(curLight);
@@ -391,7 +391,7 @@ public class LightingEngine {
      */
     private void enqueueBrightening(final BlockPos pos, final long longPos, final int newLight, final Chunk chunk) {
         this.queuedBrightenings[newLight].add(longPos);
-        chunk.method_27365(this.lightType, pos, newLight);
+        chunk.setLightAtPos(this.lightType, pos, newLight);
     }
 
     /**
@@ -399,7 +399,7 @@ public class LightingEngine {
      */
     private void enqueueDarkening(final BlockPos pos, final long longPos, final int oldLight, final Chunk chunk) {
         this.queuedDarkenings[oldLight].add(longPos);
-        chunk.method_27365(this.lightType, pos, 0);
+        chunk.setLightAtPos(this.lightType, pos, 0);
     }
 
     /**
@@ -439,7 +439,7 @@ public class LightingEngine {
      */
     private int curToLuminosity(final BlockState state) {
         if (this.lightType == LightType.SKY) {
-            return this.curChunk.method_27396(this.curPos) ? LightType.SKY.field_23634 : 0;
+            return this.curChunk.hasDirectSunlight(this.curPos) ? LightType.SKY.defaultValue : 0;
         }
 
         return MathHelper.clamp(state.getLuminance(), 0, MAX_LIGHT);
@@ -461,7 +461,7 @@ public class LightingEngine {
     }
 
     private Chunk posToChunk(final BlockPos pos) {
-        return this.world.getChunkManager().method_27346(pos.getX() >> 4, pos.getZ() >> 4);
+        return this.world.getChunkProvider().getLoadedChunk(pos.getX() >> 4, pos.getZ() >> 4);
     }
 
     private Chunk curToChunk() {

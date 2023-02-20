@@ -28,12 +28,26 @@ public abstract class ServerWorldMixin extends World {
         super(levelProperties, levelProperties2, dimension, profiler, isClient);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;method_26051(Z)Z", shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;method_3644(Z)Z",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void rngTickUpdates(CallbackInfo ci) {
         logAndSetRng("TickUp.");
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;sendBlockActions()V", shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;method_2131()V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void rngBlockEvents(CallbackInfo ci) {
         logAndSetRng("BlockEv.");
     }
@@ -42,7 +56,8 @@ public abstract class ServerWorldMixin extends World {
     @Unique private void logAndSetRng(String phase) {
         if (LoggerRegistry.__rng) {
             LoggerRegistry.getLogger("rng").log(() -> new Text[]{
-                    Messenger.s(null, String.format("RNG %s t:%d seed:%d d:%s", phase, server.getTicks(), ((ExtendedWorld) this).getRandSeed(), dimension.getType().name()))
+                    Messenger.s(null, String.format("RNG %s t:%d seed:%d d:%s", phase, server.getTicks(), ((ExtendedWorld) this).getRandSeed(),
+                            dimension.getDimensionType().name()))
             });
         }
         if (CarpetSettings.setSeed != 0) {

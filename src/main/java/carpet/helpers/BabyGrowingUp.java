@@ -26,40 +26,40 @@ public class BabyGrowingUp {
 
     private static void pushEntityOutOfBlocks(Entity entity, Box oldHitbox) {
         // Pass "null" in first argument to only get _possible_ block collisions
-        List<Box> list1 = entity.world.getCollisionBoxes(null, entity.getBoundingBox());
+        List<Box> list1 = entity.world.doesBoxCollide(null, entity.getBoundingBox());
         Box axisalignedbb = entity.getBoundingBox();
 
         for (Box aabb : list1) {
             if (!oldHitbox.intersects(aabb) && axisalignedbb.intersects(aabb)) {
-                double minX = axisalignedbb.x1;
-                double maxX = axisalignedbb.x2;
-                double minZ = axisalignedbb.z1;
-                double maxZ = axisalignedbb.z2;
+                double minX = axisalignedbb.minX;
+                double maxX = axisalignedbb.maxX;
+                double minZ = axisalignedbb.minZ;
+                double maxZ = axisalignedbb.maxZ;
 
                 // Check for collisions on the X and Z axis, and only push the
                 // new AABB if the colliding blocks AABB
                 // is completely to the opposite side of the original AABB
-                if (aabb.x2 > axisalignedbb.x1 && aabb.x1 < axisalignedbb.x2) {
-                    if (aabb.x2 >= oldHitbox.x2 && aabb.x1 >= oldHitbox.x2) {
-                        minX = aabb.x1 - entity.width;
-                        maxX = aabb.x1;
-                    } else if (aabb.x2 <= oldHitbox.x1 && aabb.x1 <= oldHitbox.x1) {
-                        minX = aabb.x2;
-                        maxX = aabb.x2 + entity.width;
+                if (aabb.maxX > axisalignedbb.minX && aabb.minX < axisalignedbb.maxX) {
+                    if (aabb.maxX >= oldHitbox.minX && aabb.minX >= oldHitbox.maxX) {
+                        minX = aabb.minX - entity.width;
+                        maxX = aabb.minX;
+                    } else if (aabb.maxX <= oldHitbox.minX && aabb.minX <= oldHitbox.minX) {
+                        minX = aabb.maxX;
+                        maxX = aabb.maxX + entity.width;
                     }
                 }
 
-                if (aabb.z2 > axisalignedbb.z1 && aabb.z1 < axisalignedbb.z2) {
-                    if (aabb.z1 >= oldHitbox.z2 && aabb.z2 >= oldHitbox.z2) {
-                        minZ = aabb.z1 - entity.width;
-                        maxZ = aabb.z1;
-                    } else if (aabb.z2 <= oldHitbox.z1 && aabb.z1 <= oldHitbox.z1) {
-                        minZ = aabb.z2;
-                        maxZ = aabb.z2 + entity.width;
+                if (aabb.maxZ > axisalignedbb.minZ && aabb.minZ < axisalignedbb.maxZ) {
+                    if (aabb.minZ >= oldHitbox.maxZ && aabb.maxZ >= oldHitbox.maxZ) {
+                        minZ = aabb.minZ - entity.width;
+                        maxZ = aabb.minZ;
+                    } else if (aabb.maxZ <= oldHitbox.minZ && aabb.minZ <= oldHitbox.minZ) {
+                        minZ = aabb.maxZ;
+                        maxZ = aabb.maxZ + entity.width;
                     }
                 }
 
-                axisalignedbb = new Box(minX, axisalignedbb.y1, minZ, maxX, axisalignedbb.y2, maxZ);
+                axisalignedbb = new Box(minX, axisalignedbb.minY, minZ, maxX, axisalignedbb.maxY, maxZ);
             }
         }
 

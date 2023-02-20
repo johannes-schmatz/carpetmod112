@@ -23,14 +23,26 @@ public class WorldMixin implements ExtendedWorld {
     @Shadow @Final public boolean isClient;
     private AtomicLong seed;
 
-    @Redirect(method = "tickBlockEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Tickable;tick()V"))
+    @Redirect(
+            method = "tickEntities",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/Tickable;tick()V"
+            )
+    )
     private void dontProcessTileEntities(Tickable tickable) {
         if (this.isClient || TickSpeed.process_entities) tickable.tick();
     }
 
-    @Redirect(method = "tickBlockEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;method_26130(Lnet/minecraft/entity/Entity;)V"))
+    @Redirect(
+            method = "tickEntities",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;checkChunk(Lnet/minecraft/entity/Entity;)V"
+            )
+    )
     private void dontProcessEntities(World world, Entity entity) {
-        if (this.isClient || TickSpeed.process_entities) world.method_26130(entity);
+        if (this.isClient || TickSpeed.process_entities) world.checkChunk(entity);
     }
 
     @Override

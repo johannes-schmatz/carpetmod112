@@ -6,12 +6,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.Random;
-import net.minecraft.world.gen.feature.NetherFortressFeature;
-import net.minecraft.world.gen.feature.StructureFeature;
 
-@Mixin(NetherFortressFeature.class)
+import net.minecraft.structure.NetherFortressStructure;
+import net.minecraft.structure.StructureFeature;
+
+@Mixin(NetherFortressStructure.class)
 public abstract class NetherFortressFeatureMixin extends StructureFeature {
-    @Redirect(method = "method_27834", at = @At(value = "INVOKE", target = "Ljava/util/Random;setSeed(J)V", remap = false))
+    @Redirect(
+            method = "shouldStartAt",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Random;setSeed(J)V",
+                    remap = false
+            )
+    )
     private void setSeed(Random random, long seed) {
         if (CarpetSettings.netherRNG) {
             world.random.setSeed(seed);

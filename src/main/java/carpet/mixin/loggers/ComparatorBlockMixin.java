@@ -24,17 +24,20 @@ import java.util.Random;
 public abstract class ComparatorBlockMixin {
     @Shadow protected abstract int calculateOutputSignal(World worldIn, BlockPos pos, BlockState state);
 
-    @Shadow protected abstract boolean method_26545(BlockState state);
-
     @Shadow protected abstract boolean hasPower(World worldIn, BlockPos pos, BlockState state);
 
-    @Inject(method = "scheduledTick", at = @At("RETURN"))
+    @Shadow protected abstract boolean isPowered(BlockState state);
+
+    @Inject(
+            method = "onScheduledTick",
+            at = @At("RETURN")
+    )
     private void logOnUpdateTick(World worldIn, BlockPos pos, BlockState state, Random rand, CallbackInfo ci) {
         if (LoggerRegistry.__instantComparators) {
             BlockEntity te = worldIn.getBlockEntity(pos);
             if (te instanceof ComparatorBlockEntity) {
                 ComparatorBlockEntity comparator = (ComparatorBlockEntity) te;
-                int index = (int) Math.floorMod(worldIn.getTime(), 3);
+                int index = (int) Math.floorMod(worldIn.getLastUpdateTime(), 3);
                 // output signal 0 is generally considered to just be a too fast pulse for a comparator, rather
                 // than an instant comparator
                 ExtendedComparatorBlockEntity ext = (ExtendedComparatorBlockEntity) comparator;
@@ -45,13 +48,20 @@ public abstract class ComparatorBlockMixin {
         }
     }
 
-    @Inject(method = "method_26557", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/World;getBlockEntity(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/entity/BlockEntity;"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "updatePowered",
+            at = @At(
+                    value = "INVOKE_ASSIGN",
+                    target = "Lnet/minecraft/world/World;getBlockEntity(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/entity/BlockEntity;"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void logOnPowerChange(World world, BlockPos pos, BlockState state, CallbackInfo ci, int computedOutput, BlockEntity blockEntity) {
         int currentOutput = blockEntity instanceof ComparatorBlockEntity ? ((ComparatorBlockEntity)blockEntity).getOutputSignal() : 0;
-        if (LoggerRegistry.__instantComparators && (currentOutput != computedOutput || this.method_26545(state) != this.hasPower(world, pos, state))) {
+        if (LoggerRegistry.__instantComparators && (currentOutput != computedOutput || this.isPowered(state) != this.hasPower(world, pos, state))) {
             if (blockEntity instanceof ComparatorBlockEntity) {
                 ComparatorBlockEntity comparator = (ComparatorBlockEntity) blockEntity;
-                int index = (int) Math.floorMod(world.getTime() + 2, 3);
+                int index = (int) Math.floorMod(world.getLastUpdateTime() + 2, 3);
                 ExtendedComparatorBlockEntity ext = (ExtendedComparatorBlockEntity) comparator;
                 ext.getScheduledOutputSignal()[index] = computedOutput;
                 ext.getBuggy()[index] = computedOutput == currentOutput;
@@ -61,14 +71,20 @@ public abstract class ComparatorBlockMixin {
         }
     }
 
-    @Redirect(method = "method_26557", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;method_26012(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;)Z"))
+    @Redirect(
+            method = "updatePowered",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;hasScheduledTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;)Z"
+            )
+    )
     private boolean logOnTickPending(World world, BlockPos pos, Block block, World world2, BlockPos pos2, BlockState state) {
-        if (!world.method_26012(pos, block)) return false;
+        if (!world.hasScheduledTick(pos, block)) return false;
         if (LoggerRegistry.__instantComparators) {
             BlockEntity te = world.getBlockEntity(pos);
             if (te instanceof ComparatorBlockEntity) {
                 ComparatorBlockEntity comparator = (ComparatorBlockEntity) te;
-                int index = (int) Math.floorMod(world.getTime() + 2, 3);
+                int index = (int) Math.floorMod(world.getLastUpdateTime() + 2, 3);
                 ExtendedComparatorBlockEntity ext = (ExtendedComparatorBlockEntity) comparator;
                 ext.getScheduledOutputSignal()[index] = calculateOutputSignal(world, pos, state);
             }

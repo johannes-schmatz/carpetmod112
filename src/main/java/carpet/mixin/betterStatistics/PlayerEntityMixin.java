@@ -11,7 +11,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
-    @Redirect(method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/stats/Stats;method_33899(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"))
+    @Redirect(
+            method = "dropStack(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/stat/Stats;dropped(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
+            )
+    )
     private Stat addDroppedObjectMeta(Item item, ItemStack stack) {
         return StatHelper.getDroppedObjectStats(item, stack.getDamage());
     }

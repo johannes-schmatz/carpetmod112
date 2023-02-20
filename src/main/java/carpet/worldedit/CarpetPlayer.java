@@ -2,7 +2,7 @@ package carpet.worldedit;
 
 import java.util.UUID;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import com.sk89q.util.StringUtil;
 import com.sk89q.worldedit.Vector;
@@ -20,7 +20,8 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.PacketByteBuf;
 
@@ -47,7 +48,7 @@ class CarpetPlayer extends AbstractPlayerActor {
 
     @Override
     public String getName() {
-        return this.player.getName();
+        return this.player.getTranslationKey();
     }
 
     @Override
@@ -62,7 +63,7 @@ class CarpetPlayer extends AbstractPlayerActor {
                 CarpetWorldEdit.inst.getWorld(this.player.world),
                 position,
                 this.player.strideDistance,
-                this.player.cameraPitch);
+                this.player.pitch);
     }
 
     @Override
@@ -105,28 +106,28 @@ class CarpetPlayer extends AbstractPlayerActor {
     @Override
     public void printRaw(String msg) {
         for (String part : msg.split("\n")) {
-            this.player.sendSystemMessage(new LiteralText(part));
+            this.player.sendMessage(new LiteralText(part));
         }
     }
 
     @Override
     public void printDebug(String msg) {
         for (String part : msg.split("\n")) {
-            this.player.sendSystemMessage(new LiteralText("\u00a77" + part));
+            this.player.sendMessage(new LiteralText("\u00a77" + part));
         }
     }
 
     @Override
     public void print(String msg) {
         for (String part : msg.split("\n")) {
-            this.player.sendSystemMessage(new LiteralText("\u00a7d" + part));
+            this.player.sendMessage(new LiteralText("\u00a7d" + part));
         }
     }
 
     @Override
     public void printError(String msg) {
         for (String part : msg.split("\n")) {
-            this.player.sendSystemMessage(new LiteralText("\u00a7c" + part));
+            this.player.sendMessage(new LiteralText("\u00a7c" + part));
         }
     }
 
@@ -147,7 +148,11 @@ class CarpetPlayer extends AbstractPlayerActor {
 
     @Override
     public boolean hasPermission(String perm) {
-        int opLevel = CarpetServer.getMinecraftServer().getPlayerManager().getOpList().method_33753(player.getGameProfile());
+        MinecraftServer server = CarpetServer.getMinecraftServer();
+
+        if (!server.isDedicated() && player.isCreative()) return true;
+
+        int opLevel = server.getPlayerManager().getOpList().method_12832(player.getGameProfile());
         int requiredOpLevel = CarpetWorldEdit.inst.getConfig().getPermissionLevel(perm);
         return opLevel >= requiredOpLevel;
     }
@@ -160,7 +165,7 @@ class CarpetPlayer extends AbstractPlayerActor {
 
     @Override
     public SessionKey getSessionKey() {
-        return new SessionKeyImpl(player.getUuid(), player.getName());
+        return new SessionKeyImpl(player.getUuid(), player.getTranslationKey());
     }
 
     private static class SessionKeyImpl implements SessionKey {

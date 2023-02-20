@@ -11,7 +11,7 @@ public class KillLogHelper {
     {
         LoggerRegistry.getLogger("kills").log( () -> new Text[]{
                 Messenger.m(null, "g "+player.getGameProfile().getName()+" smacked ","r "+count,"g  entities with sweeping")},
-                "ATTACKER", player.getUuidAsString(),
+                "ATTACKER", player.getEntityName(),
                 "COUNT", count);
     }
 
@@ -19,7 +19,7 @@ public class KillLogHelper {
     {
         LoggerRegistry.getLogger("kills").log( () -> new Text[]{
                 Messenger.m(null, "g "+player.getGameProfile().getName()+" smacked ","r 1","g  (no sweeping)")},
-                "ATTACKER", player.getUuidAsString(),
+                "ATTACKER", player.getEntityName(),
                 "COUNT", 1);
     }
 
@@ -27,7 +27,7 @@ public class KillLogHelper {
     {
         LoggerRegistry.getLogger("kills").log( () -> new Text[]{
                 Messenger.m(null, "g "+player.getGameProfile().getName()+" dud hot = no one affected")},
-                "ATTACKER", player.getUuidAsString(),
+                "ATTACKER", player.getEntityName(),
                 "COUNT", 0);
     }
 }

@@ -10,7 +10,7 @@ public class XPcombine {
 
     public static void searchForOtherXPNearbyCarpet(ExperienceOrbEntity first)
     {
-        for (ExperienceOrbEntity entityxp : first.world.getEntities(ExperienceOrbEntity.class,
+        for (ExperienceOrbEntity entityxp : first.world.getEntitiesInBox(ExperienceOrbEntity.class,
                 first.getBoundingBox().stretch(0.5D, 0.0D, 0.5D)))
         {
             combineItems(first, entityxp);

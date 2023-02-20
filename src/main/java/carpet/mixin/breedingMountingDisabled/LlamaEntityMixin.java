@@ -1,7 +1,7 @@
 package carpet.mixin.breedingMountingDisabled;
 
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.passive.LlamaEntity;
+import net.minecraft.entity.LlamaEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -17,6 +17,6 @@ public class LlamaEntityMixin extends AbstractDonkeyEntityMixin {
     @Override
     protected boolean isValidBreedingItem(ItemStack itemstack) {
         Item item = itemstack.getItem();
-        return item != Items.WHEAT && item != Item.fromBlock(Blocks.HAY_BLOCK);
+        return item != Items.WHEAT && item != Item.fromBlock(Blocks.HAY_BALE);
     }
 }

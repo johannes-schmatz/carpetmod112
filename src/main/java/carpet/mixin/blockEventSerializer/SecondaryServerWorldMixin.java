@@ -1,7 +1,7 @@
 package carpet.mixin.blockEventSerializer;
 
-import net.minecraft.server.world.MultiServerWorld;
 import net.minecraft.util.profiler.Profiler;
+import net.minecraft.world.MultiServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.dimension.Dimension;
@@ -17,7 +17,10 @@ public abstract class SecondaryServerWorldMixin extends ServerWorldMixin {
         super(levelProperties, levelProperties2, dimension, profiler, isClient);
     }
 
-    @Inject(method = "method_26064", at = @At("RETURN"))
+    @Inject(
+            method = "getWorld",
+            at = @At("RETURN")
+    )
     private void onInit(CallbackInfoReturnable<World> cir) {
         initBlockEventSerializer();
     }

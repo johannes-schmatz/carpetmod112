@@ -6,5 +6,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(MinecraftServer.class)
 public interface MinecraftServerAccessor {
-    @Invoker void invokeLogPercentage(String message, int percent);
+    @Invoker("logProgress") void invokeLogPercentage(String message, int percent);
 }

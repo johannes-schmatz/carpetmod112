@@ -1,6 +1,6 @@
 package carpet.mixin.breedingMountingDisabled;
 
-import net.minecraft.entity.passive.DonkeyEntity;
+import net.minecraft.entity.DonkeyEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;

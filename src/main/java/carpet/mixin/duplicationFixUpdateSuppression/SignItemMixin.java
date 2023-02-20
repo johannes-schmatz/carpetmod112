@@ -18,12 +18,25 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(SignItem.class)
 public class SignItemMixin {
-    @Inject(method = "useOnBlock", at = @At(value = "FIELD", target = "Lnet/minecraft/util/math/Direction;UP:Lnet/minecraft/util/math/Direction;", ordinal = 1))
+    @Inject(
+            method = "use",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/util/math/Direction;UP:Lnet/minecraft/util/math/Direction;",
+                    ordinal = 1
+            )
+    )
     private void shrinkBefore(PlayerEntity player, World worldIn, BlockPos pos, Hand hand, Direction facing, float hitX, float hitY, float hitZ, CallbackInfoReturnable<ActionResult> cir) {
         if (CarpetSettings.duplicationFixUpdateSuppression) player.getStackInHand(hand).decrement(1);
     }
 
-    @Redirect(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;decrement(I)V"))
+    @Redirect(
+            method = "use",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/item/ItemStack;decrement(I)V"
+            )
+    )
     private void vanillaShrink(ItemStack itemStack, int quantity) {
         if (CarpetSettings.duplicationFixUpdateSuppression) return;
         itemStack.decrement(quantity);

@@ -17,7 +17,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class WorldChunkMixin {
     @Shadow @Final private World world;
 
-    @Inject(method = "method_27373", at = @At("TAIL"))
+    @Inject(
+            method = "getBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;",
+            at = @At("TAIL")
+    )
     private void onSetBlockState(BlockPos pos, BlockState state, CallbackInfoReturnable<BlockState> cir) {
         if (CarpetSettings.redstoneMultimeter) StateChangeEventDispatcher.dispatchEvent(world, pos);
     }

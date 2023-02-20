@@ -7,36 +7,36 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.KillCommand;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 
 public class CommandRemoveEntity extends KillCommand {
     @Override
-    public String method_29277()
+    public String getCommandName()
     {
         return "removeEntity";
     }
 
     @Override
-    public void method_29272(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (args.length == 0)
         {
-            PlayerEntity entityplayer = method_28708(sender);
+            PlayerEntity entityplayer = getAsPlayer(sender);
             entityplayer.kill();
-            method_28710(sender, this, "commands.kill.successful", entityplayer.getDisplayName());
+            run(sender, this, "commands.kill.successful", entityplayer.getName());
         }
         else
         {
-            Entity entity = method_28743(server, sender, args[0]);
+            Entity entity = method_10711(server, sender, args[0]);
             entity.remove();
 
             if (!(entity instanceof ServerPlayerEntity))
             {
                 ServerPlayerEntity worldEditPlayer = sender instanceof ServerPlayerEntity ? (ServerPlayerEntity) sender : null;
-                WorldEditBridge.recordEntityRemoval(worldEditPlayer, sender.getEntityWorld(), entity);
+                WorldEditBridge.recordEntityRemoval(worldEditPlayer, sender.getWorld(), entity);
             }
 
-            method_28710(sender, this, "commands.kill.successful", entity.getDisplayName());
+            run(sender, this, "commands.kill.successful", entity.getName());
         }
     }
 

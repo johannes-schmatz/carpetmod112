@@ -13,7 +13,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class LivingEntityMixin {
     @Shadow public abstract boolean isPushable();
 
-    @Inject(method = "tickCramming", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "tickCramming",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void optimizedCollisionCancellations(CallbackInfo ci) {
         // Collision calculations are cancelled if isPushable() is false. Return here to lag optimize the collision code. CARPET-XCOM
         //noinspection ConstantConditions

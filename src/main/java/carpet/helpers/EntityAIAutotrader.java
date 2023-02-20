@@ -5,8 +5,8 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.village.TradeOffer;
@@ -59,7 +59,7 @@ public class EntityAIAutotrader extends Goal {
      * Finds an emerald block the trader will use to throw the items towards.
      */
     private void findClosestEmeraldBlock() {
-        World worldIn = villager.getEntityWorld();
+        World worldIn = villager.getWorld();
         BlockPos villagerpos = new BlockPos(villager);
         for (BlockPos pos : BlockPos.iterate(villagerpos.add(-3, -1, -3), villagerpos.add(3, 4, 3))) {
             if (worldIn.getBlockState(pos).getBlock() == Blocks.EMERALD_BLOCK) {
@@ -80,8 +80,8 @@ public class EntityAIAutotrader extends Goal {
     public boolean updateEquipment(ItemEntity itemEntity, TraderOfferList merchantList) {
         for (TradeOffer merchantrecipe : merchantList) {
             if (!merchantrecipe.isDisabled()) {
-                ItemStack groundItems = itemEntity.getStack();
-                ItemStack buyItem = merchantrecipe.method_25834();
+                ItemStack groundItems = itemEntity.getItemStack();
+                ItemStack buyItem = merchantrecipe.getFirstStack();
                 if (groundItems.getItem() == buyItem.getItem()) {
                     int max = merchantrecipe.getMaxUses() - merchantrecipe.getUses();
                     int price = buyItem.getCount();
@@ -93,7 +93,7 @@ public class EntityAIAutotrader extends Goal {
 
                     for (int i = 0; i < count; i++) {
                         villager.trade(merchantrecipe);
-                        dropItem(merchantrecipe.method_25839().copy());
+                        dropItem(merchantrecipe.getResult().copy());
                         groundItems.decrement(price);
                     }
 
@@ -118,14 +118,14 @@ public class EntityAIAutotrader extends Goal {
 
         if (emeraldBlockPosition != null) {
             double d0 = emeraldBlockPosition.getX() + 0.5D - villager.x;
-            double d1 = emeraldBlockPosition.getY() + 1.5D - (villager.y + (double) villager.getStandingEyeHeight());
+            double d1 = emeraldBlockPosition.getY() + 1.5D - (villager.y + (double) villager.getEyeHeight());
             double d2 = emeraldBlockPosition.getZ() + 0.5D - villager.z;
             double d3 = MathHelper.sqrt(d0 * d0 + d2 * d2);
             f1 = (float) (MathHelper.atan2(d2, d0) * (180D / Math.PI)) - 90.0F;
             f2 = (float) (-(MathHelper.atan2(d1, d3) * (180D / Math.PI)));
         }
 
-        double d0 = villager.y - 0.30000001192092896D + (double) villager.getStandingEyeHeight();
+        double d0 = villager.y - 0.30000001192092896D + (double) villager.getEyeHeight();
         ItemEntity entityitem = new ItemEntity(villager.world, villager.x, d0, villager.z, itemstack);
         float f = 0.3F;
 
@@ -147,7 +147,7 @@ public class EntityAIAutotrader extends Goal {
         int index = -1;
         for (int i = 0; i < buyingList.size(); i++) {
             TradeOffer b = buyingList.get(i);
-            if (b.method_25834().getItem().equals(recipe.method_25834().getItem()) && b.method_25839().getItem().equals(recipe.method_25839().getItem())) {
+            if (b.getFirstStack().getItem().equals(recipe.getFirstStack().getItem()) && b.getSecondStack().getItem().equals(recipe.getSecondStack().getItem())) {
                 index = i;
                 break;
             }
@@ -195,11 +195,11 @@ public class EntityAIAutotrader extends Goal {
      * @param nbttagcompound
      * @param sortedTradeList
      */
-    public void setRecipiesForSaving(CompoundTag nbttagcompound, List<Integer> sortedTradeList) {
-        ListTag nbttaglist = nbttagcompound.getList("Recipes", 10);
+    public void setRecipiesForSaving(NbtCompound nbttagcompound, List<Integer> sortedTradeList) {
+        NbtList nbttaglist = nbttagcompound.getList("Recipes", 10);
 
         for (int i = 0; i < nbttaglist.size(); ++i) {
-            CompoundTag nbt = nbttaglist.getCompound(i);
+            NbtCompound nbt = nbttaglist.getCompound(i);
             sortedTradeList.add(nbt.getInt("n"));
         }
     }
@@ -210,13 +210,13 @@ public class EntityAIAutotrader extends Goal {
      * @param list
      * @return
      */
-    public CompoundTag getRecipiesForSaving(List<Integer> list) {
-        CompoundTag nbttagcompound = new CompoundTag();
-        ListTag nbttaglist = new ListTag();
+    public NbtCompound getRecipiesForSaving(List<Integer> list) {
+        NbtCompound nbttagcompound = new NbtCompound();
+        NbtList nbttaglist = new NbtList();
 
         for (int i = 0; i < list.size(); ++i) {
             int index = list.get(i);
-            CompoundTag num = new CompoundTag();
+            NbtCompound num = new NbtCompound();
             num.putInt("n", index);
             nbttaglist.add(num);
         }

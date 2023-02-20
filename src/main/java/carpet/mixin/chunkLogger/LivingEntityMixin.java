@@ -15,12 +15,18 @@ public abstract class LivingEntityMixin extends Entity {
         super(worldIn);
     }
 
-    @Inject(method = "travel", at = @At("HEAD"))
+    @Inject(
+            method = "method_2657",
+            at = @At("HEAD")
+    )
     private void onTravelStart(float strafe, float vertical, float forward, CallbackInfo ci) {
         CarpetClientChunkLogger.setReason(() -> "Entity walking around: " + getName());
     }
 
-    @Inject(method = "travel", at = @At("RETURN"))
+    @Inject(
+            method = "method_2657",
+            at = @At("RETURN")
+    )
     private void onTravelEnd(float strafe, float vertical, float forward, CallbackInfo ci) {
         CarpetClientChunkLogger.resetReason();
     }

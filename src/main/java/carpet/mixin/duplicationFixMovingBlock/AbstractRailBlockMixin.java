@@ -14,7 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AbstractRailBlock.class)
 public class AbstractRailBlockMixin {
-    @Inject(method = "neighborUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/AbstractRailBlock;method_26417(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)V"), cancellable = true)
+    @Inject(
+            method = "neighborUpdate",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/AbstractRailBlock;dropAsItem(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)V"
+            ),
+            cancellable = true
+    )
     private void fixDupe(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, CallbackInfo ci) {
         if (CarpetSettings.duplicationFixMovingRail && PistonHelper.isBeingPushed(pos)) ci.cancel();
     }

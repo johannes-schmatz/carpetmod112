@@ -2,7 +2,7 @@ package narcolepticfrog.rsmm.events;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 
 public class PlayerConnectionEventDispatcher {
 

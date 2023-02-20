@@ -49,14 +49,14 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.inventory.BasicInventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.util.DefaultedList;
+import net.minecraft.recipe.RecipeDispatcher;
+import net.minecraft.recipe.RecipeType;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -70,7 +70,7 @@ public class EntityAICrafter extends Goal {
 	private final int[] tasks = new int[3];
 	private final int tier2Unlock = 1200 * 8;
 	private final int tier3Unlock = 1200 * 64;
-	private final Recipe[] taskList = new Recipe[3];
+	private final RecipeType[] taskList = new RecipeType[3];
 
 	private final int foodSlot = 7;
 	private final int[] food = new int[3];
@@ -678,7 +678,7 @@ public class EntityAICrafter extends Goal {
 	 * Fixes the food that is stuck in the wrong slots of the villager.
 	 */
 	private void fixFoodInventory() {
-		BasicInventory villagerInventory = villager.method_24919();
+		SimpleInventory villagerInventory = villager.method_11220();
 		ItemStack foodStack = villagerInventory.getInvStack(foodSlot);
 		boolean dropWrongFoods = false;
 
@@ -749,7 +749,7 @@ public class EntityAICrafter extends Goal {
 			taskList[1] = getRecipe(tier2[tasks[1]]);
 			taskList[2] = getRecipe(tier3[tasks[2]]);
 		} catch (Exception e) {
-			Messenger.print_server_message(villager.getServer(),
+			Messenger.print_server_message(villager.getMinecraftServer(),
 					"A villager with nasty craftings was found and stats was rerolled.");
 			randomiseStats();
 		}
@@ -843,7 +843,7 @@ public class EntityAICrafter extends Goal {
 	 * Finds a crafting table in an area around the villager.
 	 */
 	private void findCraftingTableNear() {
-		World worldIn = villager.getEntityWorld();
+		World worldIn = villager.getWorld();
 		BlockPos villagerpos = new BlockPos(villager);
 		for (BlockPos pos : BlockPos.iterate(villagerpos.add(-3, -1, -3), villagerpos.add(3, 4, 3))) {
 			if (worldIn.getBlockState(pos).getBlock() == Blocks.CRAFTING_TABLE) {
@@ -901,7 +901,7 @@ public class EntityAICrafter extends Goal {
 	 * food preference of the villager.
 	 */
 	private void setupFoodSpeed() {
-		BasicInventory villagerInventory = villager.method_24919();
+		SimpleInventory villagerInventory = villager.method_11220();
 		ItemStack foodStack = getFoodStack(villagerInventory);
 		setFoodSpeed(foodStack);
 	}
@@ -934,7 +934,7 @@ public class EntityAICrafter extends Goal {
 	 * 
 	 * @return the recipe object that is being crafted currently.
 	 */
-	private Recipe currentTaskRecipe() {
+	private RecipeType currentTaskRecipe() {
 		if (currentTask < 0 || currentTask >= taskList.length) {
 			currentTask = 0;
 		}
@@ -956,7 +956,7 @@ public class EntityAICrafter extends Goal {
 			return false;
 		}
 
-		BasicInventory villagerInventory = villager.method_24919();
+		SimpleInventory villagerInventory = villager.method_11220();
 		ItemStack food = getFoodStack(villagerInventory);
 		if (foodCooldown <= 0 && food.getCount() < foodSize) {
 			return false;
@@ -973,7 +973,7 @@ public class EntityAICrafter extends Goal {
 				for (Map.Entry<ItemStack, Integer> entry : crafting.entrySet()) {
 					entry.getKey().setCount(entry.getKey().getCount() - entry.getValue());
 				}
-				dropItem(currentTaskRecipe().method_25712(null));
+				dropItem(currentTaskRecipe().getResult(null));
 				crafted = true;
 			} else {
 				break;
@@ -997,7 +997,7 @@ public class EntityAICrafter extends Goal {
 			foodCooldown--;
 			return true;
 		}
-		BasicInventory villagerInventory = villager.method_24919();
+		SimpleInventory villagerInventory = villager.method_11220();
 		ItemStack food = getFoodStack(villagerInventory);
 		if (food.getCount() < foodSize) {
 			return false;
@@ -1015,7 +1015,7 @@ public class EntityAICrafter extends Goal {
 	 *            The inventory object of the villager.
 	 * @return Item stack of food based on the last slot.
 	 */
-	private ItemStack getFoodStack(BasicInventory villagerInventory) {
+	private ItemStack getFoodStack(SimpleInventory villagerInventory) {
 		return villagerInventory.getInvStack(foodSlot);
 	}
 
@@ -1024,7 +1024,7 @@ public class EntityAICrafter extends Goal {
 	 * last slot. This is done to switch jobs.
 	 */
 	private void dropJob() {
-		BasicInventory villagerInventory = villager.method_24919();
+		SimpleInventory villagerInventory = villager.method_11220();
 		for (int i = 0; i < villagerInventory.getInvSize() - 2; ++i) {
 			ItemStack itemstack = villagerInventory.getInvStack(i);
 			dropItem(itemstack.copy());
@@ -1046,7 +1046,7 @@ public class EntityAICrafter extends Goal {
 	 *         sufficient for the recipe.
 	 */
 	private Map<ItemStack, Integer> findRelativeInventoryItemsForCrafting(Map<ItemStack, Integer> list,
-			BasicInventory villagerInventory) {
+			SimpleInventory villagerInventory) {
 		Map<ItemStack, Integer> crafting = new HashMap<>();
 		Map<ItemStack, Integer> map = new HashMap<>(list);
 
@@ -1084,9 +1084,9 @@ public class EntityAICrafter extends Goal {
 	 *            The recipe that is being used to create a list of items for.
 	 * @return the list of items for the recipe and the amount per item.
 	 */
-	private Map<ItemStack, Integer> genCraftingMap(Recipe recipe) {
+	private Map<ItemStack, Integer> genCraftingMap(RecipeType recipe) {
 		Map<ItemStack, Integer> map = new HashMap<>();
-		DefaultedList<Ingredient> list = recipe.getPreviewInputs();
+		DefaultedList<Ingredient> list = recipe.method_14252();
 
 		for (Ingredient ig : list) {
 			ItemStack[] stack = ((IngredientAccessor) ig).getStacks();
@@ -1133,7 +1133,7 @@ public class EntityAICrafter extends Goal {
 	 */
 	private int getActiveRecipeCount(Item item) {
 		int itemCount = 0;
-		DefaultedList<Ingredient> list = currentTaskRecipe().getPreviewInputs();
+		DefaultedList<Ingredient> list = currentTaskRecipe().method_14252();
 		for (Ingredient ig : list) {
 			for (ItemStack is : ((IngredientAccessor) ig).getStacks()) {
 				if (is.getItem() == item) {
@@ -1161,14 +1161,14 @@ public class EntityAICrafter extends Goal {
 
 		if (craftingTablePosition != null) {
 			double d0 = craftingTablePosition.getX() + 0.5D - villager.x;
-			double d1 = craftingTablePosition.getY() + 1.5D - (villager.y + (double) villager.getStandingEyeHeight());
+			double d1 = craftingTablePosition.getY() + 1.5D - (villager.y + (double) villager.getEyeHeight());
 			double d2 = craftingTablePosition.getZ() + 0.5D - villager.z;
 			double d3 = MathHelper.sqrt(d0 * d0 + d2 * d2);
 			f1 = (float) (MathHelper.atan2(d2, d0) * (180D / Math.PI)) - 90.0F;
 			f2 = (float) (-(MathHelper.atan2(d1, d3) * (180D / Math.PI)));
 		}
 
-		double d0 = villager.y - 0.30000001192092896D + (double) villager.getStandingEyeHeight();
+		double d0 = villager.y - 0.30000001192092896D + (double) villager.getEyeHeight();
 		ItemEntity entityitem = new ItemEntity(villager.world, villager.x, d0, villager.z, itemstack);
 		float f = 0.3F;
 
@@ -1194,11 +1194,11 @@ public class EntityAICrafter extends Goal {
 	 * @return Returns true if the villager should stop all other inventory
 	 *         actions.
 	 */
-	public boolean updateEquipment(ItemEntity itemEntity, BasicInventory villagerInventory) {
+	public boolean updateEquipment(ItemEntity itemEntity, SimpleInventory villagerInventory) {
 		if(!inishilized){
 			return false;
 		}
-		ItemStack itemstack = itemEntity.getStack();
+		ItemStack itemstack = itemEntity.getItemStack();
 		Item item = itemstack.getItem();
 		if (itemstack.getItem().getTranslationKey().equals(Blocks.COMMAND_BLOCK.getTranslationKey())) {
 			readoutDebugInfoOnMe();
@@ -1311,7 +1311,7 @@ public class EntityAICrafter extends Goal {
 	 *         can't be placed anywhere and returns empty if it was placed into
 	 *         an empty slot or fully on top of another stack.
 	 */
-	private ItemStack addFood(ItemStack stack, BasicInventory villagerInventory) {
+	private ItemStack addFood(ItemStack stack, SimpleInventory villagerInventory) {
 		ItemStack groundItem = stack.copy();
 		ItemStack inventoryItem = villagerInventory.getInvStack(foodSlot);
 
@@ -1323,7 +1323,7 @@ public class EntityAICrafter extends Goal {
 			villagerInventory.markDirty();
 			return ItemStack.EMPTY;
 		} else {
-			if (ItemStack.areItemsEqualIgnoreDamage(inventoryItem, groundItem)) {
+			if (ItemStack.equalsIgnoreDamage(inventoryItem, groundItem)) {
 				int j = Math.min(villagerInventory.getInvMaxStackAmount(), inventoryItem.getMaxCount());
 				int k = Math.min(groundItem.getCount(), j - inventoryItem.getCount());
 
@@ -1402,7 +1402,7 @@ public class EntityAICrafter extends Goal {
 	 *         can't be placed anywhere and returns empty if it was placed into
 	 *         an empty slot or fully on top of another stack.
 	 */
-	private ItemStack addRecipeItem(ItemStack stack, BasicInventory villagerInventory) {
+	private ItemStack addRecipeItem(ItemStack stack, SimpleInventory villagerInventory) {
 		ItemStack groundItem = stack.copy();
 		ItemStack inventoryItem;
 		int emptySlot = -1;
@@ -1416,7 +1416,7 @@ public class EntityAICrafter extends Goal {
 				continue;
 			}
 
-			if (ItemStack.areItemsEqualIgnoreDamage(inventoryItem, groundItem)) {
+			if (ItemStack.equalsIgnoreDamage(inventoryItem, groundItem)) {
 				int j = Math.min(villagerInventory.getInvMaxStackAmount(), inventoryItem.getMaxCount());
 				int k = Math.min(groundItem.getCount(), j - inventoryItem.getCount());
 
@@ -1505,8 +1505,8 @@ public class EntityAICrafter extends Goal {
 	 *            The recipe that is being checked if the item type is in.
 	 * @return Returns true if the item type is in the recipe.
 	 */
-	private boolean craftingItemForPickup(Item item, Recipe irecipe) {
-		DefaultedList<Ingredient> list = irecipe.getPreviewInputs();
+	private boolean craftingItemForPickup(Item item, RecipeType irecipe) {
+		DefaultedList<Ingredient> list = irecipe.method_14252();
 		for (Ingredient ig : list) {
 			for (ItemStack is : ((IngredientAccessor) ig).getStacks()) {
 				if (is.getItem() == item) {
@@ -1539,8 +1539,8 @@ public class EntityAICrafter extends Goal {
 	 * 
 	 * @return List of all IRecpie that can be crafted.
 	 */
-	private static List<Recipe> recipeList() {
-		return Lists.newArrayList(RecipeManager.recipes);
+	private static List<RecipeType> recipeList() {
+		return Lists.newArrayList(RecipeDispatcher.REGISTRY);
 	}
 
 	/**
@@ -1550,8 +1550,8 @@ public class EntityAICrafter extends Goal {
 	 *            The string used to get the specific recipe.
 	 * @return The specific IRecpie being request.
 	 */
-	private static Recipe getRecipe(String recipe) {
-		return RecipeManager.getRecipe(new Identifier(recipe));
+	private static RecipeType getRecipe(String recipe) {
+		return RecipeDispatcher.get(new Identifier(recipe));
 	}
 
 
@@ -1559,13 +1559,13 @@ public class EntityAICrafter extends Goal {
 	 * Drops the inventory of the killed villager except for blacklisted items that can have the chance to be used as id-converters.
 	 */
 	public void dropInventory(){
-		BasicInventory villagerInventory = villager.method_24919();
+		SimpleInventory villagerInventory = villager.method_11220();
 		for (int j = 0; j < villagerInventory.getInvSize(); ++j) {
 			ItemStack is = villagerInventory.getInvStack(j);
 			boolean planks = plankCheck(is);
 			boolean die = is.getItem() == Items.DYE;
 			if(!planks && !die) {
-				villager.dropStack(is, 0.0F);
+				villager.dropItem(is, 0.0F);
 			}
 		}
 	}
@@ -1575,28 +1575,28 @@ public class EntityAICrafter extends Goal {
 	 * villager.
 	 */
 	private void readoutDebugInfoOnMe() {
-		BasicInventory villagerInventory = villager.method_24919();
+		SimpleInventory villagerInventory = villager.method_11220();
 		StringBuilder sb = new StringBuilder();
 		try {
 			calcCooldown();
 			sb.append("Crafter info:\n");
 			sb.append("Craftings:\n");
 			for (int i = 0; i < taskList.length; ++i) {
-				Recipe ir = taskList[i];
-				sb.append("tier ").append(i + 1).append(": ").append(ir.getOutput().getName()).append("\n");
+				RecipeType ir = taskList[i];
+				sb.append("tier ").append(i + 1).append(": ").append(ir.getOutput().getTranslationKey()).append("\n");
 			}
-			sb.append("Current Task: ").append(currentTaskRecipe().getOutput().getName()).append("\n");
+			sb.append("Current Task: ").append(currentTaskRecipe().getOutput().getTranslationKey()).append("\n");
 			sb.append("Crafting Cooldown(ticks)/Batch Size: ").append(cooldown).append("/").append(batchSize).append("\n");
 			sb.append("Food consumption per craft: ").append(food[2]).append("\n");
-			sb.append("Food preference: ").append(foods[food[0]].getName(new ItemStack(foods[food[0]]))).append("\nFood dislike: ").append(foods[food[1]].getName(new ItemStack(foods[food[1]]))).append("\n");
+			sb.append("Food preference: ").append(foods[food[0]].getDisplayName(new ItemStack(foods[food[0]]))).append("\nFood dislike: ").append(foods[food[1]].getDisplayName(new ItemStack(foods[food[1]]))).append("\n");
 			sb.append("Crafting experience: ").append(((VillagerEntityAccessor) villager).getRiches()).append("\n");
 	
 			sb.append("Inventory: \n");
 			for (int j = 0; j < villagerInventory.getInvSize(); ++j) {
-				sb.append("Slot: ").append(j + 1).append(": ").append(villagerInventory.getInvStack(j).getName()).append(" : ").append(villagerInventory.getInvStack(j).getCount()).append("\n");
+				sb.append("Slot: ").append(j + 1).append(": ").append(villagerInventory.getInvStack(j).getTranslationKey()).append(" : ").append(villagerInventory.getInvStack(j).getCount()).append("\n");
 			}
 		} catch(Exception ignored) {}
 		
-		Messenger.print_server_message(villager.getServer(), sb.toString());
+		Messenger.print_server_message(villager.getMinecraftServer(), sb.toString());
 	}
 }

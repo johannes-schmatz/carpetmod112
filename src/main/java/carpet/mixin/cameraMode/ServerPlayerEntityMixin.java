@@ -9,7 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -26,21 +26,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ServerPlayerEntityMixin extends PlayerEntity implements CameraPlayer {
     private CameraData cameraData = new CameraData();
 
-    public @Final @Shadow MinecraftServer server;
-    public @Shadow ServerPlayNetworkHandler networkHandler;
-    public @Final @Shadow ServerPlayerInteractionManager interactionManager;
-    public abstract @Shadow ServerWorld getServerWorld();
+    @Shadow @Final public MinecraftServer server;
+    @Shadow public ServerPlayNetworkHandler networkHandler;
+    @Shadow @Final public ServerPlayerInteractionManager interactionManager;
+    @Shadow public abstract ServerWorld getServerWorld();
 
     public ServerPlayerEntityMixin(World worldIn, GameProfile gameProfileIn) {
         super(worldIn, gameProfileIn);
     }
 
-    @Inject(method = "copyFrom", at = @At("RETURN"))
-    private void onCopyFrom(ServerPlayerEntity that, boolean keepEverything, CallbackInfo ci) {
-        cameraData = ((ServerPlayerEntityMixin) (Object) that).cameraData;
+    @Inject(method = "method_14968", at = @At("RETURN"))
+    private void onCopyFrom(ServerPlayerEntity other, boolean keepEverything, CallbackInfo ci) {
+        cameraData = ((ServerPlayerEntityMixin) (Object) other).cameraData;
     }
 
-    @Inject(method = "setGameMode", at = @At("RETURN"))
+    @Inject(method = "method_3170", at = @At("RETURN"))
     private void onGameModeChange(GameMode gameType, CallbackInfo ci) {
         if (gameType != GameMode.SPECTATOR) {
             // Rule to prevent /c camera mode to spectate other players, disable after exiting spectator mode CARPET-XCOM
@@ -81,35 +81,36 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Ca
     @Override
     public boolean moveToStoredCameraData() {
         if (CarpetSettings.cameraModeRestoreLocation) {
-            if (cameraData.storedDim != dimensionId) {
+            if (cameraData.storedDim != dimension) {
                 ServerWorld worldserver1 = getServerWorld();
-                ServerWorld worldserver2 = server.getWorldById(cameraData.storedDim);
-                dimensionId = cameraData.storedDim;
-                networkHandler.sendPacket(new PlayerRespawnS2CPacket(dimensionId, worldserver1.getDifficulty(), worldserver1.getLevelProperties().getGeneratorType(), this.interactionManager.getGameMode()));
-                this.server.getPlayerManager().sendCommandTree(asPlayer());
-                DebugLogHelper.invisDebug(() -> "s2: " + worldserver1.field_23572.contains(this) + " " + worldserver2.field_23572.contains(this));
+                ServerWorld worldserver2 = server.getWorld(cameraData.storedDim);
+                dimension = cameraData.storedDim;
+                networkHandler.sendPacket(new PlayerRespawnS2CPacket(dimension, worldserver1.getGlobalDifficulty(), worldserver1.getLevelProperties().getGeneratorType(),
+                        this.interactionManager.getGameMode()));
+                this.server.getPlayerManager().method_12831(asPlayer());
+                DebugLogHelper.invisDebug(() -> "s2: " + worldserver1.loadedEntities.contains(this) + " " + worldserver2.loadedEntities.contains(this));
                 worldserver1.removeEntity(this);
                 removed = false;
-                worldserver1.method_25975(chunkX, chunkZ).remove(this, chunkY);
+                worldserver1.getChunk(chunkX, chunkZ).removeEntity(this, chunkY);
 
                 if (isAlive()) {
                     refreshPositionAndAngles(cameraData.storeX, cameraData.storeY, cameraData.storeZ, cameraData.storeYaw, cameraData.storePitch);
                     worldserver2.spawnEntity(this);
-                    worldserver2.method_26050(this, false);
+                    worldserver2.checkChunk(this, false);
                 }
-                DebugLogHelper.invisDebug(() -> "s3: " + worldserver1.field_23572.contains(this) + " " + worldserver2.field_23572.contains(this));
+                DebugLogHelper.invisDebug(() -> "s3: " + worldserver1.loadedEntities.contains(this) + " " + worldserver2.loadedEntities.contains(this));
                 setWorld(worldserver2);
-                this.server.getPlayerManager().method_33707(asPlayer(), worldserver1);
-                requestTeleport(cameraData.storeX, cameraData.storeY, cameraData.storeZ);
+                this.server.getPlayerManager().method_1986(asPlayer(), worldserver1);
+                refreshPositionAfterTeleport(cameraData.storeX, cameraData.storeY, cameraData.storeZ);
                 interactionManager.setWorld(worldserver2);
                 this.server.getPlayerManager().sendWorldInfo(asPlayer(), worldserver2);
-                this.server.getPlayerManager().method_33734(asPlayer());
-                DebugLogHelper.invisDebug(() -> "s4: " + worldserver1.field_23572.contains(this) + " " + worldserver2.field_23572.contains(this));
+                this.server.getPlayerManager().method_2009(asPlayer());
+                DebugLogHelper.invisDebug(() -> "s4: " + worldserver1.loadedEntities.contains(this) + " " + worldserver2.loadedEntities.contains(this));
                 return true;
             } else {
                 if (cameraData.storeX == 0 && cameraData.storeY == 0 && cameraData.storeZ == 0)
                     cameraData.storeY = 256.0f;
-                double dist = Math.sqrt(new BlockPos(cameraData.storeX, cameraData.storeY, cameraData.storeZ).getSquaredDistance(x, y, z));
+                double dist = Math.sqrt(new BlockPos(cameraData.storeX, cameraData.storeY, cameraData.storeZ).squaredDistanceTo(x, y, z));
                 networkHandler.requestTeleport(cameraData.storeX, cameraData.storeY, cameraData.storeZ, cameraData.storeYaw, cameraData.storePitch);
                 return dist > (this.server.getPlayerManager().getViewDistance() - 2) * 16;
             }

@@ -4,12 +4,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.Constructor;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import com.sk89q.worldedit.Vector;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtInt;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -28,13 +28,13 @@ final class TileEntityUtils {
      * @param position the position
      * @return a tag compound
      */
-    private static CompoundTag updateForSet(CompoundTag tag, Vector position) {
+    private static NbtCompound updateForSet(NbtCompound tag, Vector position) {
         checkNotNull(tag);
         checkNotNull(position);
 
-        tag.put("x", new IntTag(position.getBlockX()));
-        tag.put("y", new IntTag(position.getBlockY()));
-        tag.put("z", new IntTag(position.getBlockZ()));
+        tag.put("x", new NbtInt(position.getBlockX()));
+        tag.put("y", new NbtInt(position.getBlockY()));
+        tag.put("z", new NbtInt(position.getBlockZ()));
 
         return tag;
     }
@@ -47,7 +47,7 @@ final class TileEntityUtils {
      * @param clazz the tile entity class
      * @param tag the tag for the tile entity (may be null to not set NBT data)
      */
-    static void setTileEntity(World world, Vector position, Class<? extends BlockEntity> clazz, @Nullable CompoundTag tag) {
+    static void setTileEntity(World world, Vector position, Class<? extends BlockEntity> clazz, @Nullable NbtCompound tag) {
         checkNotNull(world);
         checkNotNull(position);
         checkNotNull(clazz);
@@ -61,7 +61,7 @@ final class TileEntityUtils {
         if (tag != null) {
             // Set X, Y, Z
             updateForSet(tag, position);
-            tileEntity.fromTag(tag);
+            tileEntity.fromNbt(tag);
         }
 
         world.setBlockEntity(new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()), tileEntity);
@@ -75,10 +75,10 @@ final class TileEntityUtils {
      * @param position the position
      * @param tag the tag for the tile entity (may be null to do nothing)
      */
-    static void setTileEntity(World world, Vector position, @Nullable CompoundTag tag) {
+    static void setTileEntity(World world, Vector position, @Nullable NbtCompound tag) {
         if (tag != null) {
             updateForSet(tag, position);
-            BlockEntity tileEntity = BlockEntity.method_26922(world, tag);
+            BlockEntity tileEntity = BlockEntity.create(world, tag);
             if (tileEntity != null) {
                 world.setBlockEntity(new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()), tileEntity);
             }

@@ -11,7 +11,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Explosion.class)
 public class ExplosionMixin {
-    @Inject(method = "method_25898", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "collectBlocksAndDamageEntities",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void onExplosionA(CallbackInfo ci) {
         if (CarpetSettings.optimizedTNT) {
             OptimizedTNT.doExplosionA((ExplosionAccessor) this);
@@ -19,7 +23,11 @@ public class ExplosionMixin {
         }
     }
 
-    @Inject(method = "method_25899", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "affectWorld",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void onExplosionB(boolean spawnParticles, CallbackInfo ci) {
         if (CarpetSettings.optimizedTNT) {
             OptimizedTNT.doExplosionB((ExplosionAccessor) this, spawnParticles);

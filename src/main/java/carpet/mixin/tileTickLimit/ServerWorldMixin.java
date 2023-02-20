@@ -15,23 +15,33 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.TreeSet;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.world.ScheduledTick;
+import net.minecraft.util.ScheduledTick;
 
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin {
-    @Shadow @Final private TreeSet<ScheduledTick> field_31703;
+    @Shadow @Final private TreeSet<ScheduledTick> scheduledTicks;
 
-    @Inject(method = "method_26051", at = @At(value = "CONSTANT", args = "intValue=65536", ordinal = 1))
+    @Inject(
+            method = "method_3644",
+            at = @At(
+                    value = "CONSTANT",
+                    args = "intValue=65536",
+                    ordinal = 1
+            )
+    )
     private void logTileTickLimit(boolean runAllPending, CallbackInfoReturnable<Boolean> cir) {
         if (LoggerRegistry.__tileTickLimit) {
-            int scheduled = field_31703.size();
+            int scheduled = scheduledTicks.size();
             LoggerRegistry.getLogger("tileTickLimit").log(() -> new Text[] {
                 Messenger.s(null, String.format("Reached tile tick limit (%d > %d)", scheduled, CarpetSettings.tileTickLimit))
             }, "NUMBER", scheduled, "LIMIT", CarpetSettings.tileTickLimit);
         }
     }
 
-    @ModifyConstant(method = "method_26051", constant = @Constant(intValue = 65536))
+    @ModifyConstant(
+            method = "method_3644",
+            constant = @Constant(intValue = 65536)
+    )
     private int tileTickLimit(int origValue) {
         int limit = CarpetSettings.tileTickLimit;
         return limit < 0 ? Integer.MAX_VALUE : limit;

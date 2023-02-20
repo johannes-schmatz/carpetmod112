@@ -16,13 +16,13 @@ import java.util.Random;
 @Mixin(Explosion.class)
 public interface ExplosionAccessor {
     @Accessor boolean getCreateFire();
-    @Accessor("field_23520") boolean getDamagesTerrain();
+    @Accessor("destructive") boolean getDamagesTerrain();
     @Accessor Random getRandom();
     @Accessor World getWorld();
     @Accessor("x") double getX();
     @Accessor("y") double getY();
     @Accessor("z") double getZ();
-    @Accessor Entity getEntity();
+    @Accessor("causingEntity") Entity getEntity();
     @Accessor float getPower();
     @Accessor List<BlockPos> getAffectedBlocks();
     @Accessor Map<PlayerEntity, Vec3d> getAffectedPlayers();

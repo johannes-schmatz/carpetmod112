@@ -16,12 +16,24 @@ public abstract class AbstractRedstoneGateBlockMixin {
 
     protected abstract int getDelay(BlockState state, World world, BlockPos pos);
 
-    @Redirect(method = "method_26557", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/AbstractRedstoneGateBlock;method_26560(Lnet/minecraft/block/BlockState;)I"))
+    @Redirect(
+            method = "updatePowered",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/AbstractRedstoneGateBlock;getUpdateDelayInternal(Lnet/minecraft/block/BlockState;)I"
+            )
+    )
     private int getDelay(AbstractRedstoneGateBlock diode, BlockState state, World world, BlockPos pos) {
         return getDelay(state, world, pos);
     }
 
-    @Redirect(method = "scheduledTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/AbstractRedstoneGateBlock;method_26549(Lnet/minecraft/block/BlockState;)I"))
+    @Redirect(
+            method = "onScheduledTick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/AbstractRedstoneGateBlock;getUpdateDelay(Lnet/minecraft/block/BlockState;)I"
+            )
+    )
     private int getTickDelay(AbstractRedstoneGateBlock diode, BlockState state, World world, BlockPos pos) {
         return getTickDelay(state, world, pos);
     }

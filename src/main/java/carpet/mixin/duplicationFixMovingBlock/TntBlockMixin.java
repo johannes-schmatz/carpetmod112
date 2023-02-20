@@ -14,7 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TntBlock.class)
 public class TntBlockMixin {
-    @Inject(method = "neighborUpdate", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "neighborUpdate",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void fixDupe(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, CallbackInfo ci) {
         if (CarpetSettings.duplicationFixMovingTNT && PistonHelper.isBeingPushed(pos)) ci.cancel();
     }

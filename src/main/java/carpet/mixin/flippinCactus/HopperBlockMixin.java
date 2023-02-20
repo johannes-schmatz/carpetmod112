@@ -12,7 +12,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(HopperBlock.class)
 public class HopperBlockMixin {
-    @Redirect(method = "getPlacementState", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Direction;getOpposite()Lnet/minecraft/util/math/Direction;"))
+    @Redirect(
+            method = "getStateFromData",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/math/Direction;getOpposite()Lnet/minecraft/util/math/Direction;"
+            )
+    )
     private Direction flip(Direction facing, World worldIn, BlockPos pos, Direction facingArg, float hitX, float hitY, float hitZ, int meta, LivingEntity placer) {
         if (BlockRotator.flippinEligibility(placer)) return facing; // flipped twice
         return facing.getOpposite();

@@ -18,7 +18,15 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(BlockWithEntity.class)
 public class BlockWithEntityMixin {
-    @Inject(method = "afterBreak", at = @At(value = "NEW", target = "net/minecraft/item/ItemStack"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "method_8651",
+            at = @At(
+                    value = "NEW",
+                    target = "net/minecraft/item/ItemStack"
+            ),
+            cancellable = true,
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void fixShulkerBox(World worldIn, PlayerEntity player, BlockPos pos, BlockState state, BlockEntity te, ItemStack stack, CallbackInfo ci, int fortune, Item item) {
         // Remove ability to drop shulker boxes given the set block to air already does it. This causes duplication with duplicationFixUpdateSuppression.
         // In vanilla this behavior never triggers CARPET-XCOM

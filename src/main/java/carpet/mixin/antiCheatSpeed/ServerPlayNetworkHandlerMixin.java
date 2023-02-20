@@ -2,15 +2,21 @@ package carpet.mixin.antiCheatSpeed;
 
 import carpet.CarpetSettings;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerPlayNetworkHandler.class)
 public class ServerPlayNetworkHandlerMixin {
-    @Redirect(method = "onPlayerMove", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;isInTeleportationState()Z"))
+    @Redirect(
+            method = "onPlayerMove",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;method_12784()Z"
+            )
+    )
     private boolean antiCheatSpeed(ServerPlayerEntity player) {
-        return CarpetSettings.antiCheatSpeed || player.isInTeleportationState();
+        return CarpetSettings.antiCheatSpeed || player.method_12784();
     }
 }

@@ -17,7 +17,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class InGameHudMixin {
     @Shadow @Final private PlayerListHud playerListHud;
 
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;isInSingleplayer()Z"))
+    @Redirect(
+            method = "render",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/MinecraftClient;isIntegratedServerRunning()Z"
+            )
+    )
     private boolean onDraw(MinecraftClient minecraftClient) {
         if (!minecraftClient.isInSingleplayer()) return false;
         PlayerListHudAccessor hud = ((PlayerListHudAccessor) playerListHud);

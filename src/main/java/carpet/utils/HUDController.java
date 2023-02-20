@@ -5,11 +5,11 @@ import carpet.helpers.TickSpeed;
 import carpet.logging.LoggerRegistry;
 import carpet.logging.logHelpers.PacketCounter;
 import carpet.mixin.accessors.PlayerListHeaderS2CPacketAccessor;
-import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.EntityCategory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
@@ -112,7 +112,7 @@ public class HUDController
         List<Object> commandParams = new ArrayList<>();
         for (int dim = -1; dim <= 1; dim++)
         {
-            for (SpawnGroup type : SpawnGroup.values())
+            for (EntityCategory type : EntityCategory.values())
             {
                 Pair<Integer, Integer> counts = SpawnReporter.mobcaps.get(dim).getOrDefault(type, new Pair<>(0, 0));
                 int actual = counts.getLeft(), limit = counts.getRight();
@@ -120,7 +120,7 @@ public class HUDController
             }
         }
         LoggerRegistry.getLogger("mobcaps").log((option, player) -> {
-            int dim = player.dimensionId;
+            int dim = player.dimension;
             switch (option)
             {
                 case "overworld":
@@ -140,7 +140,7 @@ public class HUDController
     private static Text [] send_mobcap_display(int dim)
     {
         List<Text> components = new ArrayList<>();
-        for (SpawnGroup type:SpawnGroup.values())
+        for (EntityCategory type: EntityCategory.values())
         {
             Pair<Integer,Integer> counts = SpawnReporter.mobcaps.get(dim).getOrDefault(type, new Pair<>(0,0));
             int actual = counts.getLeft(); int limit = counts.getRight();

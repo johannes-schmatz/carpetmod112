@@ -17,16 +17,25 @@ public class PistonBlockEntityMixin extends BlockEntity implements ExtendedPisto
     @Shadow private float lastProgress;
     private long lastTicked;
 
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(
+            method = "tick",
+            at = @At("HEAD")
+    )
     private void onUpdate(CallbackInfo ci) {
-        this.lastTicked = this.world.getTime();
+        this.lastTicked = this.world.getLastUpdateTime();
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"
+            )
+    )
     private void onSetBlockState(CallbackInfo ci) {
         if (CarpetSettings.pistonGhostBlocksFix == CarpetSettings.PistonGhostBlocksFix.serverOnly) {
             BlockState state = this.world.getBlockState(this.pos);
-            this.world.updateListeners(pos.offset(state.get(PistonHeadBlock.FACING).getOpposite()), state, state, 0);
+            this.world.method_11481(pos.offset(state.get(PistonHeadBlock.FACING).getOpposite()), state, state, 0);
         }
     }
 

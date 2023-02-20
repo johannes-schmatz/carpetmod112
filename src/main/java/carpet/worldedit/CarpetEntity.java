@@ -7,8 +7,9 @@ import com.sk89q.worldedit.entity.metadata.EntityType;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.NullWorld;
-import net.minecraft.nbt.CompoundTag;
-import javax.annotation.Nullable;
+import net.minecraft.nbt.NbtCompound;
+
+import org.jetbrains.annotations.Nullable;
 import java.lang.ref.WeakReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -26,10 +27,10 @@ class CarpetEntity implements Entity {
     public BaseEntity getState() {
         net.minecraft.entity.Entity entity = entityRef.get();
         if (entity != null) {
-            String id = net.minecraft.entity.EntityType.getName(entity);
+            String id = net.minecraft.entity.EntityType.getEntityName(entity);
             if (id != null) {
-                CompoundTag tag = new CompoundTag();
-                entity.toTag(tag);
+                NbtCompound tag = new NbtCompound();
+                entity.toNbt(tag);
                 return new BaseEntity(id, NBTConverter.fromNative(tag));
             } else {
                 return null;

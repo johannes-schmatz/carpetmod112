@@ -1,10 +1,10 @@
 package carpet.utils;
 
-import net.minecraft.container.Container;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.screen.ScreenHandler;
 
-public class VoidContainer extends Container
+public class VoidContainer extends ScreenHandler
 {
     public VoidContainer()
     {

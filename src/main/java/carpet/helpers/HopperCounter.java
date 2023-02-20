@@ -9,7 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,7 +44,7 @@ public class HopperCounter
     public void add(MinecraftServer server, ItemStack stack) {
         if (startTick == 0) {
             startTick = server.getTicks();
-            startMillis = MinecraftServer.getMeasuringTimeMs();
+            startMillis = MinecraftServer.getTimeMillis();
         }
         ItemWithMeta item = new ItemWithMeta(stack);
         counter.put(item, counter.getLong(item) + stack.getCount());
@@ -54,7 +54,7 @@ public class HopperCounter
     public void reset(MinecraftServer server) {
         counter.clear();
         startTick = server.getTicks();
-        startMillis = MinecraftServer.getMeasuringTimeMs();
+        startMillis = MinecraftServer.getTimeMillis();
         pubSubProvider.publish();
     }
 
@@ -88,7 +88,7 @@ public class HopperCounter
             return Collections.singletonList(Messenger.s(null, String.format("No items for %s yet", name)));
         }
         long total = getTotalItems();
-        long ticks = Math.max(realTime ? (MinecraftServer.getMeasuringTimeMs() - startMillis) / 50 : server.getTicks() - startTick, 1);
+        long ticks = Math.max(realTime ? (MinecraftServer.getTimeMillis() - startMillis) / 50 : server.getTicks() - startTick, 1);
         if (total == 0) {
             if (brief) {
                 return Collections.singletonList(Messenger.m(null,

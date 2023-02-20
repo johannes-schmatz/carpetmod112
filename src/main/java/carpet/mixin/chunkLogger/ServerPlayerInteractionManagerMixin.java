@@ -10,11 +10,17 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public class ServerPlayerInteractionManagerMixin {
-    @Redirect(method = "method_33542", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;)Z"))
+    @Redirect(
+            method = "tryBreakBlock",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setAir(Lnet/minecraft/util/math/BlockPos;)Z"
+            )
+    )
     private boolean removeBlock(World world, BlockPos pos) {
         try {
             CarpetClientChunkLogger.setReason("Player removed block");
-            return world.removeBlock(pos);
+            return world.setAir(pos);
         } finally {
             CarpetClientChunkLogger.resetReason();
         }

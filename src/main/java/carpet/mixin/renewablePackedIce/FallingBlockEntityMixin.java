@@ -23,7 +23,15 @@ public abstract class FallingBlockEntityMixin extends Entity {
         super(worldIn);
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;getBlock()Lnet/minecraft/block/Block;", ordinal = 3), cancellable = true)
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/BlockState;getBlock()Lnet/minecraft/block/Block;",
+                    ordinal = 3
+            ),
+            cancellable = true
+    )
     private void checkIce(CallbackInfo ci) {
         Block block = this.block.getBlock();
         BlockPos pos = new BlockPos(this);
@@ -31,13 +39,13 @@ public abstract class FallingBlockEntityMixin extends Entity {
         if (block == Blocks.ANVIL && CarpetSettings.renewablePackedIce &&
                 this.world.getBlockState(new BlockPos(this.x, this.y - 0.06, this.z)).getBlock() == Blocks.ICE) {
             if (iceCount < 2) {
-                world.breakBlock(pos.down(), false);
+                world.removeBlock(pos.down(), false);
                 this.onGround = false;
                 iceCount++;
                 ci.cancel();
             } else {
                 world.setBlockState(pos.down(), Blocks.PACKED_ICE.getDefaultState(), 3);
-                world.syncWorldEvent(2001, pos.down(), Block.getId(Blocks.PACKED_ICE));
+                world.syncGlobalEvent(2001, pos.down(), Block.getIdByBlock(Blocks.PACKED_ICE));
             }
         }
     }

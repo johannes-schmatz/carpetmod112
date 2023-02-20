@@ -1,6 +1,6 @@
 package narcolepticfrog.rsmm.events;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 
 public interface PlayerConnectionListener {
 

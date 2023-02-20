@@ -9,7 +9,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin extends WorldMixin {
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiler/Profiler;pop()V"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/profiler/Profiler;pop()V"
+            )
+    )
     private void procLightUpdates(CallbackInfo ci) {
         if (!CarpetSettings.newLight) return;
         this.profiler.swap("lighting");

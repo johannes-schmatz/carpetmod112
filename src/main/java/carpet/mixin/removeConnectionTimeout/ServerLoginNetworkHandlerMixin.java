@@ -18,24 +18,33 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ServerLoginNetworkHandlerMixin {
     private long connectionSystemTimer;
 
-    @Shadow public abstract void disconnect(Text reason);
+    @Shadow public abstract void method_14978(Text reason);
 
-    @Inject(method = "<init>", at = @At("RETURN"))
+    @Inject(
+            method = "<init>",
+            at = @At("RETURN")
+    )
     private void determineTimeout(MinecraftServer serverIn, ClientConnection networkManagerIn, CallbackInfo ci) {
         // Get current time as player starts logging in, 30 sec as timeout timer CARPET-XCOM
         connectionSystemTimer = System.currentTimeMillis() - 30000;
     }
 
-    @ModifyConstant(method = "tick", constant = @Constant(intValue = 600))
+    @ModifyConstant(
+            method = "tick",
+            constant = @Constant(intValue = 600)
+    )
     private int disableVanillaTimeout(int tickLimit) {
         return -1;
     }
 
-    @Inject(method = "tick", at = @At("TAIL"))
+    @Inject(
+            method = "tick",
+            at = @At("TAIL")
+    )
     private void betterTimout(CallbackInfo ci) {
         // Hard swap to system time check to prevent players timing out when tick warping CARPET-XCOM
         if (!CarpetSettings.removeConnectionTimeout && connectionSystemTimer > System.currentTimeMillis()) {
-            this.disconnect(new TranslatableText("multiplayer.disconnect.slow_login"));
+            this.method_14978(new TranslatableText("multiplayer.disconnect.slow_login"));
         }
     }
 }

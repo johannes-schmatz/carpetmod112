@@ -15,12 +15,26 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public class PlayerInventoryMixin {
     @Shadow public PlayerEntity player;
 
-    @Inject(method = "addStack(Lnet/minecraft/item/ItemStack;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getEmptySlot()I", shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "method_3140",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerInventory;getEmptySlot()I",
+                    shift = At.Shift.AFTER
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void dupeItemSlotStorePartialItemStack(ItemStack itemStackIn, CallbackInfoReturnable<Integer> cir, int slot) {
         ((DupingPlayer) player).dupeItem(slot);
     }
 
-    @Inject(method = "insertStack(ILnet/minecraft/item/ItemStack;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getEmptySlot()I"))
+    @Inject(
+            method = "method_14150",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerInventory;getEmptySlot()I"
+            )
+    )
     private void dupeItemSlotAdd(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         ((DupingPlayer) player).dupeItem(slot);
     }

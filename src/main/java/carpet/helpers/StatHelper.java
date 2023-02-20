@@ -8,14 +8,13 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.class_5569;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.scoreboard.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.stat.ItemStat;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.stat.CraftingStat;
 import net.minecraft.stat.ServerStatHandler;
 import net.minecraft.stat.Stat;
 import net.minecraft.stat.StatHandler;
@@ -25,7 +24,7 @@ import net.minecraft.util.UserCache;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +42,7 @@ public class StatHelper {
     private static final Int2ObjectMap<Stat> OBJECTS_DROPPED_META_STATS = new Int2ObjectOpenHashMap<>();
 
     public static File[] getStatFiles(MinecraftServer server) {
-        File statsDir = new File(server.getWorldById(0).method_25960().method_28318(), "stats");
+        File statsDir = new File(server.getWorld(0).getSaveHandler().getWorldFolder(), "stats");
         return statsDir.listFiles((dir, name) -> name.endsWith(".json"));
     }
 
@@ -62,7 +61,7 @@ public class StatHelper {
                     stats.put(uuid, players.createStatHandler(player));
                 } else {
                     ServerStatHandler manager = new ServerStatHandler(server, file);
-                    manager.method_33862();
+                    manager.method_8270();
                     stats.put(uuid, manager);
                 }
             } catch (IllegalArgumentException ignored) {}
@@ -86,12 +85,12 @@ public class StatHelper {
 
     public static void initialize(Scoreboard scoreboard, MinecraftServer server, ScoreboardObjective objective) {
         LOGGER.info("Initializing " + objective);
-        ScoreboardCriterion criteria = objective.getDisplayName();
-        if (!(criteria instanceof class_5569)) return;
+        ScoreboardCriterion criteria = objective.getCriterion();
+        if (!(criteria instanceof StartupParameter)) return;
         Stat stat = ((ScoreCriteriaStatAccessor) criteria).getStat();
         for (Map.Entry<UUID, StatHandler> statEntry : getAllStatistics(server).entrySet()) {
             StatHandler stats = statEntry.getValue();
-            int value = stats.method_33903(stat);
+            int value = stats.method_1729(stat);
             if (value == 0) continue;
             String username = getUsername(server, statEntry.getKey());
             if (username == null) continue;
@@ -103,7 +102,7 @@ public class StatHelper {
 
     public static Stat getBlockStateStats(BlockState state) {
         Block block = state.getBlock();
-        int id = Block.getId(block);
+        int id = Block.getIdByBlock(block);
         int meta = block.getMeta(state);
         return BLOCK_STATE_STATS[(id << 4) | meta];
     }
@@ -132,15 +131,15 @@ public class StatHelper {
         void store(int stateId, Stat stat);
     }
 
-    private static void registerSubStats(ItemStat baseStat, StatStorage storage, Function<Text, TranslatableText> textFun) {
+    private static void registerSubStats(CraftingStat baseStat, StatStorage storage, Function<Text, TranslatableText> textFun) {
         Item item = ((StatCraftingAccessor) baseStat).getItem();
         int id = Item.getRawId(item);
-        if (item.hasVariants()) {
+        if (item.hasSubTypes()) {
             for (int meta = 0; meta < 16; meta++) {
                 int stateId = (id << 4) | meta;
                 ItemStack stackWithMeta = new ItemStack(item, 1, meta);
                 Text text = textFun.apply(stackWithMeta.toHoverableText());
-                StatSubItem statWithMeta = (StatSubItem) new StatSubItem(baseStat, meta, text).method_33869();
+                StatSubItem statWithMeta = (StatSubItem) new StatSubItem(baseStat, meta, text).addStat();
                 storage.store(stateId, statWithMeta);
             }
         } else {
@@ -151,23 +150,23 @@ public class StatHelper {
         }
     }
 
-    public static void addCraftStats(ItemStat baseStat) {
+    public static void addCraftStats(CraftingStat baseStat) {
         registerSubStats(baseStat, CRAFT_META_STATS::put, text -> new TranslatableText("stat.craftItem", text));
     }
 
-    public static void addMineStats(ItemStat baseStat) {
+    public static void addMineStats(CraftingStat baseStat) {
         registerSubStats(baseStat, (state, stat) -> BLOCK_STATE_STATS[state] = stat, text -> new TranslatableText("stat.mineBlock", text));
     }
 
-    public static void addUseStats(ItemStat baseStat) {
+    public static void addUseStats(CraftingStat baseStat) {
         registerSubStats(baseStat, OBJECT_USE_META_STATS::put, text -> new TranslatableText("stat.useItem", text));
     }
 
-    public static void addPickedUpStats(ItemStat baseStat) {
+    public static void addPickedUpStats(CraftingStat baseStat) {
         registerSubStats(baseStat, OBJECTS_PICKED_UP_META_STATS::put, text -> new TranslatableText("stat.pickup", text));
     }
 
-    public static void addDroppedStats(ItemStat baseStat) {
+    public static void addDroppedStats(CraftingStat baseStat) {
         registerSubStats(baseStat, OBJECTS_DROPPED_META_STATS::put, text -> new TranslatableText("stat.drop", text));
     }
 }

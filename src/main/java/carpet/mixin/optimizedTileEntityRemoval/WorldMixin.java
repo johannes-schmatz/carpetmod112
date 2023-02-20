@@ -21,7 +21,14 @@ public class WorldMixin {
     @Shadow @Final public List<BlockEntity> tickingBlockEntities;
     @Shadow @Final public List<BlockEntity> blockEntities;
 
-    @Inject(method = "tickBlockEntities", at = @At(value = "FIELD", target = "Lnet/minecraft/world/World;unloadedBlockEntities:Ljava/util/List;", ordinal = 0))
+    @Inject(
+            method = "tickEntities",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/world/World;unloadedBlockEntities:Ljava/util/List;",
+                    ordinal = 0
+            )
+    )
     private void optimizedTileEntityRemoval(CallbackInfo ci) {
         if (!CarpetSettings.optimizedTileEntityRemoval || this.unloadedBlockEntities.isEmpty()) return;
 

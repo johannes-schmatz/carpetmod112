@@ -9,7 +9,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ScoreboardPlayerUpdateS2CPacket.class)
 public class ScoreboardPlayerUpdateS2CPacketMixin {
-    @Redirect(method = "<init>(Lnet/minecraft/scoreboard/ScoreboardPlayerScore;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/ScoreboardPlayerScore;getScore()I"))
+    @Redirect(
+            method = "<init>(Lnet/minecraft/scoreboard/ScoreboardPlayerScore;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/scoreboard/ScoreboardPlayerScore;getScore()I"
+            )
+    )
     private int getScorePoints(ScoreboardPlayerScore score) {
         return ((ExtendedScore) score).getScorePointsDelta();
     }

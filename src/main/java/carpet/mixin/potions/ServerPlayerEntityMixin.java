@@ -4,7 +4,7 @@ import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,13 +18,22 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         super(worldIn, gameProfileIn);
     }
 
-    @Redirect(method = "onStatusEffectRemoved", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;onStatusEffectRemoved(Lnet/minecraft/entity/effect/StatusEffectInstance;)V"))
+    @Redirect(
+            method = "method_2649",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;method_2649(Lnet/minecraft/entity/effect/StatusEffectInstance;)V"
+            )
+    )
     private void finishPotionEffectHead(PlayerEntity entityPlayer, StatusEffectInstance effect) {
-        if (!CarpetSettings.effectsFix) super.onStatusEffectRemoved(effect);
+        if (!CarpetSettings.effectsFix) super.method_2649(effect);
     }
 
-    @Inject(method = "onStatusEffectRemoved", at = @At("RETURN"))
+    @Inject(
+            method = "method_2649",
+            at = @At("RETURN")
+    )
     private void finishedPotionEffectReturn(StatusEffectInstance effect, CallbackInfo ci) {
-        if (CarpetSettings.effectsFix) super.onStatusEffectRemoved(effect);
+        if (CarpetSettings.effectsFix) super.method_2649(effect);
     }
 }

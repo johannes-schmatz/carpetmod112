@@ -6,11 +6,11 @@ import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import java.io.IOException;
 import java.util.*;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 
 public class PubSubMessenger implements PluginChannelHandler {
@@ -99,8 +99,8 @@ public class PubSubMessenger implements PluginChannelHandler {
             String nodeName = update.getKey().fullName;
             Object value = update.getValue();
             buf.writeString(nodeName);
-            if (value instanceof Tag) {
-                CompoundTag tag = makeCompound((Tag) value);
+            if (value instanceof NbtElement) {
+                NbtCompound tag = makeCompound((NbtElement) value);
                 buf.writeVarInt(TYPE_NBT);
                 ByteBufOutputStream out = new ByteBufOutputStream(buf);
                 try {
@@ -128,9 +128,9 @@ public class PubSubMessenger implements PluginChannelHandler {
         return buf;
     }
 
-    private static CompoundTag makeCompound(Tag tag) {
-        if (tag instanceof CompoundTag) return (CompoundTag) tag;
-        CompoundTag compound = new CompoundTag();
+    private static NbtCompound makeCompound(NbtElement tag) {
+        if (tag instanceof NbtCompound) return (NbtCompound) tag;
+        NbtCompound compound = new NbtCompound();
         compound.put("", tag);
         return compound;
     }

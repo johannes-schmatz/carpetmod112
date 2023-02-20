@@ -24,93 +24,162 @@ public abstract class ChunkMixin implements NewLightChunk {
     private short pendingNeighborLightInits;
 
     @Shadow @Final private World world;
-    @Shadow @Final private ChunkSection[] sections;
-    @Shadow private boolean field_25379;
-    @Shadow private boolean field_25380;
-    @Shadow @Final public int x;
-    @Shadow @Final public int z;
-    @Shadow public abstract boolean method_27396(BlockPos pos);
-    @Shadow public abstract void method_27421();
-    @Shadow protected abstract void method_27399(int x, int z);
+    @Shadow @Final private ChunkSection[] chunkSections;
+    @Shadow private boolean terrainPopulated;
+    @Shadow private boolean lightPopulated;
+    @Shadow @Final public int chunkX;
+    @Shadow @Final public int chunkZ;
+    @Shadow public abstract boolean hasDirectSunlight(BlockPos pos);
+    @Shadow protected abstract void method_3911(int x, int z);
 
-    @Inject(method = "method_27385", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/dimension/Dimension;hasSkyLight()Z"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "calculateSkyLight",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/dimension/Dimension;isOverworld()Z"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void generateSkyLight(CallbackInfo ci, int top, int x, int z) {
         if (CarpetSettings.newLight) LightingHooks.fillSkylightColumn((Chunk) (Object) this, x, z);
     }
 
-    @Redirect(method = "method_27385", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/dimension/Dimension;hasSkyLight()Z"))
+    @Redirect(
+            method = "calculateSkyLight",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/dimension/Dimension;isOverworld()Z"
+            )
+    )
     private boolean generateSkyLightCancelVanilla(Dimension worldProvider) {
-        return !CarpetSettings.newLight && worldProvider.hasSkyLight();
+        return !CarpetSettings.newLight && worldProvider.isOverworld();
     }
 
-    @ModifyConstant(method = "method_27394", constant = @Constant(intValue = 255))
+    @ModifyConstant(
+            method = "method_3917",
+            constant = @Constant(intValue = 255)
+    )
     private int noMask(int mask) {
         return CarpetSettings.newLight ? -1 : 255;
     }
 
-    @Redirect(method = "method_27394", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;method_25977(IIII)V"))
+    @Redirect(
+            method = "method_3917",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;method_3704(IIII)V"
+            )
+    )
     private void markDirtyInRelightBlock(World world, int x, int z, int y1, int y2) {
-        if (!CarpetSettings.newLight) world.method_25977(x, z, y1, y2);
+        if (!CarpetSettings.newLight) world.method_3704(x, z, y1, y2);
     }
 
-    @Redirect(method = "method_27394", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/dimension/Dimension;hasSkyLight()Z", ordinal = 0))
+    @Redirect(
+            method = "method_3917",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/dimension/Dimension;isOverworld()Z",
+                    ordinal = 0
+            )
+    )
     private boolean relightSkyLight(Dimension worldProvider, int x, int y, int z) {
-        boolean hasSkylight = worldProvider.hasSkyLight();
+        boolean hasSkylight = worldProvider.isOverworld();
         if (!hasSkylight || !CarpetSettings.newLight) return hasSkylight;
-        LightingHooks.relightSkylightColumn(world, (Chunk) (Object) this, x, z, this.x * 16 + x, this.z * 16 + z);
+        LightingHooks.relightSkylightColumn(world, (Chunk) (Object) this, x, z, this.chunkX * 16 + x, this.chunkZ * 16 + z);
         return false; // cancel vanilla code
     }
 
-    @Redirect(method = "method_27394", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/dimension/Dimension;hasSkyLight()Z", ordinal = 1))
+    @Redirect(
+            method = "method_3917",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/dimension/Dimension;isOverworld()Z",
+                    ordinal = 1
+            )
+    )
     private boolean relightSkyLight2(Dimension worldProvider) {
-        return !CarpetSettings.newLight && worldProvider.hasSkyLight();
+        return !CarpetSettings.newLight && worldProvider.isOverworld();
     }
 
-    @Inject(method = "method_27364", at = @At("HEAD"))
+    @Inject(
+            method = "getLightAtPos",
+            at = @At("HEAD")
+    )
     private void procOnGetLightFor(LightType type, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
         if (CarpetSettings.newLight) ((NewLightWorld) world).getLightingEngine().procLightUpdates(type);
     }
 
-    @Inject(method = "method_27370", at = @At("HEAD"))
+    @Inject(
+            method = "getLightLevel",
+            at = @At("HEAD")
+    )
     private void procOnGetLightSubtracted(BlockPos pos, int amount, CallbackInfoReturnable<Integer> cir) {
         if (CarpetSettings.newLight) ((NewLightWorld) world).getLightingEngine().procLightUpdates();
     }
 
-    @Redirect(method = "method_27365", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;method_27385()V"))
+    @Redirect(
+            method = "setLightAtPos",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/chunk/Chunk;calculateSkyLight()V"
+            )
+    )
     private void newLightGenerateSkylightMap(Chunk chunk, LightType type, BlockPos pos) {
         if (CarpetSettings.newLight) {
             //Forge: generateSkylightMap produces the wrong result (See #3870)
-            LightingHooks.initSkylightForSection(world, chunk, sections[pos.getY() >> 4]);
+            LightingHooks.initSkylightForSection(world, chunk, chunkSections[pos.getY() >> 4]);
         } else {
-            chunk.method_27385();
+            chunk.calculateSkyLight();
         }
     }
 
-    @Inject(method = "method_27392", at = @At("RETURN"))
+    @Inject(
+            method = "loadToWorld",
+            at = @At("RETURN")
+    )
     private void onOnLoad(CallbackInfo ci) {
         if (CarpetSettings.newLight) LightingHooks.onLoad(world, (Chunk) (Object) this);
     }
 
-    @Redirect(method = "method_27367", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;method_27421()V"))
+    @Redirect(
+            method = "populate(Lnet/minecraft/server/world/ChunkGenerator;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/chunk/Chunk;populate()V"
+            )
+    )
     private void checkLightInPopulate(Chunk chunk) {
         if (CarpetSettings.newLight) {
-            this.field_25379 = true;
+            this.terrainPopulated = true;
         } else {
-            chunk.method_27421();
+            chunk.populate();
         }
     }
 
-    @Redirect(method = "method_27391", at = @At(value = "FIELD", target = "Lnet/minecraft/world/chunk/Chunk;field_25380:Z"))
+    @Redirect(
+            method = "populateBlockEntities",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/world/chunk/Chunk;lightPopulated:Z"
+            )
+    )
     private boolean checkLightInOnTick(Chunk chunk) {
-        return CarpetSettings.newLight || field_25380;
+        return CarpetSettings.newLight || lightPopulated;
     }
 
 
-    @ModifyVariable(method = "method_27373", index = 12, at = @At(value = "STORE", ordinal = 1))
+    @ModifyVariable(
+            method = "getBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;",
+            index = 12,
+            at = @At(
+                    value = "STORE",
+                    ordinal = 1
+            )
+    )
     private boolean setBlockStateInitSkylight(boolean flag, BlockPos pos) {
         if (CarpetSettings.newLight){
             //Forge: Always initialize sections properly (See #3870 and #3879)
-            LightingHooks.initSkylightForSection(world, (Chunk) (Object) this, sections[pos.getY() >> 4]);
+            LightingHooks.initSkylightForSection(world, (Chunk) (Object) this, chunkSections[pos.getY() >> 4]);
             //Forge: Don't call generateSkylightMap (as it produces the wrong result; sections are initialized above). Never bypass relightBlock (See #3870)
             return false;
         }
@@ -118,10 +187,16 @@ public abstract class ChunkMixin implements NewLightChunk {
     }
 
     //Forge: Error correction is unnecessary as these are fixed (See #3871)
-    @Redirect(method = "method_27373", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;method_27399(II)V"))
+    @Redirect(
+            method = "getBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/chunk/Chunk;method_3911(II)V"
+            )
+    )
     private void dontPropagateSkylightOcclusion(Chunk chunk, int x, int z) {
         if (CarpetSettings.newLight) return;
-        this.method_27399(x, z);
+        this.method_3911(x, z);
     }
 
     @Override
@@ -150,13 +225,13 @@ public abstract class ChunkMixin implements NewLightChunk {
         int x = pos.getX() & 15;
         int y = pos.getY();
         int z = pos.getZ() & 15;
-        ChunkSection section = this.sections[y >> 4];
-        if (section == Chunk.EMPTY_SECTION) {
-            return this.method_27396(pos) ? type.field_23634 : 0;
+        ChunkSection section = this.chunkSections[y >> 4];
+        if (section == Chunk.EMPTY) {
+            return this.hasDirectSunlight(pos) ? type.defaultValue : 0;
         }
         if (type == LightType.SKY) {
-            return !this.world.dimension.hasSkyLight() ? 0 : section.method_27440(x, y & 15, z);
+            return !this.world.dimension.isOverworld() ? 0 : section.getSkyLight(x, y & 15, z);
         }
-        return type == LightType.BLOCK ? section.method_27443(x, y & 15, z) : type.field_23634;
+        return type == LightType.BLOCK ? section.getBlockLight(x, y & 15, z) : type.defaultValue;
     }
 }

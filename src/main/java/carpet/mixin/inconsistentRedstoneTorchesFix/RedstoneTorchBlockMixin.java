@@ -13,9 +13,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(RedstoneTorchBlock.class)
 public class RedstoneTorchBlockMixin {
-    @Inject(method = "neighborUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;method_26013(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V"), cancellable = true)
+    @Inject(
+            method = "neighborUpdate",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;createAndScheduleBlockTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V"
+            ),
+            cancellable = true
+    )
     private void inconsistentRedstoneTorchesFix(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, CallbackInfo ci) {
-        if (CarpetSettings.inconsistentRedstoneTorchesFix && world.method_26012(pos, (RedstoneTorchBlock) (Object) this)) {
+        if (CarpetSettings.inconsistentRedstoneTorchesFix && world.method_11489(pos, (RedstoneTorchBlock) (Object) this)) {
             ci.cancel();
         }
     }

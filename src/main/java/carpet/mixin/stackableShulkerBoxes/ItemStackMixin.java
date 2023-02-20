@@ -17,11 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ItemStackMixin implements ExtendedItemStack {
     @Shadow private int count;
     @Shadow public abstract Item getItem();
-    @Shadow public abstract boolean hasTag();
+    @Shadow public abstract boolean hasNbt();
 
     @Override
     public boolean isGroundStackable() {
-        return ((ExtendedItem) this.getItem()).itemGroundStacking(hasTag());
+        return ((ExtendedItem) this.getItem()).itemGroundStacking(hasNbt());
     }
 
     @Override
@@ -29,9 +29,13 @@ public abstract class ItemStackMixin implements ExtendedItemStack {
         this.count = size;
     }
 
-    @Inject(method = "getMaxCount", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "getMaxCount",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void stackableShulkersPlayerInventory(CallbackInfoReturnable<Integer> cir) {
         if (!CarpetSettings.stackableShulkersPlayerInventory || !CarpetMod.playerInventoryStacking.get()) return;
-        if (getItem() instanceof ShulkerBoxItem && !hasTag()) cir.setReturnValue(64);
+        if (getItem() instanceof ShulkerBoxItem && !hasNbt()) cir.setReturnValue(64);
     }
 }

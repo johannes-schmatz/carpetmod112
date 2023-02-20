@@ -14,13 +14,27 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(World.class)
 public class WorldMixin {
-    @Inject(method = "updateNeighbor", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/crash/CrashReport;create(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/util/crash/CrashReport;"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "updateNeighbor",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/crash/CrashReport;create(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/util/crash/CrashReport;"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void checkUpdateSuppression1(BlockPos pos, Block blockIn, BlockPos fromPos, CallbackInfo ci, BlockState iblockstate, Throwable throwable) {
         if (CarpetSettings.updateSuppressionCrashFix && (throwable instanceof ThrowableSuppression || throwable instanceof StackOverflowError)) {
             throw new ThrowableSuppression("Update suppression");
         }
     }
-    @Inject(method = "onBlockChanged", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/crash/CrashReport;create(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/util/crash/CrashReport;"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "method_13691",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/crash/CrashReport;create(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/util/crash/CrashReport;"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void checkUpdateSuppression2(BlockPos pos, Block blockIn, BlockPos fromPos, CallbackInfo ci, BlockState iblockstate, Throwable throwable) {
         if (CarpetSettings.updateSuppressionCrashFix && (throwable instanceof ThrowableSuppression || throwable instanceof StackOverflowError)) {
             throw new ThrowableSuppression("Update suppression");

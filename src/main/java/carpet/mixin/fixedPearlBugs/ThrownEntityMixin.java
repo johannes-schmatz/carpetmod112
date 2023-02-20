@@ -3,7 +3,7 @@ package carpet.mixin.fixedPearlBugs;
 import carpet.CarpetSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.thrown.ThrownEntity;
+import net.minecraft.entity.thrown.ThrowableEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,10 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
-@Mixin(ThrownEntity.class)
+@Mixin(ThrowableEntity.class)
 public abstract class ThrownEntityMixin extends Entity {
     @Shadow private String ownerName;
-    @Shadow protected LivingEntity owner;
+    @Shadow protected LivingEntity field_6932;
 
     public ThrownEntityMixin(World worldIn) {
         super(worldIn);
@@ -28,16 +28,16 @@ public abstract class ThrownEntityMixin extends Entity {
     private void pearlCheck(CallbackInfoReturnable<LivingEntity> cir) {
         if (!CarpetSettings.fixedPearlBugs) return;
         if (ownerName == null) {
-            if (owner == null) return;
-            ownerName = owner.getName();
+            if (field_6932 == null) return;
+            ownerName = field_6932.getTranslationKey();
         }
         try {
             Entity e = ((ServerWorld) world).getEntity(UUID.fromString(ownerName));
-            if (!world.field_23576.contains(e)) {
-                owner = null;
+            if (!world.entities.contains(e)) {
+                field_6932 = null;
             }
         } catch (Exception e) {
-            owner = null;
+            field_6932 = null;
         }
     }
 }

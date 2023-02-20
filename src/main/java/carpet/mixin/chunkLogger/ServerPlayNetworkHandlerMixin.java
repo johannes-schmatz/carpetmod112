@@ -16,11 +16,17 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerPlayNetworkHandler.class)
 public class ServerPlayNetworkHandlerMixin {
-    @Redirect(method = "onPlayerInteractBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;interactBlock(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/Hand;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;FFF)Lnet/minecraft/util/ActionResult;"))
+    @Redirect(
+            method = "onPlayerInteractBlock",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;method_12792(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/Hand;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;FFF)Lnet/minecraft/util/ActionResult;"
+            )
+    )
     private ActionResult processRightClickBlock(ServerPlayerInteractionManager manager, PlayerEntity player, World worldIn, ItemStack stack, Hand hand, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ) {
         try {
             CarpetClientChunkLogger.setReason("Player interacting with right click");
-            return manager.interactBlock(player, worldIn, stack, hand, pos, facing, hitX, hitY, hitZ);
+            return manager.method_12792(player, worldIn, stack, hand, pos, facing, hitX, hitY, hitZ);
         } finally {
             CarpetClientChunkLogger.resetReason();
         }

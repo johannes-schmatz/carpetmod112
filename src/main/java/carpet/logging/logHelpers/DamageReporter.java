@@ -29,8 +29,8 @@ public class DamageReporter
         LoggerRegistry.getLogger("damage").logNoCommand( (option, player)->
             verifyAndProduceMessage(option, player, source, target, () ->
                 Messenger.m(null,
-                        source.getDisplayName(),
-                        "g  attacking ", target.getDisplayName(),"g  for ",
+                        source.getName(),
+                        "g  attacking ", target.getName(),"g  for ",
                         String.format("r %.2f",amount), "g  points of damage")
             )
         );
@@ -46,7 +46,7 @@ public class DamageReporter
         LoggerRegistry.getLogger("damage").logNoCommand( (option, player)->
             verifyAndProduceMessage(option, player, source.getAttacker(), target, () ->
                 Messenger.m(null,
-                        target.getDisplayName(),
+                        target.getName(),
                         "g  receiving ",
                         String.format("r %.2f", amount),
                         String.format("g  points of damage from %s", source.getName()))
@@ -64,8 +64,8 @@ public class DamageReporter
                         String.format("r %.2f", amount),
                         "g  points of damage")
             ),
-            "ATTACKER", source.getAttacker() == null ? null : source.getAttacker().getUuidAsString(),
-            "TARGET", target.getUuidAsString(),
+            "ATTACKER", source.getAttacker() == null ? null : source.getAttacker().getEntityName(),
+            "TARGET", target.getEntityName(),
             "AMOUNT", amount,
             "DAMAGE_TYPE", source.getName()
         );

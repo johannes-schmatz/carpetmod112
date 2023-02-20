@@ -15,13 +15,27 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public class HostileEntityMixin {
     private static final ThreadLocal<Float> attackDamagePre = new ThreadLocal<>();
 
-    @Inject(method = "tryAttack", at = @At(value = "CONSTANT", args = "intValue=0"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "tryAttack",
+            at = @At(
+                    value = "CONSTANT",
+                    args = "intValue=0"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void onAttack(Entity entity, CallbackInfoReturnable<Boolean> cir, float attackDamage) {
         DamageReporter.register_damage_attacker(entity, (HostileEntity) (Object) this, attackDamage);
         attackDamagePre.set(attackDamage);
     }
 
-    @Inject(method = "tryAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;getKnockback(Lnet/minecraft/entity/LivingEntity;)I"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "tryAttack",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/enchantment/EnchantmentHelper;getKnockback(Lnet/minecraft/entity/LivingEntity;)I"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void onAttackModified(Entity entity, CallbackInfoReturnable<Boolean> cir, float attackDamage) {
         DamageReporter.modify_damage((LivingEntity)entity, DamageSource.mob((HostileEntity) (Object) this), attackDamagePre.get(), attackDamage, "attacker enchants");
     }

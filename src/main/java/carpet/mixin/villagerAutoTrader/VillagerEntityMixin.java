@@ -7,7 +7,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TraderOfferList;
 import net.minecraft.world.World;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,45 +33,74 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
         super(worldIn);
     }
 
-    @Inject(method = "<init>(Lnet/minecraft/world/World;I)V", at = @At("RETURN"))
+    @Inject(
+            method = "<init>(Lnet/minecraft/world/World;I)V",
+            at = @At("RETURN")
+    )
     private void onInit(World worldIn, int professionId, CallbackInfo ci) {
         autotraderAI = new EntityAIAutotrader((VillagerEntity) (Object) this);
     }
 
 
 
-    @Inject(method = {
-            "initGoals",
-            "onGrowUp"
-    }, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/VillagerEntity;getType()I"))
+    @Inject(
+            method = {
+                    "method_11225",
+                    "method_10926"
+            },
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/passive/VillagerEntity;profession()I"
+            )
+    )
     private void addCraftTask(CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader) {
-            goalSelector.add(6, autotraderAI);
+            goals.add(6, autotraderAI);
         }
     }
 
-    @Inject(method = "writeCustomDataToTag", at = @At(value = "INVOKE", target = "Lnet/minecraft/village/TraderOfferList;toTag()Lnet/minecraft/nbt/CompoundTag;"))
-    private void writeOffersSorted(CompoundTag compound, CallbackInfo ci) {
+    @Inject(
+            method = "writeCustomDataToNbt",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/village/TraderOfferList;toNbt()Lnet/minecraft/nbt/NbtCompound;"
+            )
+    )
+    private void writeOffersSorted(NbtCompound compound, CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader) {
             compound.put("OffersSorted", autotraderAI.getRecipiesForSaving(sortedTradeList));
         }
     }
 
-    @Inject(method = "readCustomDataFromTag", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/passive/VillagerEntity;offers:Lnet/minecraft/village/TraderOfferList;", shift = At.Shift.AFTER))
-    private void readOffersSorted(CompoundTag compound, CallbackInfo ci) {
+    @Inject(
+            method = "readCustomDataFromNbt",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/entity/passive/VillagerEntity;offers:Lnet/minecraft/village/TraderOfferList;",
+                    shift = At.Shift.AFTER
+            )
+    )
+    private void readOffersSorted(NbtCompound compound, CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader) {
             autotraderAI.setRecipiesForSaving(compound.getCompound("OffersSorted"), sortedTradeList);
         }
     }
 
-    @Inject(method = "setCurrentCustomer", at = @At("RETURN"))
+    @Inject(
+            method = "setCurrentCustomer",
+            at = @At("RETURN")
+    )
     private void onSetCustomer(PlayerEntity player, CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader && player != null) {
             autotraderAI.sortRepopulatedSortedList(offers, buyingListsorted, sortedTradeList);
         }
     }
 
-    @Inject(method = "getTradeOffers", at = @At("RETURN"), cancellable = true)
+    @Inject(
+            method = "getOffers",
+            at = @At("RETURN"),
+            cancellable = true
+    )
     private void getRecipes(PlayerEntity player, CallbackInfoReturnable<TraderOfferList> cir) {
         if (CarpetSettings.villagerAutoTrader) {
             if (this.buyingListsorted == null) {
@@ -84,21 +113,34 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
         }
     }
 
-    @Inject(method = "method_24926", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/passive/VillagerEntity;offers:Lnet/minecraft/village/TraderOfferList;", ordinal = 0))
+    @Inject(
+            method = "getOffers()V",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/entity/passive/VillagerEntity;offers:Lnet/minecraft/village/TraderOfferList;",
+                    ordinal = 0
+            )
+    )
     private void initBuyingListSorted(CallbackInfo ci) {
         if (this.buyingListsorted == null) {
             this.buyingListsorted = new TraderOfferList();
         }
     }
 
-    @Inject(method = "method_24926", at = @At("RETURN"))
+    @Inject(
+            method = "setCurrentCustomer",
+            at = @At("RETURN")
+    )
     private void onPopulateDone(CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader) {
             autotraderAI.sortRepopulatedSortedList(offers, buyingListsorted, sortedTradeList);
         }
     }
 
-    @Inject(method = "loot", at = @At("RETURN"))
+    @Inject(
+            method = "loot",
+            at = @At("RETURN")
+    )
     private void onUpdateEquipment(ItemEntity itemEntity, CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader && autotraderAI != null) {
             if (buyingListsorted == null) {

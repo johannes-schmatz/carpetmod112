@@ -14,12 +14,19 @@ public class BrewingStandBlockEntityMixin implements BlockEntityOptimizer.LazyBl
     @Shadow private int brewTime;
     private boolean sleeping;
 
-    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "tick",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void sleep(CallbackInfo ci) {
         if (CarpetSettings.optimizedTileEntities && sleeping) ci.cancel();
     }
 
-    @Inject(method = "tick", at = @At("RETURN"))
+    @Inject(
+            method = "tick",
+            at = @At("RETURN")
+    )
     private void checkSleep(CallbackInfo ci) {
         if (brewTime == 0) sleeping = true;
     }

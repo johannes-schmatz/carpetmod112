@@ -30,63 +30,117 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         super(worldIn);
     }
 
-    @Inject(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getDifficulty()Lnet/minecraft/world/Difficulty;", ordinal = 0))
+    @Inject(
+            method = "damage",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;getGlobalDifficulty()Lnet/minecraft/world/Difficulty;",
+                    ordinal = 0
+            )
+    )
     private void saveDamagePreDifficulty(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         damagePreDifficulty = amount;
     }
 
-    @Inject(method = "damage", at = @At(value = "CONSTANT", args = "floatValue=0", ordinal = 2))
+    @Inject(
+            method = "damage",
+            at = @At(
+                    value = "CONSTANT",
+                    args = "floatValue=0",
+                    ordinal = 2
+            )
+    )
     private void modifyDamageDifficulty(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.isScaledWithDifficulty()) {
             DamageReporter.modify_damage(this, source, damagePreDifficulty, amount, "difficulty");
         }
     }
 
-    @Redirect(method = "applyDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;applyArmorToDamage(Lnet/minecraft/entity/damage/DamageSource;F)F"))
+    @Redirect(
+            method = "applyDamage",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;applyArmorDamage(Lnet/minecraft/entity/damage/DamageSource;F)F"
+            )
+    )
     private float modifyDamageArmor(PlayerEntity entityPlayer, DamageSource source, float damage) {
-        float modified = applyArmorToDamage(source, damage);
+        float modified = applyArmorDamage(source, damage);
         if (LoggerRegistry.__damage) {
             DamageReporter.modify_damage(this, source, damage, modified,
-                String.format("armour %.1f and toughness %.1f", (float)this.getArmor(), (float)this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue()));
+                String.format("armour %.1f and toughness %.1f", (float)this.getArmorProtectionValue(), (float)this.initializeAttribute(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue()));
         }
         return modified;
     }
 
-    @Inject(method = "applyDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;setAbsorptionAmount(F)V"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "applyDamage",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;setAbsorption(F)V"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void modifyDamageAbsorption(DamageSource damageSrc, float damageAmount, CallbackInfo ci, float f) {
         DamageReporter.modify_damage(this, damageSrc, damageAmount, f, "Absorption");
     }
 
-    @Inject(method = "applyDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;setHealth(F)V"))
+    @Inject(
+            method = "applyDamage",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;setHealth(F)V"
+            )
+    )
     private void logFinalDamage(DamageSource source, float amount, CallbackInfo ci) {
         DamageReporter.register_final_damage(this, source, amount);
     }
 
-    @Inject(method = "applyDamage", at = @At("HEAD"))
+    @Inject(
+            method = "applyDamage",
+            at = @At("HEAD")
+    )
     private void logInvulnerable(DamageSource source, float amount, CallbackInfo ci) {
         if (LoggerRegistry.__damage && isInvulnerableTo(source)) {
             DamageReporter.modify_damage(this, source, amount, 0, "invulnerability to the damage source");
         }
     }
 
-    @Inject(method = "attack", at = @At("HEAD"))
+    @Inject(
+            method = "attack",
+            at = @At("HEAD")
+    )
     private void resetMobsSmashed(Entity targetEntity, CallbackInfo ci) {
         mobsSmashed = 1;
         sweeping = false;
     }
 
-    @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"))
+    @Inject(
+            method = "attack",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
+            )
+    )
     private void onAttackingEntity(Entity targetEntity, CallbackInfo ci) {
         mobsSmashed++;
     }
 
-    @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;spawnSweepAttackParticles()V"))
+    @Inject(
+            method = "attack",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;method_13267()V"
+            )
+    )
     private void onSweep(Entity targetEntity, CallbackInfo ci) {
         sweeping = true;
         if (LoggerRegistry.__kills) KillLogHelper.onSweep((PlayerEntity) (Object) this, mobsSmashed);
     }
 
-    @Inject(method = "attack", at = @At("RETURN"))
+    @Inject(
+            method = "attack",
+            at = @At("RETURN")
+    )
     private void onAttackEnd(Entity targetEntity, CallbackInfo ci) {
         if (!LoggerRegistry.__kills || sweeping || !targetEntity.isAttackable()) return;
         if (!targetEntity.handleAttack(this)) {

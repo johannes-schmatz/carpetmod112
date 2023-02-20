@@ -11,7 +11,7 @@ import net.fabricmc.mapping.reader.v2.TinyVisitor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -69,9 +69,9 @@ public class StackTraceDeobfuscator {
             return this;
         }
 
-        public Builder withLegacyYarnNames(String version) {
+        public Builder withLegacyYarnNames() {
             try {
-                return withNamesUrl(new URI("https://dl.bintray.com/legacy-fabric/Legacy-Fabric-Maven/net/fabricmc/yarn/" + version + "/yarn-" + version + "-v2.jar"));
+                return withNamesUrl(new URI(Build.YARN_JAR_URL));
             } catch (URISyntaxException e) {
                 throw new IllegalStateException(e);
             }
@@ -120,7 +120,7 @@ public class StackTraceDeobfuscator {
         if (FabricLoader.getInstance().isDevelopmentEnvironment() && false) {
             builder.withMappings(new HashMap<>());
         } else {
-            builder.withLegacyYarnNames(Build.YARN_MAPPINGS);
+            builder.withLegacyYarnNames();
         }
         return builder.build();
     }

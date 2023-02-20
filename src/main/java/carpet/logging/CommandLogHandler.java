@@ -2,7 +2,7 @@ package carpet.logging;
 
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 public class CommandLogHandler extends LogHandler
@@ -23,7 +23,7 @@ public class CommandLogHandler extends LogHandler
         String command = String.join(" ", this.command);
         for (Map.Entry<String, String> param : params.entrySet())
             command = command.replace("$" + param.getKey(), param.getValue());
-        player.server.worldGenerationProgressListenerFactory.method_29374(player, command);
+        player.server.provider.execute(player, command);
     }
     
     private static Map<String, String> paramsToMap(Object[] commandParams)

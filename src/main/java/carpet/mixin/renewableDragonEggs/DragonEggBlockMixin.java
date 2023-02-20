@@ -4,7 +4,7 @@ import carpet.CarpetSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DragonEggBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.FoodItem;
 import net.minecraft.item.Item;
@@ -35,11 +35,11 @@ public abstract class DragonEggBlockMixin extends Block {
         FOOD_ITEMS.add(Items.COOKED_BEEF);
         FOOD_ITEMS.add(Items.CHICKEN);
         FOOD_ITEMS.add(Items.COOKED_CHICKEN);
-        FOOD_ITEMS.add(Items.FISH);
+        FOOD_ITEMS.add(Items.RAW_FISH);
         FOOD_ITEMS.add(Items.COOKED_FISH);
-        FOOD_ITEMS.add(Items.PORKCHOP);
+        FOOD_ITEMS.add(Items.RAW_PORKCHOP);
         FOOD_ITEMS.add(Items.COOKED_PORKCHOP);
-        FOOD_ITEMS.add(Items.RABBIT);
+        FOOD_ITEMS.add(Items.RAW_RABBIT);
         FOOD_ITEMS.add(Items.COOKED_RABBIT);
         FOOD_ITEMS.add(Items.MUTTON);
         FOOD_ITEMS.add(Items.COOKED_MUTTON);
@@ -50,12 +50,16 @@ public abstract class DragonEggBlockMixin extends Block {
         super(materialIn);
     }
 
-    @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "use",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void tryFeed(World worldIn, BlockPos pos, BlockState state, PlayerEntity playerIn, Hand hand, Direction facing, float hitX, float hitY, float hitZ, CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.renewableDragonEggs) {
             ItemStack itemstack = playerIn.getStackInHand(hand);
             if (isMeat(itemstack.getItem())) {
-                int saturation = (int) (((FoodItem) itemstack.getItem()).getSaturationModifier(itemstack) * 10);
+                int saturation = (int) (((FoodItem) itemstack.getItem()).getSaturation(itemstack) * 10);
                 if (!playerIn.abilities.creativeMode) {
                     itemstack.decrement(1);
                 }

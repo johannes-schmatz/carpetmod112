@@ -13,7 +13,14 @@ import java.util.LinkedHashMap;
 
 @Mixin(Chunk.class)
 public class WorldChunkMixin {
-    @Redirect(method = "<init>(Lnet/minecraft/world/World;II)V", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Maps;newHashMap()Ljava/util/HashMap;", remap = false))
+    @Redirect(
+            method = "<init>(Lnet/minecraft/world/World;II)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lcom/google/common/collect/Maps;newHashMap()Ljava/util/HashMap;",
+                    remap = false
+            )
+    )
     private HashMap<BlockPos, BlockEntity> newTileEntityMap() {
         return CarpetSettings.reloadUpdateOrderFix ? new LinkedHashMap<>() : new HashMap<>();
     }

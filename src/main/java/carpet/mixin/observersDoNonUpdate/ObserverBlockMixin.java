@@ -15,7 +15,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class ObserverBlockMixin {
     @Shadow @Final public static BooleanProperty POWERED;
 
-    @Redirect(method = "getPlacementState", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;with(Lnet/minecraft/state/property/Property;Ljava/lang/Comparable;)Lnet/minecraft/block/BlockState;"))
+    @Redirect(
+            method = "getStateFromData",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/BlockState;with(Lnet/minecraft/state/property/Property;Ljava/lang/Comparable;)Lnet/minecraft/block/BlockState;"
+            )
+    )
     private <T extends Comparable<T>, V extends T> BlockState noUpdateOnPlace(BlockState state, Property<T> property, V value) {
         return state.with(property, value).with(POWERED, CarpetSettings.observersDoNonUpdate);
     }

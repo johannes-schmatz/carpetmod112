@@ -3,7 +3,7 @@ package carpet.mixin.randomTickOptimization;
 import carpet.helpers.RandomTickOptimization;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
+import net.minecraft.block.material.Material;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.profiler.Profiler;
@@ -24,18 +24,31 @@ public abstract class ServerWorldMixin extends World {
     }
 
     // Prevent execution of the original return
-    @Redirect(method = "method_26014", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;needsUpdates()Z"))
+    @Redirect(
+            method = "createAndScheduleBlockTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/Block;doImmediateUpdates()Z"
+            )
+    )
     private boolean requiresUpdatesWorldGenFix(Block block) {
-        return !RandomTickOptimization.needsWorldGenFix && block.needsUpdates();
+        return !RandomTickOptimization.needsWorldGenFix && block.doImmediateUpdates();
     }
 
-    @Inject(method = "method_26014", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;needsUpdates()Z"), cancellable = true)
+    @Inject(
+            method = "createAndScheduleBlockTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/Block;doImmediateUpdates()Z"
+            ),
+            cancellable = true
+    )
     private void randomTickWorldGenFix(BlockPos pos, Block blockIn, int delay, int priority, CallbackInfo ci) {
         if (!RandomTickOptimization.needsWorldGenFix) return;
-        if (this.setBlockState(pos.add(-8, -8, -8), pos.add(8, 8, 8))) {
+        if (this.isRegionLoaded(pos.add(-8, -8, -8), pos.add(8, 8, 8))) {
             BlockState state = this.getBlockState(pos);
             if (state.getMaterial() != Material.AIR && state.getBlock() == blockIn) {
-                state.getBlock().scheduledTick(this, pos, state, this.random);
+                state.getBlock().onScheduledTick(this, pos, state, this.random);
             }
             ci.cancel(); // move return into the if for `needsWorldGenFix`
         }

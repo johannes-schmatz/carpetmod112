@@ -21,9 +21,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.server.network.ServerPlayerEntity;
+
+import net.minecraft.recipe.RecipeDispatcher;
+import net.minecraft.recipe.RecipeType;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 
@@ -31,7 +32,7 @@ public class CustomCrafting {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String CARPET_DIRECTORY_RECIPES = "carpet/recipes";
     private static ArrayList<Pair<String, JsonObject>> recipeList = new ArrayList<>();
-    private static HashSet<Recipe> recipes = new HashSet<Recipe>();
+    private static HashSet<RecipeType> recipes = new HashSet<RecipeType>();
 
     public static boolean registerCustomRecipes(boolean result) throws IOException {
         if (!result) {
@@ -61,9 +62,9 @@ public class CustomCrafting {
                         bufferedreader = Files.newBufferedReader(path1);
                         JsonObject json = JsonHelper.deserialize(gson, bufferedreader, JsonObject.class);
                         recipeList.add(Pair.of(s, json));
-                        Recipe ir = RecipeManagerAccessor.invokeParseRecipeJson(json);
+                        RecipeType ir = RecipeManagerAccessor.invokeParseRecipeJson(json);
                         recipes.add(ir);
-                        RecipeManager.register(s, ir);
+                        RecipeDispatcher.register(s, ir);
                     } catch (JsonParseException jsonparseexception) {
                         LOGGER.error("Parsing error loading recipe " + resourcelocation, jsonparseexception);
                         return false;
@@ -84,7 +85,7 @@ public class CustomCrafting {
         return recipeList;
     }
 
-    public static boolean filterCustomRecipesForOnlyCarpetClientUsers(Recipe recipe, ServerPlayerEntity player){
+    public static boolean filterCustomRecipesForOnlyCarpetClientUsers(RecipeType recipe, ServerPlayerEntity player){
         return !recipes.contains(recipe) || CarpetClientServer.isPlayerRegistered(player);
     }
 }

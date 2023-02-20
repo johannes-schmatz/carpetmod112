@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(World.class)
 public interface WorldAccessor {
-    @Accessor("field_23571") void setScheduledUpdatesAreImmediate(boolean scheduledUpdatesAreImmediate);
-    @Accessor("field_23579") int getUpdateLCG();
-    @Accessor("field_23579") void setUpdateLCG(int seed);
-    @Invoker("method_25980") boolean invokeIsChunkLoaded(int x, int z, boolean allowEmpty);
+    @Accessor("immediateUpdates") void setScheduledUpdatesAreImmediate(boolean scheduledUpdatesAreImmediate);
+    @Accessor("lcgBlockSeed") int getUpdateLCG();
+    @Accessor("lcgBlockSeed") void setUpdateLCG(int seed);
+    @Invoker("isChunkLoaded") boolean invokeIsChunkLoaded(int x, int z, boolean allowEmpty);
 }

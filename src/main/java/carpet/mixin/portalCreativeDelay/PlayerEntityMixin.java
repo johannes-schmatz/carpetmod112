@@ -10,7 +10,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
-    @Inject(method = "getMaxNetherPortalTime", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "getMaxNetherPortalTime",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void portalCreativeDelay(CallbackInfoReturnable<Integer> cir) {
         if (CarpetSettings.portalCreativeDelay) {
             cir.setReturnValue(PortalHelper.player_holds_obsidian((PlayerEntity) (Object) this) ? Integer.MAX_VALUE : 80);

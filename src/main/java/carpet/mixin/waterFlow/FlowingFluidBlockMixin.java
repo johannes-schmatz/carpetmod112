@@ -13,20 +13,30 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import javax.annotation.concurrent.NotThreadSafe;
+//import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Random;
 
-@NotThreadSafe
+//@NotThreadSafe
 @Mixin(FlowingFluidBlock.class)
 public class FlowingFluidBlockMixin {
     private int level = 8; // Thread safety: needs to be thread local for multi-threaded dimensions
 
-    @Inject(method = "scheduledTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/FlowingFluidBlock;method_26597(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Ljava/util/Set;"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "onScheduledTick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/FlowingFluidBlock;getFlowDirections(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Ljava/util/Set;"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void rememberLevel(World worldIn, BlockPos pos, BlockState state, Random rand, CallbackInfo ci, int i) {
         level = i;
     }
 
-    @ModifyConstant(method = "method_26597", constant = @Constant(intValue = 1))
+    @ModifyConstant(
+            method = "getFlowDirections",
+            constant = @Constant(intValue = 1)
+    )
     private int maxFlow(int flow) {
         if (CarpetSettings.waterFlow == CarpetSettings.WaterFlow.vanilla) return flow;
         int level = this.level;

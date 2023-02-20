@@ -2,14 +2,12 @@ package carpet.helpers;
 
 import carpet.CarpetServer;
 import carpet.mixin.accessors.BlockAccessor;
-import carpet.mixin.accessors.ServerChunkCacheAccessor;
+import carpet.mixin.accessors.ServerChunkProviderAccessor;
 import net.minecraft.block.*;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerChunkCache;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkCache;
-import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,13 +53,13 @@ public class RandomTickOptimization {
         if (server == null || server.worlds == null) // worlds not loaded yet
             return;
         for (World world : server.worlds) {
-            ChunkCache provider = world.getChunkManager();
-            if (!(provider instanceof ServerChunkCache))
+            ChunkProvider provider = world.getChunkProvider();
+            if (!(provider instanceof ServerChunkProvider))
                 continue;
-            for (Chunk chunk : ((ServerChunkCacheAccessor) provider).getLoadedChunksMap().values()) {
-                for (ChunkSection subchunk : chunk.getSections()) {
+            for (Chunk chunk : ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().values()) {
+                for (ChunkSection subchunk : chunk.getBlockStorage()) {
                     if (subchunk != null)
-                        subchunk.method_27445();
+                        subchunk.calculateCounts();
                 }
             }
         }

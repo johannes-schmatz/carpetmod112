@@ -13,13 +13,14 @@ import carpet.utils.extensions.WaypointContainer;
 import carpet.worldedit.WorldEditBridge;
 import narcolepticfrog.rsmm.events.TickStartEventDispatcher;
 import narcolepticfrog.rsmm.server.RSMMServer;
-import net.minecraft.entity.SpawnGroup;
+
+import net.minecraft.entity.EntityCategory;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -80,17 +81,17 @@ public class CarpetServer {
     public void onLoadAllWorlds() {
         TickingArea.loadConfig(server);
         for (ServerWorld world : server.worlds) {
-            int dim = world.dimension.getType().getRawId();
+            int dim = world.dimension.getDimensionType().getId();
             try {
                 ((WaypointContainer) world).setWaypoints(Waypoint.loadWaypoints(world));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
 
-            String prefix = "minecraft." + world.dimension.getType().getSaveDir();
+            String prefix = "minecraft." + world.dimension.getDimensionType().getName();
             new PubSubInfoProvider<>(CarpetMod.PUBSUB,prefix + ".chunk_loading.dropped_chunks.hash_size",20,
                     () -> ChunkLoading.getCurrentHashSize(world));
-            for (SpawnGroup creatureType : SpawnGroup.values()) {
+            for (EntityCategory creatureType : EntityCategory.values()) {
                 String mobCapPrefix = prefix + ".mob_cap." + creatureType.name().toLowerCase(Locale.ROOT);
                 new PubSubInfoProvider<>(CarpetMod.PUBSUB, mobCapPrefix + ".filled", 20, () -> {
                     Pair<Integer, Integer> mobCap = SpawnReporter.mobcaps.get(dim).get(creatureType);
@@ -139,7 +140,7 @@ public class CarpetServer {
     }
 
     public Random setRandomSeed(int p_72843_1_, int p_72843_2_, int p_72843_3_) {
-        long i = (long) p_72843_1_ * 341873128712L + (long) p_72843_2_ * 132897987541L + server.worlds[0].getLevelProperties().method_28225() + (long) p_72843_3_;
+        long i = (long) p_72843_1_ * 341873128712L + (long) p_72843_2_ * 132897987541L + server.worlds[0].getLevelProperties().getSeed() + (long) p_72843_3_;
         CarpetMod.rand.setSeed(i);
         return CarpetMod.rand;
     }
@@ -147,7 +148,7 @@ public class CarpetServer {
     public void loadBots() {
         try
         {
-            File settings_file = server.getLevelStorage().method_28330(server.getLevelName(), "bot.conf");
+            File settings_file = server.getSaveStorage().method_11957(server.getLevelName(), "bot.conf");
             BufferedReader b = new BufferedReader(new FileReader(settings_file));
             String line = "";
             boolean temp = CarpetSettings.removeFakePlayerSkins;
@@ -171,7 +172,7 @@ public class CarpetServer {
 
     public void writeConf(ArrayList<String> names) {
         try {
-            File settings_file = server.getLevelStorage().method_28330(server.getLevelName(), "bot.conf");
+            File settings_file = server.getSaveStorage().method_11957(server.getLevelName(), "bot.conf");
             if (names != null) {
                 FileWriter fw = new FileWriter(settings_file);
                 for (String name : names) {

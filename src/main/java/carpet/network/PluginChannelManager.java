@@ -8,7 +8,7 @@ import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,7 +35,7 @@ public class PluginChannelManager {
         PlayerManager playerList = server.getPlayerManager();
         // make sure server started up
         if (playerList != null) {
-            sendChannelUpdate(playerList.getPlayerList(), "REGISTER", Arrays.asList(channels));
+            sendChannelUpdate(playerList.getPlayers(), "REGISTER", Arrays.asList(channels));
         }
     }
 
@@ -48,12 +48,12 @@ public class PluginChannelManager {
             }
             channelHandlers.remove(channel);
         }
-        sendChannelUpdate(server.getPlayerManager().getPlayerList(), "UNREGISTER", Arrays.asList(channels));
+        sendChannelUpdate(server.getPlayerManager().getPlayers(), "UNREGISTER", Arrays.asList(channels));
     }
 
     public void process(ServerPlayerEntity player, CustomPayloadC2SPacket packet) {
-        String channel = packet.method_32939();
-        PacketByteBuf payload = packet.method_32941();
+        String channel = packet.getChannel();
+        PacketByteBuf payload = packet.getPayload();
         switch(channel) {
             case "REGISTER": {
                 this.processRegister(player, payload);

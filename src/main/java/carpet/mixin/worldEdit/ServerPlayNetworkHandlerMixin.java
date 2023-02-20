@@ -1,10 +1,10 @@
 package carpet.mixin.worldEdit;
 
 import carpet.worldedit.WorldEditBridge;
-import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
+import net.minecraft.network.packet.c2s.play.SwingHandC2SPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,8 +17,14 @@ public class ServerPlayNetworkHandlerMixin {
     @Shadow @Final private MinecraftServer server;
     @Shadow public ServerPlayerEntity player;
 
-    @Inject(method = "onPlayerInteractItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;interactItem(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;"))
-    private void onRightClickAir(PlayerInteractItemC2SPacket packetIn, CallbackInfo ci) {
-        WorldEditBridge.onRightClickAir(server.getWorldById(player.dimensionId), player);
+    @Inject(
+            method = "onSwingHand",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;method_12791(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;"
+            )
+    )
+    private void onRightClickAir(SwingHandC2SPacket packetIn, CallbackInfo ci) {
+        WorldEditBridge.onRightClickAir(server.getWorld(player.dimension), player);
     }
 }

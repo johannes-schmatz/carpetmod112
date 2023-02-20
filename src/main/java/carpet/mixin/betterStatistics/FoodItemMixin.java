@@ -11,8 +11,14 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(FoodItem.class)
 public class FoodItemMixin {
-    @Redirect(method = "finishUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/stats/Stats;method_33892(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"))
+    @Redirect(
+            method = "method_3367",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/stat/Stats;used(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
+            )
+    )
     private Stat addUseMeta(Item item, ItemStack stack) {
-        return StatHelper.getObjectUseStats(item, stack.getMetadata());
+        return StatHelper.getObjectUseStats(item, stack.getMeta());
     }
 }

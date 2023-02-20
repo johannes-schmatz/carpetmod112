@@ -19,17 +19,30 @@ public abstract class WorldMixin {
 
     @Shadow public abstract BlockState getBlockState(BlockPos pos);
 
-    @Inject(method = "updateNeighbor", at = @At("RETURN"))
+    @Inject(
+            method = "updateNeighbor",
+            at = @At("RETURN")
+    )
     private void onNeighborChanged(BlockPos pos, Block blockIn, BlockPos fromPos, CallbackInfo ci) {
         if (CarpetSettings.redstoneMultimeter && !isClient) StateChangeEventDispatcher.dispatchEvent((World) (Object) this, pos);
     }
 
-    @Inject(method = "onBlockChanged", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/ObserverBlock;method_26711(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Lnet/minecraft/util/math/BlockPos;)V", shift = At.Shift.AFTER))
+    @Inject(
+            method = "method_13691",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/ObserverBlock;method_13711(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Lnet/minecraft/util/math/BlockPos;)V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void onObservedNeighborChanged(BlockPos pos, Block blockIn, BlockPos fromPos, CallbackInfo ci) {
         if (CarpetSettings.redstoneMultimeter) StateChangeEventDispatcher.dispatchEvent((World) (Object) this, pos);
     }
 
-    @Inject(method = "updateHorizontalAdjacent", at = @At("RETURN"))
+    @Inject(
+            method = "updateHorizontalAdjacent",
+            at = @At("RETURN")
+    )
     private void onComparatorUpdate(BlockPos pos, Block blockIn, CallbackInfo ci) {
         if (CarpetSettings.redstoneMultimeter) StateChangeEventDispatcher.dispatchEvent((World) (Object) this, pos);
     }

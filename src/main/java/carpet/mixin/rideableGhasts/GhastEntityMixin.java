@@ -2,8 +2,8 @@ package carpet.mixin.rideableGhasts;
 
 import carpet.CarpetSettings;
 import carpet.helpers.GhastHelper;
-import net.minecraft.class_3092;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.goal.FindPlayerGoal;
 import net.minecraft.entity.mob.FlyingEntity;
 import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -23,14 +23,23 @@ public class GhastEntityMixin extends FlyingEntity {
         super(worldIn);
     }
 
-    @Inject(method = "initGoals", at = @At("RETURN"))
+    @Inject(
+            method = "initGoals",
+            at = @At("RETURN")
+    )
     private void addNewTasks(CallbackInfo ci) {
-        this.goalSelector.add(3, new GhastHelper.AIFollowClues((GhastEntity) (Object) this));
-        this.goalSelector.add(4, new GhastHelper.AIFindOwner((GhastEntity) (Object) this));
+        this.attackGoals.add(3, new GhastHelper.AIFollowClues((GhastEntity) (Object) this));
+        this.attackGoals.add(4, new GhastHelper.AIFindOwner((GhastEntity) (Object) this));
     }
 
-    @Redirect(method = "initGoals", at = @At(value = "NEW", target = "net/minecraft/class_3092"))
-    private class_3092 replaceTargetTask(MobEntity ghast) {
+    @Redirect(
+            method = "initGoals",
+            at = @At(
+                    value = "NEW",
+                    target = "net/minecraft/entity/ai/goal/FindPlayerGoal"
+            )
+    )
+    private FindPlayerGoal replaceTargetTask(MobEntity ghast) {
         return new GhastHelper.GhastEntityAIFindEntityNearestPlayer(ghast);
     }
 
@@ -53,7 +62,7 @@ public class GhastEntityMixin extends FlyingEntity {
         boolean worked = super.interactMob(player, hand);
         if (!worked) {
             player.startRiding(this, true);
-            player.getItemCooldownManager().set(Items.FIRE_CHARGE, 1);
+            player.getItemCooldownManager().method_11384(Items.FIRE_CHARGE, 1);
         }
         return false;
     }

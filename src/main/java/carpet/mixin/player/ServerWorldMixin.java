@@ -13,7 +13,18 @@ import java.util.UUID;
 
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin {
-    @Inject(method = "method_33481", at = @At(value = "INVOKE_ASSIGN", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;", shift = At.Shift.BY, by = 2, remap = false), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "method_12781",
+            at = @At(
+                    value = "INVOKE_ASSIGN",
+                    target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;",
+                    shift = At.Shift.BY,
+                    by = 2,
+                    remap = false
+            ),
+            cancellable = true,
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void loginMinecartFix(Entity entityIn, CallbackInfoReturnable<Boolean> cir, UUID uuid, Entity entity) {
         if (FakeServerPlayerEntity.shouldFixMinecart()) {
             entity.removed = true;

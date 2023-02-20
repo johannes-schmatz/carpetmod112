@@ -13,7 +13,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(DoublePlantBlock.class)
 public class DoublePlantBlockMixin {
-    @Redirect(method = "method_26587", at = @At(value = "INVOKE", target = "Lnet/minecraft/stats/Stats;method_33886(Lnet/minecraft/block/Block;)Lnet/minecraft/stat/Stat;"))
+    @Redirect(
+            method = "onBreak",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/stat/Stats;mined(Lnet/minecraft/block/Block;)Lnet/minecraft/stat/Stat;"
+            )
+    )
     private Stat addBlockMeta(Block blockIn, World worldIn, BlockPos pos, BlockState state) {
         return StatHelper.getBlockStateStats(state);
     }

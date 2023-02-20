@@ -11,9 +11,9 @@ import net.minecraft.block.DropperBlock;
 import net.minecraft.block.entity.DispenserBlockEntity;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.util.DefaultedList;
+import net.minecraft.recipe.RecipeDispatcher;
+import net.minecraft.recipe.RecipeType;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -24,7 +24,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(DropperBlock.class)
 public class DropperBlockMixin extends DispenserBlock {
-    @Inject(method = "dispense", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "dispense",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void autoCraftOnDispense(World worldIn, BlockPos pos, CallbackInfo ci) {
         if (CarpetSettings.autoCraftingDropper && this.autoCraftingDispense(worldIn, pos)) ci.cancel();
     }
@@ -60,17 +64,17 @@ public class DropperBlockMixin extends DispenserBlock {
         for (int i = 0; i < 9; i++) {
             craftingInventory.setInvStack(i, dispenserTE.getInvStack(i));
         }
-        Recipe recipe = RecipeManager.method_25728(craftingInventory, worldIn);
+        RecipeType recipe = RecipeDispatcher.method_14262(craftingInventory, worldIn);
         if (recipe == null) {
             return false;
         }
         // crafting it
         Vec3d target = new Vec3d(front).add(0.5, 0.2, 0.5);
-        ItemStack result = recipe.method_25712(craftingInventory);
+        ItemStack result = recipe.getResult(craftingInventory);
         AutoCraftingDropperHelper.spawnItemStack(worldIn, target.x, target.y, target.z, result);
 
         // copied from CraftingResultSlot.onTakeItem()
-        DefaultedList<ItemStack> nonNullList = recipe.method_25715(craftingInventory);
+        DefaultedList<ItemStack> nonNullList = recipe.method_13670(craftingInventory);
         for (int i = 0; i < nonNullList.size(); ++i) {
             ItemStack itemStack_2 = dispenserTE.getInvStack(i);
             ItemStack itemStack_3 = nonNullList.get(i);
@@ -82,7 +86,7 @@ public class DropperBlockMixin extends DispenserBlock {
             if (!itemStack_3.isEmpty()) {
                 if (itemStack_2.isEmpty()) {
                     dispenserTE.setInvStack(i, itemStack_3);
-                } else if (ItemStack.areItemsEqual(itemStack_2, itemStack_3) && ItemStack.areTagsEqual(itemStack_2, itemStack_3)) {
+                } else if (ItemStack.equals(itemStack_2, itemStack_3) && ItemStack.equalsIgnoreDamage(itemStack_2, itemStack_3)) {
                     itemStack_3.increment(itemStack_2.getCount());
                     dispenserTE.setInvStack(i, itemStack_3);
                 } else {

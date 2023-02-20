@@ -6,9 +6,9 @@ import carpet.helpers.TickSpeed;
 import carpetmod.Build;
 import com.google.gson.JsonObject;
 import io.netty.buffer.Unpooled;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -64,19 +64,19 @@ public class CarpetClientMessageHandler {
 
         String[] list = CarpetSettings.findAll(null);
 
-        CompoundTag chunkData = new CompoundTag();
+        NbtCompound chunkData = new NbtCompound();
 
         chunkData.putString("carpetVersion", Build.VERSION);
         chunkData.putFloat("tickrate", TickSpeed.tickrate);
         chunkData.putInt("netVersion", NET_VERSION);
-        ListTag listNBT = new ListTag();
+        NbtList listNBT = new NbtList();
         for (String rule : list) {
             String current = CarpetSettings.get(rule);
             String[] options = CarpetSettings.getOptions(rule);
             String def = CarpetSettings.getDefault(rule);
             boolean isfloat = CarpetSettings.isDouble(rule);
 
-            CompoundTag ruleNBT = new CompoundTag();
+            NbtCompound ruleNBT = new NbtCompound();
             ruleNBT.putString("rule", rule);
             ruleNBT.putString("current", current);
             ruleNBT.putString("default", def);
@@ -86,27 +86,27 @@ public class CarpetClientMessageHandler {
         chunkData.put("ruleList", listNBT);
 
         try {
-            data.writeCompoundTag(chunkData);
+            data.writeNbtCompound(chunkData);
         } catch (Exception e) {
         }
 
         CarpetClientServer.sender(data, sender);
     }
 
-    public static void sendNBTVillageData(ServerPlayerEntity sender, CompoundTag compound) {
+    public static void sendNBTVillageData(ServerPlayerEntity sender, NbtCompound compound) {
         PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
         data.writeInt(CarpetClientMessageHandler.VILLAGE_MARKERS);
 
-        data.writeCompoundTag(compound);
+        data.writeNbtCompound(compound);
 
         CarpetClientServer.sender(data, sender);
     }
 
-    public static void sendNBTBoundingboxData(ServerPlayerEntity sender, CompoundTag compound) {
+    public static void sendNBTBoundingboxData(ServerPlayerEntity sender, NbtCompound compound) {
         PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
         data.writeInt(CarpetClientMessageHandler.BOUNDINGBOX_MARKERS);
 
-        data.writeCompoundTag(compound);
+        data.writeNbtCompound(compound);
 
         CarpetClientServer.sender(data, sender);
     }
@@ -119,12 +119,12 @@ public class CarpetClientMessageHandler {
         CarpetClientServer.sender(data);
     }
 
-    public static void sendNBTChunkData(ServerPlayerEntity sender, int dataType, CompoundTag compound) {
+    public static void sendNBTChunkData(ServerPlayerEntity sender, int dataType, NbtCompound compound) {
         PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
         data.writeInt(CarpetClientMessageHandler.CHUNK_LOGGER);
         data.writeInt(dataType);
         try {
-            data.writeCompoundTag(compound);
+            data.writeNbtCompound(compound);
         } catch (Exception e) {
         }
         CarpetClientServer.sender(data, sender);
@@ -137,11 +137,11 @@ public class CarpetClientMessageHandler {
         CarpetClientServer.sender(data);
     }
 
-    public static void sendNBTRandomTickData(ServerPlayerEntity sender, CompoundTag compound) {
+    public static void sendNBTRandomTickData(ServerPlayerEntity sender, NbtCompound compound) {
         PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
         data.writeInt(CarpetClientMessageHandler.RANDOMTICK_DISPLAY);
         try {
-            data.writeCompoundTag(compound);
+            data.writeNbtCompound(compound);
         } catch (Exception e) {
         }
         CarpetClientServer.sender(data, sender);
@@ -152,11 +152,11 @@ public class CarpetClientMessageHandler {
         PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
         data.writeInt(CUSTOM_RECIPES);
 
-        CompoundTag chunkData = new CompoundTag();
+        NbtCompound chunkData = new NbtCompound();
 
-        ListTag listNBT = new ListTag();
+        NbtList listNBT = new NbtList();
         for (Pair<String, JsonObject> pair : CustomCrafting.getRecipeList()) {
-            CompoundTag recipe = new CompoundTag();
+            NbtCompound recipe = new NbtCompound();
             recipe.putString("name", pair.getKey());
             recipe.putString("recipe", pair.getValue().toString());
             listNBT.add(recipe);
@@ -164,7 +164,7 @@ public class CarpetClientMessageHandler {
         chunkData.put("recipeList", listNBT);
 
         try {
-            data.writeCompoundTag(chunkData);
+            data.writeNbtCompound(chunkData);
         } catch (Exception e) {
         }
 
@@ -172,6 +172,6 @@ public class CarpetClientMessageHandler {
     }
 
     public static void confirmationReceivedCustomRecipesSendUpdate(ServerPlayerEntity sender) {
-        sender.getRecipeBook().sendInitRecipesPacket(sender);
+        sender.method_14965().method_14997(sender);
     }
 }

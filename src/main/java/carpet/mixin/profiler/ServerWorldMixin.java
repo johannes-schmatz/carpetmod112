@@ -22,78 +22,169 @@ public abstract class ServerWorldMixin extends World {
         super(levelProperties, levelProperties2, dimension, profiler, isClient);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/SpawnHelper;method_26212(Lnet/minecraft/server/world/ServerWorld;ZZZ)I"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/MobSpawnerHelper;tickSpawners(Lnet/minecraft/server/world/ServerWorld;ZZZ)I"
+            )
+    )
     private void preSpawning(CallbackInfo ci) {
-        CarpetProfiler.start_section(this.dimension.getType().getSaveDir(), "spawning");
+        CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "spawning");
         LagSpikeHelper.processLagSpikes(this, MOB_SPAWNING, PRE);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/SpawnHelper;method_26212(Lnet/minecraft/server/world/ServerWorld;ZZZ)I", shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/MobSpawnerHelper;tickSpawners(Lnet/minecraft/server/world/ServerWorld;ZZZ)I",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void postSpawning(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, MOB_SPAWNING, POST);
         CarpetProfiler.end_current_section();
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkCache;tick()Z"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/chunk/ChunkProvider;tickChunks()Z"
+            )
+    )
     private void preChunkUnloading(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, CHUNK_UNLOADING, PRE);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkCache;tick()Z", shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/chunk/ChunkProvider;tickChunks()Z",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void postChunkUnloading(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, CHUNK_UNLOADING, POST);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;method_26051(Z)Z"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;method_3644(Z)Z"
+            )
+    )
     private void preTileTick(CallbackInfo ci) {
-        CarpetProfiler.start_section(this.dimension.getType().getSaveDir(), "blocks");
+        CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "blocks");
         LagSpikeHelper.processLagSpikes(this, TILE_TICK, PRE);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;method_26051(Z)Z", shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;method_3644(Z)Z",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void postTileTick(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, TILE_TICK, PRE);
         CarpetProfiler.end_current_section();
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;tickChunk()V"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;tickBlocks()V"
+            )
+    )
     private void preRandomTick(CallbackInfo ci) {
-        CarpetProfiler.start_section(this.dimension.getType().getSaveDir(), "blocks");
+        CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "blocks");
         LagSpikeHelper.processLagSpikes(this, RANDOM_TICK, PRE);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;tickChunk()V", shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;tickBlocks()V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void postRandomTick(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, RANDOM_TICK, POST);
         CarpetProfiler.end_current_section();
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/class_6380;method_33590()V"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/PlayerWorldManager;method_2111()V"
+            )
+    )
     private void preChunkMap(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, PLAYER_CHUNK_MAP, PRE);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/class_6380;method_33590()V", shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/PlayerWorldManager;method_2111()V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void postChunkMap(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, PLAYER_CHUNK_MAP, POST);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/storage/VillageState;method_35113()V"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/village/VillageState;method_2839()V"
+            )
+    )
     private void preVillage(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, VILLAGE, PRE);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/village/ZombieSiegeManager;method_35109()V", shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/village/ZombieSiegeManager;method_2835()V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void postVillage(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, VILLAGE, POST);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;sendBlockActions()V"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;method_2131()V"
+            )
+    )
     private void preBlockEvent(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, BLOCK_EVENT, PRE);
     }
 
-    @Inject(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;sendBlockActions()V", shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/world/ServerWorld;method_2131()V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void postBlockEvent(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, BLOCK_EVENT, POST);
     }

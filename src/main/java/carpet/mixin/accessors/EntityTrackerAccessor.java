@@ -5,9 +5,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Set;
 import net.minecraft.entity.EntityTracker;
-import net.minecraft.server.network.EntityTrackerEntry;
+import net.minecraft.entity.TrackedEntityInstance;
 
 @Mixin(EntityTracker.class)
 public interface EntityTrackerAccessor {
-    @Accessor("field_31685") Set<EntityTrackerEntry> getEntries();
+    @Accessor("trackedEntities") Set<TrackedEntityInstance> getEntries();
 }

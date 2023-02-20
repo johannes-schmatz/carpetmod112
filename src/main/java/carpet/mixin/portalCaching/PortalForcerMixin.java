@@ -12,15 +12,11 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.PortalTeleporter;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ColumnPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.PortalForcer;
+import net.minecraft.util.math.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -34,14 +30,19 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
-@Mixin(PortalForcer.class)
+@Mixin(PortalTeleporter.class)
 public class PortalForcerMixin implements ExtendedPortalForcer {
-    @Shadow @Final private Long2ObjectMap<PortalForcer.class_5096> field_23640;
+    @Shadow @Final private Long2ObjectMap<PortalTeleporter.Position> cache;
     @Shadow @Final private ServerWorld world;
-    private final Long2ObjectMap<PortalForcer.class_5096> destinationHistoryCache = new Long2ObjectOpenHashMap<>(4096);
+    private final Long2ObjectMap<PortalTeleporter.Position> destinationHistoryCache = new Long2ObjectOpenHashMap<>(4096);
 
+    /**
+     *
+     * @author skyrising
+     * @reason carpet mod
+     */
     @Overwrite
-    public boolean method_26217(Entity entity, float rotationYaw) {
+    public boolean method_8584(Entity entity, float rotationYaw) {
         int range = 128;
         double distance = -1.0D;
         int x = MathHelper.floor(entity.x);
@@ -49,17 +50,17 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
         boolean flag = true;
         boolean flag_cm = true;
         BlockPos outPos = BlockPos.ORIGIN;
-        long posKey = ColumnPos.method_25891(x, z);
+        long posKey = ChunkPos.getIdFromCoords(x, z);
 
-        if (this.field_23640.containsKey(posKey)) {
-            PortalForcer.class_5096 pos = this.field_23640.get(posKey);
+        if (this.cache.containsKey(posKey)) {
+            PortalTeleporter.Position pos = this.cache.get(posKey);
             distance = 0.0D;
             outPos = pos;
-            pos.field_23641 = this.world.getTime();
+            pos.pos = this.world.getLastUpdateTime();
             flag = false;
         } else if (CarpetSettings.portalCaching && this.destinationHistoryCache.containsKey(posKey)) {
             // potential best candidate for linkage.
-            PortalForcer.class_5096 pos = this.destinationHistoryCache.get(posKey);
+            PortalTeleporter.Position pos = this.destinationHistoryCache.get(posKey);
             //just to verify nobody is cheating the system with update suppression
             if (this.world.getBlockState(pos).getBlock() == Blocks.NETHER_PORTAL) {
                 distance = 0.0D;
@@ -100,7 +101,7 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
         }
 
         if (flag) {
-            this.field_23640.put(posKey, createPortalPosition(outPos, this.world.getTime(), new Vec3d(entity.x, entity.y, entity.z)));
+            this.cache.put(posKey, createPortalPosition(outPos, this.world.getLastUpdateTime(), new Vec3d(entity.x, entity.y, entity.z)));
         }
 
         if (CarpetSettings.portalCaching && (flag || flag_cm)) {
@@ -111,7 +112,7 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
         double outX = outPos.getX() + 0.5;
         double outZ = outPos.getZ() + 0.5;
         BlockPattern.Result pattern = Blocks.NETHER_PORTAL.findPortal(this.world, outPos);
-        boolean axisNegative = pattern.getForwards().rotateYClockwise().getDirection() == Direction.AxisDirection.NEGATIVE;
+        boolean axisNegative = pattern.getForwards().rotateYClockwise().getAxisDirection() == Direction.AxisDirection.NEGATIVE;
         double horizontal = pattern.getForwards().getAxis() == Direction.Axis.X ? pattern.getFrontTopLeft().getZ() : pattern.getFrontTopLeft().getX();
         double outY = pattern.getFrontTopLeft().getY() + 1 - entity.getLastNetherPortalDirectionVector().y * pattern.getHeight();
 
@@ -121,7 +122,7 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
 
         //CM portalSuffocationFix
         //removed offset calculation outside of the if statement
-        double offset = (1.0D - entity.getLastNetherPortalDirectionVector().x) * pattern.getWidth() * pattern.getForwards().rotateYClockwise().getDirection().offset();
+        double offset = (1.0D - entity.getLastNetherPortalDirectionVector().x) * pattern.getWidth() * pattern.getForwards().rotateYClockwise().getAxisDirection().offset();
         if (CarpetSettings.portalSuffocationFix) {
             double correctedRadius = 1.02 * entity.width / 2;
             if (correctedRadius >= pattern.getWidth() - correctedRadius) {
@@ -182,17 +183,21 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
         return true;
     }
 
+    /**
+     * @author skyrising
+     * @reason carpet mod
+     */
     @Overwrite
-    public void method_26214(long worldTime)
+    public void method_4698(long worldTime)
     {
         if (worldTime % 100 != 0) return;
         long uncachingTime = worldTime - 300L;
-        ObjectIterator<PortalForcer.class_5096> it = this.field_23640.values().iterator();
+        ObjectIterator<PortalTeleporter.Position> it = this.cache.values().iterator();
         ArrayList<Vec3d> uncachings = new ArrayList<>();
         while (it.hasNext()) {
-            PortalForcer.class_5096 pos = it.next();
+            PortalTeleporter.Position pos = it.next();
 
-            if (pos == null || pos.field_23641 < uncachingTime) {
+            if (pos == null || pos.pos < uncachingTime) {
                 uncachings.add(((ExtendedPortalPosition) pos).getCachingCoords());
                 it.remove();
             }
@@ -207,11 +212,14 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
 
         // Log portal uncaching CARPET-XCOM
         if(LoggerRegistry.__portalCaching) {
-            PortalCaching.portalCachingCleared(world, field_23640.size(), uncachings);
+            PortalCaching.portalCachingCleared(world, cache.size(), uncachings);
         }
     }
 
-    @Inject(method = "method_26215", at = @At("RETURN"))
+    @Inject(
+            method = "method_3803",
+            at = @At("RETURN")
+    )
     private void onMakePortal(Entity entityIn, CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.portalCaching) clearHistoryCache();
     }
@@ -220,7 +228,7 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
     public void clearHistoryCache() {
         MinecraftServer server = this.world.getServer();
         for (ServerWorld world : server.worlds) {
-            ((PortalForcerMixin) (Object) world.getPortalForcer()).removeAllCachedEntries();
+            ((PortalForcerMixin) (Object) world.getPortalTeleporter()).removeAllCachedEntries();
         }
     }
 
@@ -230,18 +238,19 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
 
     private static MethodHandle portalPositionConstructor;
 
-    private PortalForcer.class_5096 createPortalPosition(BlockPos pos, long lastUpdate, Vec3d cachingCoords) {
+    private PortalTeleporter.Position createPortalPosition(BlockPos pos, long lastUpdate, Vec3d cachingCoords) {
         if (portalPositionConstructor == null) {
             try {
                 MethodHandles.Lookup lookup = MethodHandles.lookup();
-                Constructor<PortalForcer.class_5096> constructor = PortalForcer.class_5096.class.getDeclaredConstructor(PortalForcer.class, BlockPos.class, long.class);
+                Constructor<PortalTeleporter.Position> constructor = PortalTeleporter.Position.class.getDeclaredConstructor(PortalTeleporter.class, BlockPos.class,
+                        long.class);
                 portalPositionConstructor = lookup.unreflectConstructor(constructor);
             } catch (ReflectiveOperationException e) {
                 throw new RuntimeException(e);
             }
         }
         try {
-            PortalForcer.class_5096 portalPos = (PortalForcer.class_5096) portalPositionConstructor.invokeExact((PortalForcer) (Object) this, pos, lastUpdate);
+            PortalTeleporter.Position portalPos = (PortalTeleporter.Position) portalPositionConstructor.invokeExact((PortalTeleporter) (Object) this, pos, lastUpdate);
             ((ExtendedPortalPosition) portalPos).setCachingCoords(cachingCoords);
             return portalPos;
         } catch (Throwable t) {

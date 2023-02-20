@@ -9,7 +9,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ChunkSection.class)
 public class ChunkSectionMixin {
-    @Inject(method = "isEmpty", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "isEmpty",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void nonEmptyForNewLight(CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.newLight) cir.setReturnValue(false);
     }

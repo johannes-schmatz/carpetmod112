@@ -22,17 +22,32 @@ public abstract class ServerWorldMixin extends World {
         super(levelProperties, levelProperties2, dimension, profiler, isClient);
     }
 
-    @Redirect(method = "updatePlayersSleeping", at = @At(value = "INVOKE", target = "Ljava/util/List;size()I", remap = false))
+    @Redirect(
+            method = "updateSleepingStatus",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/List;size()I",
+                    remap = false
+            )
+    )
     private int getPlayerListSize(List<PlayerEntity> list) {
         return CarpetSettings.sleepingThreshold < 100 ? 0 : list.size();
     }
 
-    @Inject(method = "method_33479", at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;", remap = false), cancellable = true)
+    @Inject(
+            method = "isReady",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/List;iterator()Ljava/util/Iterator;",
+                    remap = false
+            ),
+            cancellable = true
+    )
     private void sleepingThreshold(CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.sleepingThreshold < 100) {
             int players = 0;
             int sleeping = 0;
-            for (PlayerEntity player : field_23576) {
+            for (PlayerEntity player : playerEntities) {
                 if (player.isSpectator()) continue;
                 players++;
                 if (player.isSleepingLongEnough()) sleeping++;

@@ -1,15 +1,15 @@
 package carpet.helpers;
 
-import net.minecraft.container.CraftingTableContainer;
-import net.minecraft.container.Slot;
-import net.minecraft.container.SlotActionType;
+import net.minecraft.inventory.slot.Slot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.ContainerSlotUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
+import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.ItemAction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -19,7 +19,7 @@ import net.minecraft.world.World;
  * Auto crafting table tile entity class enabling autocrafting. When carpet rule enabled that tile
  * crafting table turns into a automatic crafting table where it can be used to automatically craft items.
  */
-public class ContainerAutoCraftingTable extends CraftingTableContainer {
+public class ContainerAutoCraftingTable extends CraftingScreenHandler {
     private final CraftingTableBlockEntity tileEntity;
     private final PlayerEntity player;
 
@@ -27,7 +27,7 @@ public class ContainerAutoCraftingTable extends CraftingTableContainer {
         super(playerInventory, world, pos);
         this.tileEntity = tileEntity;
         this.player = playerInventory.player;
-        field_22767.clear();
+        slots.clear();
         this.addSlot(new OutputSlot(this.tileEntity));
 
         for (int y = 0; y < 3; ++y) {
@@ -48,10 +48,10 @@ public class ContainerAutoCraftingTable extends CraftingTableContainer {
     }
 
     @Override
-    public ItemStack onSlotClick(int slotId, int dragType, SlotActionType clickTypeIn, PlayerEntity player) {
+    public ItemStack method_3252(int slotId, int dragType, ItemAction clickTypeIn, PlayerEntity player) {
         try {
             tileEntity.setPlayer(player);
-            return super.onSlotClick(slotId, dragType, clickTypeIn, player);
+            return super.method_3252(slotId, dragType, clickTypeIn, player);
         } finally {
             tileEntity.setPlayer(null);
         }
@@ -61,7 +61,7 @@ public class ContainerAutoCraftingTable extends CraftingTableContainer {
     public void onContentChanged(Inventory inv) {
         if (this.player instanceof ServerPlayerEntity) {
             ServerPlayNetworkHandler netHandler = ((ServerPlayerEntity) this.player).networkHandler;
-            netHandler.sendPacket(new ContainerSlotUpdateS2CPacket(this.syncId, 0, this.tileEntity.getInvStack(0)));
+            netHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(this.syncId, 0, this.tileEntity.getInvStack(0)));
         }
     }
 
@@ -102,7 +102,7 @@ public class ContainerAutoCraftingTable extends CraftingTableContainer {
         }
 
         @Override
-        protected void onTake(int amount) {
+        protected void method_13644(int amount) {
             ContainerAutoCraftingTable.this.tileEntity.takeInvStack(0, amount);
         }
     }

@@ -17,11 +17,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
     PoweredRailBlock.class
 })
 public class RailBlocksMixin {
-    @Inject(method = "rotate", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "withRotation",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void fixControlFlow(BlockState state, BlockRotation rot, CallbackInfoReturnable<BlockState> cir) {
         if (rot != BlockRotation.CLOCKWISE_180) return;
-        AbstractRailBlock.RailShape shape = state.get(RailBlock.SHAPE);
-        if (shape == AbstractRailBlock.RailShape.NORTH_SOUTH || shape == AbstractRailBlock.RailShape.EAST_WEST) {
+        AbstractRailBlock.RailShapeType shape = state.get(RailBlock.SHAPE);
+        if (shape == AbstractRailBlock.RailShapeType.NORTH_SOUTH || shape == AbstractRailBlock.RailShapeType.EAST_WEST) {
             // these don't change the state but the missing cases in vanilla fall through to COUNTERCLOCKWISE_90
             // leading to incorrect results
             cir.setReturnValue(state);

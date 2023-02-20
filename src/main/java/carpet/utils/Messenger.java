@@ -4,7 +4,7 @@ import carpet.CarpetSettings;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.EntityCategory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.ClickEvent;
@@ -55,23 +55,23 @@ public class Messenger
         comp.getStyle().setUnderline(style.indexOf('u')>=0);
         comp.getStyle().setBold(style.indexOf('b')>=0);
         comp.getStyle().setObfuscated(style.indexOf('o')>=0);
-        comp.getStyle().setColor(Formatting.WHITE);
-        if (style.indexOf('w')>=0) comp.getStyle().setColor(Formatting.WHITE); // not needed
-        if (style.indexOf('y')>=0) comp.getStyle().setColor(Formatting.YELLOW);
-        if (style.indexOf('m')>=0) comp.getStyle().setColor(Formatting.LIGHT_PURPLE);
-        if (style.indexOf('r')>=0) comp.getStyle().setColor(Formatting.RED);
-        if (style.indexOf('c')>=0) comp.getStyle().setColor(Formatting.AQUA);
-        if (style.indexOf('l')>=0) comp.getStyle().setColor(Formatting.GREEN);
-        if (style.indexOf('t')>=0) comp.getStyle().setColor(Formatting.BLUE);
-        if (style.indexOf('f')>=0) comp.getStyle().setColor(Formatting.DARK_GRAY);
-        if (style.indexOf('g')>=0) comp.getStyle().setColor(Formatting.GRAY);
-        if (style.indexOf('d')>=0) comp.getStyle().setColor(Formatting.GOLD);
-        if (style.indexOf('p')>=0) comp.getStyle().setColor(Formatting.DARK_PURPLE);
-        if (style.indexOf('n')>=0) comp.getStyle().setColor(Formatting.DARK_RED);
-        if (style.indexOf('q')>=0) comp.getStyle().setColor(Formatting.DARK_AQUA);
-        if (style.indexOf('e')>=0) comp.getStyle().setColor(Formatting.DARK_GREEN);
-        if (style.indexOf('v')>=0) comp.getStyle().setColor(Formatting.DARK_BLUE);
-        if (style.indexOf('k')>=0) comp.getStyle().setColor(Formatting.BLACK);
+        comp.getStyle().setFormatting(Formatting.WHITE);
+        if (style.indexOf('w')>=0) comp.getStyle().setFormatting(Formatting.WHITE); // not needed
+        if (style.indexOf('y')>=0) comp.getStyle().setFormatting(Formatting.YELLOW);
+        if (style.indexOf('m')>=0) comp.getStyle().setFormatting(Formatting.LIGHT_PURPLE);
+        if (style.indexOf('r')>=0) comp.getStyle().setFormatting(Formatting.RED);
+        if (style.indexOf('c')>=0) comp.getStyle().setFormatting(Formatting.AQUA);
+        if (style.indexOf('l')>=0) comp.getStyle().setFormatting(Formatting.GREEN);
+        if (style.indexOf('t')>=0) comp.getStyle().setFormatting(Formatting.BLUE);
+        if (style.indexOf('f')>=0) comp.getStyle().setFormatting(Formatting.DARK_GRAY);
+        if (style.indexOf('g')>=0) comp.getStyle().setFormatting(Formatting.GRAY);
+        if (style.indexOf('d')>=0) comp.getStyle().setFormatting(Formatting.GOLD);
+        if (style.indexOf('p')>=0) comp.getStyle().setFormatting(Formatting.DARK_PURPLE);
+        if (style.indexOf('n')>=0) comp.getStyle().setFormatting(Formatting.DARK_RED);
+        if (style.indexOf('q')>=0) comp.getStyle().setFormatting(Formatting.DARK_AQUA);
+        if (style.indexOf('e')>=0) comp.getStyle().setFormatting(Formatting.DARK_GREEN);
+        if (style.indexOf('v')>=0) comp.getStyle().setFormatting(Formatting.DARK_BLUE);
+        if (style.indexOf('k')>=0) comp.getStyle().setFormatting(Formatting.BLACK);
         return comp;
     }
     public static String heatmap_color(double actual, double reference)
@@ -82,17 +82,17 @@ public class Messenger
         if (actual > reference) color = "m";
         return color;
     }
-    public static String creatureTypeColor(SpawnGroup type)
+    public static String creatureTypeColor(EntityCategory type)
     {
         switch (type)
         {
             case MONSTER:
                 return "n";
-            case CREATURE:
+            case PASSIVE:
                 return "e";
             case AMBIENT:
                 return "f";
-            case WATER_CREATURE:
+            case AQUATIC:
                 return "v";
         }
         return "w";
@@ -233,7 +233,7 @@ public class Messenger
             previous_component = comp;
         }
         if (receiver != null)
-            receiver.sendSystemMessage(message);
+            receiver.sendMessage(message);
         return message;
     }
 
@@ -246,35 +246,35 @@ public class Messenger
         Text message = new LiteralText(text);
         _applyStyleToTextComponent(message, style);
         if (receiver != null)
-            receiver.sendSystemMessage(message);
+            receiver.sendMessage(message);
         return message;
     }
 
     public static void send(CommandSource receiver, Text ... messages) { send(receiver, Arrays.asList(messages)); }
     public static void send(CommandSource receiver, List<Text> list)
     {
-        list.forEach(receiver::sendSystemMessage);
+        list.forEach(receiver::sendMessage);
     }
 
     public static void print_server_message(MinecraftServer server, String message)
     {
         if (server == null)
-            CarpetSettings.LOG.error("Message not delivered: "+message);
-        server.sendSystemMessage(new LiteralText(message));
+            CarpetSettings.LOG.error("Message not delivered: {}", message);
+        server.sendMessage(new LiteralText(message));
         Text txt = m(null, "gi "+message);
-        for (PlayerEntity entityplayer : server.getPlayerManager().getPlayerList())
+        for (PlayerEntity player : server.getPlayerManager().getPlayers())
         {
-            entityplayer.sendSystemMessage(txt);
+            player.sendMessage(txt);
         }
     }
     public static void print_server_message(MinecraftServer server, Text message)
     {
         if (server == null)
-            CarpetSettings.LOG.error("Message not delivered: " + message.method_32275());
-        server.sendSystemMessage(message);
-        for (PlayerEntity entityplayer : server.getPlayerManager().getPlayerList())
+            CarpetSettings.LOG.error("Message not delivered: {}", message.asUnformattedString());
+        server.sendMessage(message);
+        for (PlayerEntity player : server.getPlayerManager().getPlayers())
         {
-            entityplayer.sendSystemMessage(message);
+            player.sendMessage(message);
         }
     }
 }

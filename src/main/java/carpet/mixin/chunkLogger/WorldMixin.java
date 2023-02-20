@@ -14,19 +14,32 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(World.class)
 public class WorldMixin {
-    @Inject(method = "updateHorizontalAdjacent", at = @At("HEAD"))
+    @Inject(
+            method = "updateHorizontalAdjacent",
+            at = @At("HEAD")
+    )
     private void onComparatorUpdate(BlockPos pos, Block blockIn, CallbackInfo ci) {
         CarpetClientChunkLogger.setReason("Comparator updates for inventory changes");
     }
 
-    @Inject(method = "updateHorizontalAdjacent", at = @At("RETURN"))
+    @Inject(
+            method = "updateHorizontalAdjacent",
+            at = @At("RETURN")
+    )
     private void onComparatorUpdateEnd(BlockPos pos, Block blockIn, CallbackInfo ci) {
         CarpetClientChunkLogger.resetReason();
     }
 
-    @Redirect(method = "tickBlockEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;remove(Lnet/minecraft/entity/Entity;)V"))
+    @Redirect(
+            method = "tickEntities",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/chunk/Chunk;removeEntity(Lnet/minecraft/entity/Entity;)V"
+            )
+    )
     private void logOnRemoveEntity(Chunk chunk, Entity entity) {
         CarpetClientChunkLogger.setReason(() -> "Removing entity from chunk: " + entity.getName());
-        chunk.remove(entity);
+        chunk.removeEntity(entity);
+        // TODO: reset logger?
     }
 }

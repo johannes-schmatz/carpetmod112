@@ -5,7 +5,7 @@ import carpet.helpers.PistonHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FacingBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.PistonBlock;
 import net.minecraft.block.piston.PistonHandler;
 import net.minecraft.util.math.BlockPos;
@@ -26,18 +26,40 @@ public class PistonBlockMixin extends FacingBlock {
         super(materialIn);
     }
 
-    @Redirect(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 1))
+    @Redirect(
+            method = "move",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z",
+                    ordinal = 1
+            )
+    )
     private boolean setBlockState1(World world, BlockPos pos, BlockState newState, int flags) {
         return CarpetSettings.movingBlockLightOptimization || world.setBlockState(pos, newState, flags);
     }
 
-    @Redirect(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 2))
+    @Redirect(
+            method = "move",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z",
+                    ordinal = 2
+            )
+    )
     private boolean setBlockState2(World world, BlockPos pos, BlockState newState, int flags) {
         return CarpetSettings.movingBlockLightOptimization || world.setBlockState(pos, newState, flags);
     }
 
     // Added the properties of opacity and light to the moving block as to minimize light updates. CARPET-XCOM
-    @Inject(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 2), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "move",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z",
+                    ordinal = 2
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void movingBlockLightOptimization(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir,
                                               PistonHandler helper, List<BlockPos> positions, List<BlockState> states, List<BlockPos> list2, int k, BlockState[] aiblockstate, Direction enumfacing, int index, BlockPos currentPos, BlockState currentState) {
         if (!CarpetSettings.movingBlockLightOptimization) return;
@@ -57,6 +79,6 @@ public class PistonBlockMixin extends FacingBlock {
         if (remove){
             worldIn.setBlockState(posOld, Blocks.AIR.getDefaultState(), 2);
         }
-        worldIn.method_26099(currentPos, movingBlock.getBlock());
+        worldIn.method_13693(currentPos, movingBlock.getBlock());
     }
 }

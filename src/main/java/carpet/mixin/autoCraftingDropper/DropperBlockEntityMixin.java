@@ -16,7 +16,7 @@ public class DropperBlockEntityMixin extends DispenserBlockEntity {
         if (CarpetSettings.autoCraftingDropper && world != null) {
             BlockState state = world.getBlockState(pos);
             if (state.getBlock() == Blocks.DROPPER && world.getBlockState(pos.offset(state.get(DispenserBlock.FACING))).getBlock() == Blocks.CRAFTING_TABLE) {
-                return this.getInvStackList().get(slot).isEmpty();
+                return this.method_13730().get(slot).isEmpty();
             }
         }
         return super.isValidInvStack(slot, stack);

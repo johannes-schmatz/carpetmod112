@@ -16,15 +16,15 @@ import org.spongepowered.asm.mixin.Mixin;
 @Mixin(FireChargeItem.class)
 public class FireChargeItemMixin extends Item {
     @Override
-    public TypedActionResult<ItemStack> use(World itemStackIn, PlayerEntity worldIn, Hand playerIn) {
-        if (!(CarpetSettings.rideableGhasts && worldIn.getVehicle() instanceof GhastEntity)) {
-            return super.use(itemStackIn, worldIn, playerIn);
+    public TypedActionResult<ItemStack> method_13649(World world, PlayerEntity player, Hand hand) {
+        if (!(CarpetSettings.rideableGhasts && player.getVehicle() instanceof GhastEntity)) {
+            return super.method_13649(world, player, hand);
         }
-        ItemStack itemstack = worldIn.getStackInHand(playerIn);
-        GhastEntity ghast = (GhastEntity) worldIn.getVehicle();
-        worldIn.getItemCooldownManager().set(this, 40);
-        GhastHelper.set_off_fball(ghast, itemStackIn, worldIn);
-        if (!worldIn.abilities.creativeMode) {
+        ItemStack itemstack = player.getStackInHand(hand);
+        GhastEntity ghast = (GhastEntity) player.getVehicle();
+        player.getItemCooldownManager().method_11384(this, 40);
+        GhastHelper.set_off_fball(ghast, world, player);
+        if (!player.abilities.creativeMode) {
             itemstack.decrement(1);
         }
         return new TypedActionResult<>(ActionResult.SUCCESS, itemstack);

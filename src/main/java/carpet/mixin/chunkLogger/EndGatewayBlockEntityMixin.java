@@ -11,12 +11,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EndGatewayBlockEntity.class)
 public class EndGatewayBlockEntityMixin {
-    @Inject(method = "findExitPortalPos", at = @At("HEAD"))
+    @Inject(
+            method = "method_11687",
+            at = @At("HEAD")
+    )
     private static void onFindExitPortalPosStart(World world, BlockPos pos, int range, boolean includeCenter, CallbackInfoReturnable<BlockPos> cir) {
         CarpetClientChunkLogger.setReason("End gateway looking for highest block");
     }
 
-    @Inject(method = "findExitPortalPos", at = @At("RETURN"))
+    @Inject(
+            method = "method_11687",
+            at = @At("RETURN")
+    )
     private static void onFindExitPortalPosEnd(World world, BlockPos pos, int range, boolean includeCenter, CallbackInfoReturnable<BlockPos> cir) {
         CarpetClientChunkLogger.resetReason();
     }

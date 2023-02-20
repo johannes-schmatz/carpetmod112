@@ -24,13 +24,17 @@ import java.util.List;
 @Mixin(RedstoneWireBlock.class)
 public abstract class RedstoneWireBlockMixin {
     @Shadow @Final public static IntProperty POWER;
-    @Shadow protected abstract BlockState method_26769(World worldIn, BlockPos pos, BlockState state);
-    @Shadow protected abstract int method_26761(World worldIn, BlockPos pos, int strength);
+    @Shadow protected abstract BlockState update(World worldIn, BlockPos pos, BlockState state);
+    @Shadow protected abstract int getPower(World worldIn, BlockPos pos, int strength);
 
     private final RedstoneWireTurbo turbo = new RedstoneWireTurbo((RedstoneWireBlock) (Object) this);
     private static final ThreadLocal<BlockPos> source = new ThreadLocal<>();
 
-    @Inject(method = "method_26769", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "update(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void updateSurroundingRedstone(World worldIn, BlockPos pos, BlockState state, CallbackInfoReturnable<BlockState> cir) {
         if (CarpetSettings.redstoneDustAlgorithm == CarpetSettings.RedstoneDustAlgorithm.fast) {
             cir.setReturnValue(turbo.updateSurroundingRedstone(worldIn, pos, state, source.get()));
@@ -38,25 +42,35 @@ public abstract class RedstoneWireBlockMixin {
     }
 
     @SuppressWarnings("ParameterCanBeLocal")
-    @Inject(method = "method_26762", at = @At(value = "FIELD", target = "Lnet/minecraft/block/RedstoneWireBlock;wiresGivePower:Z", ordinal = 1, shift = At.Shift.AFTER), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "update(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/block/RedstoneWireBlock;wiresGivePower:Z",
+                    ordinal = 1,
+                    shift = At.Shift.AFTER
+            ),
+            cancellable = true,
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void calculateCurrentChanges(World world, BlockPos pos1, BlockPos pos2, BlockState state, CallbackInfoReturnable<BlockState> cir, BlockState iblockstate, int i, int power, int fromNeighbors) {
         if (CarpetSettings.redstoneDustAlgorithm != CarpetSettings.RedstoneDustAlgorithm.fast) return;
         int maxCurrentStrength = 0;
         if (fromNeighbors < 15) {
-            for (Direction enumfacing : Direction.Type.HORIZONTAL) {
+            for (Direction enumfacing : Direction.DirectionType.HORIZONTAL) {
                 BlockPos blockpos = pos1.offset(enumfacing);
                 boolean isNeighbor = blockpos.getX() != pos2.getX() || blockpos.getZ() != pos2.getZ();
 
                 if (isNeighbor) {
-                    maxCurrentStrength = this.method_26761(world, blockpos, maxCurrentStrength);
+                    maxCurrentStrength = this.getPower(world, blockpos, maxCurrentStrength);
                 }
 
-                if (world.getBlockState(blockpos).isSolidBlock() && !world.getBlockState(pos1.up()).isSolidBlock()) {
+                if (world.getBlockState(blockpos).method_11734() && !world.getBlockState(pos1.up()).method_11734()) {
                     if (isNeighbor && pos1.getY() >= pos2.getY()) {
-                        maxCurrentStrength = this.method_26761(world, blockpos.up(), maxCurrentStrength);
+                        maxCurrentStrength = this.getPower(world, blockpos.up(), maxCurrentStrength);
                     }
-                } else if (!world.getBlockState(blockpos).isSolidBlock() && isNeighbor && pos1.getY() <= pos2.getY()) {
-                    maxCurrentStrength = this.method_26761(world, blockpos.down(), maxCurrentStrength);
+                } else if (!world.getBlockState(blockpos).method_11734() && isNeighbor && pos1.getY() <= pos2.getY()) {
+                    maxCurrentStrength = this.getPower(world, blockpos.down(), maxCurrentStrength);
                 }
             }
         }
@@ -72,28 +86,53 @@ public abstract class RedstoneWireBlockMixin {
         cir.setReturnValue(state);
     }
 
-    @Inject(method = "method_26769", at = @At(value = "INVOKE", target = "Ljava/util/Set;clear()V"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "update(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Set;clear()V"
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void shuffleUpdateOrder(World worldIn, BlockPos pos, BlockState state, CallbackInfoReturnable<BlockState> cir, List<BlockPos> list) {
         if (CarpetSettings.redstoneDustAlgorithm == CarpetSettings.RedstoneDustAlgorithm.random) {
             Collections.shuffle(list);
         }
     }
 
-    @Redirect(method = "onBlockRemoved", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;method_26769(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"))
+    @Redirect(
+            method = "onBreaking",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/RedstoneWireBlock;update(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"
+            )
+    )
     private BlockState updateOnBreak(RedstoneWireBlock wire, World worldIn, BlockPos pos, BlockState state) {
         source.set(null);
-        return method_26769(worldIn, pos, state);
+        return update(worldIn, pos, state);
     }
 
-    @Redirect(method = "neighborUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;method_26769(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"))
+    @Redirect(
+            method = "neighborUpdate",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/RedstoneWireBlock;update(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"
+            )
+    )
     private BlockState updateOnNeighborChanged(RedstoneWireBlock wire, World worldIn, BlockPos pos, BlockState state, BlockState state2, World worldIn2, BlockPos pos2, Block blockIn, BlockPos fromPos) {
         source.set(fromPos);
-        return method_26769(worldIn, pos, state);
+        return update(worldIn, pos, state);
     }
 
-    @Redirect(method = "onBlockAdded", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;method_26769(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"))
+    @Redirect(
+            method = "onCreation",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/RedstoneWireBlock;update(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"
+            )
+    )
     private BlockState updateOnBlockAdded(RedstoneWireBlock wire, World worldIn, BlockPos pos, BlockState state) {
         source.set(null);
-        return method_26769(worldIn, pos, state);
+        return update(worldIn, pos, state);
     }
 }

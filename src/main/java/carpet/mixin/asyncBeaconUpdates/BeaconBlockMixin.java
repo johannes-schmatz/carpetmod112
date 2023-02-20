@@ -1,7 +1,12 @@
 package carpet.mixin.asyncBeaconUpdates;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.*;
+
+import net.minecraft.block.BeaconBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.util.NetworkUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -16,10 +21,13 @@ public abstract class BeaconBlockMixin extends BlockWithEntity {
         super(material);
     }
 
-    @Inject(method = "neighborUpdate", at = @At("RETURN"))
+    @Inject(
+            method = "neighborUpdate",
+            at = @At("RETURN")
+    )
     private void asyncBeaconUpdates(BlockState state, World world, BlockPos pos, Block block, BlockPos neighborPos, CallbackInfo ci) {
         if (CarpetSettings.asyncBeaconUpdates && world.isReceivingRedstonePower(pos)) {
-            NetworkUtils.field_32712.submit(() -> world.updateNeighborsAlways(pos, this, true));
+            NetworkUtils.downloadExcecutor.submit(() -> world.method_13692(pos, this, true));
         }
     }
 }

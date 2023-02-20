@@ -2,11 +2,11 @@ package carpet.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
-import net.minecraft.block.MaterialColor;
-import net.minecraft.entity.ai.TargetFinder;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.material.MaterialColor;
+import net.minecraft.util.RandomVectorGenerator;
 import net.minecraft.entity.ai.goal.WanderAroundGoal;
-import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.PathAwareEntity;
 import net.minecraft.entity.mob.ZombiePigmanEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.BooleanProperty;
@@ -28,24 +28,24 @@ public class BlockInfo
 {
     public static String getSoundName(BlockSoundGroup stype)
     {
-        if (stype == BlockSoundGroup.WOOD   ) { return "WOOD"  ;   }
-        if (stype == BlockSoundGroup.GRAVEL ) { return "GRAVEL";   }
-        if (stype == BlockSoundGroup.GRASS  ) { return "GRASS" ;   }
+        if (stype == BlockSoundGroup.field_12759   ) { return "WOOD"  ;   }
+        if (stype == BlockSoundGroup.field_12760 ) { return "GRAVEL";   }
+        if (stype == BlockSoundGroup.field_12761  ) { return "GRASS" ;   }
         if (stype == BlockSoundGroup.STONE  ) { return "STONE" ;   }
-        if (stype == BlockSoundGroup.METAL  ) { return "METAL" ;   }
-        if (stype == BlockSoundGroup.GLASS  ) { return "GLASS" ;   }
-        if (stype == BlockSoundGroup.CLOTH  ) { return "WOOL"  ;   }
-        if (stype == BlockSoundGroup.SAND   ) { return "SAND"  ;   }
-        if (stype == BlockSoundGroup.SNOW   ) { return "SNOW"  ;   }
-        if (stype == BlockSoundGroup.LADDER ) { return "LADDER";   }
-        if (stype == BlockSoundGroup.ANVIL  ) { return "ANVIL" ;   }
-        if (stype == BlockSoundGroup.SLIME  ) { return "SLIME" ;   }
+        if (stype == BlockSoundGroup.field_12763  ) { return "METAL" ;   }
+        if (stype == BlockSoundGroup.field_12764  ) { return "GLASS" ;   }
+        if (stype == BlockSoundGroup.field_12765  ) { return "WOOL"  ;   }
+        if (stype == BlockSoundGroup.field_12766   ) { return "SAND"  ;   }
+        if (stype == BlockSoundGroup.field_12767   ) { return "SNOW"  ;   }
+        if (stype == BlockSoundGroup.field_12768 ) { return "LADDER";   }
+        if (stype == BlockSoundGroup.field_12769  ) { return "ANVIL" ;   }
+        if (stype == BlockSoundGroup.field_12770  ) { return "SLIME" ;   }
         return "Something new";
     }
 
     private static String getMapColourName(MaterialColor colour)
     {
-        if (colour == MaterialColor.CLEAR        ) { return "AIR"        ; }
+        if (colour == MaterialColor.AIR        ) { return "AIR"        ; }
         if (colour == MaterialColor.GRASS      ) { return "GRASS"      ; }
         if (colour == MaterialColor.SAND       ) { return "SAND"       ; }
         if (colour == MaterialColor.WEB      ) { return "WOOL"       ; }
@@ -87,56 +87,57 @@ public class BlockInfo
     private static String getMaterialName(Material material)
     {
         if (material == Material.AIR             ) { return "AIR"            ; }
-        if (material == Material.SOLID_ORGANIC           ) { return "GRASS"          ; }
-        if (material == Material.SOIL          ) { return "DIRT"           ; }
+        if (material == Material.GRASS           ) { return "GRASS"          ; }
+        if (material == Material.DIRT          ) { return "DIRT"           ; }
         if (material == Material.WOOD            ) { return "WOOD"           ; }
         if (material == Material.STONE            ) { return "STONE"          ; }
-        if (material == Material.METAL            ) { return "IRON"           ; }
-        if (material == Material.REPAIR_STATION           ) { return "ANVIL"          ; }
+        if (material == Material.IRON            ) { return "IRON"           ; }
+        if (material == Material.ANVIL           ) { return "ANVIL"          ; }
         if (material == Material.WATER           ) { return "WATER"          ; }
         if (material == Material.LAVA            ) { return "LAVA"           ; }
-        if (material == Material.LEAVES          ) { return "LEAVES"         ; }
+        if (material == Material.FOILAGE          ) { return "LEAVES"         ; }
         if (material == Material.PLANT          ) { return "PLANTS"         ; }
         if (material == Material.REPLACEABLE_PLANT            ) { return "VINE"           ; }
         if (material == Material.SPONGE          ) { return "SPONGE"         ; }
         if (material == Material.WOOL           ) { return "WOOL"           ; }
         if (material == Material.FIRE            ) { return "FIRE"           ; }
-        if (material == Material.AGGREGATE            ) { return "SAND"           ; }
-        if (material == Material.SUPPORTED        ) { return "REDSTONE_COMPONENT"; }
+        if (material == Material.SAND            ) { return "SAND"           ; }
+        if (material == Material.DECORATION        ) { return "REDSTONE_COMPONENT"; }
         if (material == Material.CARPET          ) { return "CARPET"         ; }
         if (material == Material.GLASS           ) { return "GLASS"          ; }
         if (material == Material.REDSTONE_LAMP  ) { return "REDSTONE_LAMP"  ; }
         if (material == Material.TNT             ) { return "TNT"            ; }
-        if (material == Material.UNUSED_PLANT           ) { return "CORAL"          ; }
+        if (material == Material.SWORD           ) { return "CORAL"          ; }
         if (material == Material.ICE             ) { return "ICE"            ; }
-        if (material == Material.DENSE_ICE      ) { return "PACKED_ICE"     ; }
+        if (material == Material.PACKED_ICE      ) { return "PACKED_ICE"     ; }
         if (material == Material.SNOW_LAYER            ) { return "SNOW_LAYER"     ; }
-        if (material == Material.SNOW_BLOCK    ) { return "SNOW"           ; }
+        if (material == Material.SNOW    ) { return "SNOW"           ; }
         if (material == Material.CACTUS          ) { return "CACTUS"         ; }
-        if (material == Material.ORGANIC_PRODUCT            ) { return "CLAY"           ; }
-        if (material == Material.GOURD           ) { return "GOURD"          ; }
+        if (material == Material.CLAY            ) { return "CLAY"           ; }
+        if (material == Material.PUMPKIN           ) { return "GOURD"          ; }
         if (material == Material.EGG      ) { return "DRAGON_EGG"     ; }
         if (material == Material.PORTAL          ) { return "PORTAL"         ; }
         if (material == Material.CAKE            ) { return "CAKE"           ; }
         if (material == Material.COBWEB             ) { return "COBWEB"         ; }
         if (material == Material.PISTON          ) { return "PISTON"         ; }
         if (material == Material.BARRIER         ) { return "BARRIER"        ; }
-        if (material == Material.STRUCTURE_VOID  ) { return "STRUCTURE"      ; }
+        if (material == Material.CAVE_AIR  ) { return "STRUCTURE"      ; }
         return "Something new";
     }
 
     public static <T extends Comparable<T>> Text formatBlockProperty(Property<T> prop, T value) {
         Text name = new LiteralText( prop.getName()+ "=");
         Text valueText = new LiteralText(prop.name(value));
-        if (prop instanceof DirectionProperty) valueText.getStyle().setColor(Formatting.GOLD);
-        else if (prop instanceof BooleanProperty) valueText.getStyle().setColor((Boolean) value ? Formatting.GREEN : Formatting.RED);
-        else if (prop instanceof IntProperty) valueText.getStyle().setColor(Formatting.GREEN);
+        if (prop instanceof DirectionProperty) valueText.getStyle().setFormatting(Formatting.GOLD);
+        else if (prop instanceof BooleanProperty) valueText.getStyle().setFormatting((Boolean) value ? Formatting.GREEN :
+                Formatting.RED);
+        else if (prop instanceof IntProperty) valueText.getStyle().setFormatting(Formatting.GREEN);
         return name.append(valueText);
     }
 
     public static Text formatBoolean(boolean value) {
         Text component = new LiteralText(Boolean.toString(value));
-        component.getStyle().setColor(value ? Formatting.GREEN : Formatting.RED);
+        component.getStyle().setFormatting(value ? Formatting.GREEN : Formatting.RED);
         return component;
     }
 
@@ -152,46 +153,47 @@ public class BlockInfo
         }
         Text stateInfo = new LiteralText("");
         boolean first = true;
-        for (Map.Entry<Property<?>, Comparable<?>> entry : state.getEntries().entrySet()) {
+        for (Map.Entry<Property<?>, Comparable<?>> entry : state.getPropertyMap().entrySet()) {
             if (!first) {
                 stateInfo.append(", ");
             }
             first = false;
             stateInfo.append(formatBlockProperty((Property) entry.getKey(), (Comparable) entry.getValue()));
         }
+        // TODO: rewrite with normal strings
         List<Text> lst = new ArrayList<>();
         lst.add(Messenger.s(null, ""));
         lst.add(Messenger.s(null, "====================================="));
-        lst.add(Messenger.s(null, String.format("Block info for %s%s (id %d%s):",Block.REGISTRY.getId(block),metastring, Block.getId(block), metastring )));
+        lst.add(Messenger.s(null, String.format("Block info for %s%s (id %d%s):",Block.REGISTRY.getIdentifier(block),metastring, Block.getIdByBlock(block), metastring )));
         lst.add(Messenger.m(null, "w  - State: ", stateInfo));
         lst.add(Messenger.s(null, String.format(" - Material: %s", getMaterialName(material))));
-        lst.add(Messenger.s(null, String.format(" - Map colour: %s", getMapColourName(state.getColor(world, pos)))));
+        lst.add(Messenger.s(null, String.format(" - Map colour: %s", getMapColourName(state.getMaterialColor(world, pos)))));
         lst.add(Messenger.s(null, String.format(" - Sound type: %s", getSoundName(block.getSoundGroup()))));
         lst.add(Messenger.s(null, ""));
-        lst.add(Messenger.m(null, "w  - Full block: ", formatBoolean(state.isOpaque())));
-        lst.add(Messenger.m(null, "w  - Full cube: ", formatBoolean(state.isFullCube())));
-        lst.add(Messenger.m(null, "w  - Normal cube: ", formatBoolean(state.isSolidBlock())));
-        lst.add(Messenger.m(null, "w  - Block normal cube: ", formatBoolean(state.isSolidFullCube())));
-        lst.add(Messenger.m(null, "w  - Is liquid: ", formatBoolean(material.isLiquid())));
+        lst.add(Messenger.m(null, "w  - Full block: ", formatBoolean(state.isFullBlock())));
+        lst.add(Messenger.m(null, "w  - Full cube: ", formatBoolean(state.method_11730())));
+        lst.add(Messenger.m(null, "w  - Normal cube: ", formatBoolean(state.method_11734())));
+        lst.add(Messenger.m(null, "w  - Block normal cube: ", formatBoolean(state.method_11733())));
+        lst.add(Messenger.m(null, "w  - Is liquid: ", formatBoolean(material.isFluid())));
         lst.add(Messenger.m(null, "w  - Is solid: ", formatBoolean(material.isSolid())));
         lst.add(Messenger.s(null, ""));
-        lst.add(Messenger.s(null, String.format(" - Light in: %d, above: %d", world.method_26136(pos), world.method_26136(pos.up()))));
+        lst.add(Messenger.s(null, String.format(" - Light in: %d, above: %d", world.getLightLevel(pos), world.getLightLevel(pos.up()))));
         lst.add(Messenger.s(null, String.format(" - Brightness in: %.2f, above: %.2f", world.getBrightness(pos), world.getBrightness(pos.up()))));
         lst.add(Messenger.m(null, "w  - Is opaque: ", formatBoolean(material.isOpaque())));
         lst.add(Messenger.s(null, String.format(" - Light opacity: %d", state.getOpacity())));
-        lst.add(Messenger.m(null, "w  - Blocks light: ", formatBoolean(material.allowsLight())));
+        lst.add(Messenger.m(null, "w  - Blocks light: ", formatBoolean(material.isTransluscent())));
         lst.add(Messenger.s(null, String.format(" - Emitted light: %d", state.getLuminance())));
-        lst.add(Messenger.m(null, "w  - Picks neighbour light value: ", formatBoolean(state.usesNeighbourLight())));
+        lst.add(Messenger.m(null, "w  - Picks neighbour light value: ", formatBoolean(state.useNeighbourLight())));
         lst.add(Messenger.s(null, ""));
-        lst.add(Messenger.m(null, "w  - Causes suffocation: ", formatBoolean(state.shouldSuffocate())));
-        lst.add(Messenger.m(null, "w  - Blocks movement: ", formatBoolean(!block.method_26420(world, pos))));
+        lst.add(Messenger.m(null, "w  - Causes suffocation: ", formatBoolean(state.method_13763())));
+        lst.add(Messenger.m(null, "w  - Blocks movement: ", formatBoolean(!block.canBePlacedAtPos(world, pos)))); // isReplaceable
         lst.add(Messenger.m(null, "w  - Can burn: ", formatBoolean(material.isBurnable())));
-        lst.add(Messenger.m(null, "w  - Requires a tool: ", formatBoolean(!material.canBreakByHand())));
+        lst.add(Messenger.m(null, "w  - Requires a tool: ", formatBoolean(!material.doesBlockMovement()))); // doesRequiresTool
         lst.add(Messenger.s(null, String.format(" - Hardness: %.2f", state.getHardness(world, pos))));
         lst.add(Messenger.s(null, String.format(" - Blast resistance: %.2f", block.getBlastResistance(null))));
-        lst.add(Messenger.m(null, "w  - Ticks randomly: ", formatBoolean(block.hasRandomTicks())));
+        lst.add(Messenger.m(null, "w  - Ticks randomly: ", formatBoolean(block.ticksRandomly())));
         lst.add(Messenger.s(null, ""));
-        lst.add(Messenger.m(null, "w  - Can provide power: ", formatBoolean(state.emitsRedstonePowe())));
+        lst.add(Messenger.m(null, "w  - Can provide power: ", formatBoolean(state.emitsRedstonePower())));
         lst.add(Messenger.s(null, String.format(" - Strong power level: %d", world.getReceivedStrongRedstonePower(pos))));
         lst.add(Messenger.s(null, String.format(" - Redstone power level: %d", world.getReceivedRedstonePower(pos))));
         lst.add(Messenger.s(null, ""));
@@ -210,7 +212,7 @@ public class BlockInfo
         for (int i=0; i<1000; i++)
         {
 
-            Vec3d vec = TargetFinder.findTarget(creature, 10, 7);
+            Vec3d vec = RandomVectorGenerator.method_2799(creature, 10, 7);
             if (vec == null)
             {
                 continue;

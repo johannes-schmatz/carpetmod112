@@ -10,7 +10,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PistonBlockEntity.class)
 public class PistonBlockEntityMixin {
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(
+            method = "tick",
+            at = @At("HEAD")
+    )
     private void onUpdate(CallbackInfo ci) {
         if (CarpetSettings.pistonClippingFix > 0) PistonFixes.synchronizeClient();
     }

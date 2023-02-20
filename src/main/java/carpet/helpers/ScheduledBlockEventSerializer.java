@@ -3,12 +3,13 @@ package carpet.helpers;
 import carpet.CarpetSettings;
 import carpet.mixin.accessors.ServerWorldAccessor;
 import net.minecraft.block.Block;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.BlockAction;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.storage.PersistentState;
+import net.minecraft.world.PersistentState;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
@@ -26,24 +27,25 @@ public class ScheduledBlockEventSerializer extends PersistentState {
         super(name);
     }
 
-    public void fromTag(CompoundTag nbt) {
-        ListTag nbttaglist = nbt.getList("blockEvents", 10);
+    public void fromNbt(NbtCompound nbt) {
+        NbtList nbttaglist = nbt.getList("blockEvents", 10);
         for (int i = 0; i < nbttaglist.size(); ++i) {
-            CompoundTag nbttagcompound = nbttaglist.getCompound(i);
-            BlockAction blockeventdata = new BlockAction(new BlockPos(nbttagcompound.getInt("X"), nbttagcompound.getInt("Y"), nbttagcompound.getInt("Z")), Block.getBlockFromRawId(nbttagcompound.getInt("B") & 4095), nbttagcompound.getInt("ID"), nbttagcompound.getInt("P"));
+            NbtCompound nbttagcompound = nbttaglist.getCompound(i);
+            BlockAction blockeventdata = new BlockAction(new BlockPos(nbttagcompound.getInt("X"), nbttagcompound.getInt("Y"), nbttagcompound.getInt("Z")),
+                    Block.getById(nbttagcompound.getInt("B") & 4095), nbttagcompound.getInt("ID"), nbttagcompound.getInt("P"));
             list.add(blockeventdata);
         }
     }
 
-    public CompoundTag toTag(CompoundTag compound) {
-        ListTag nbttaglist = new ListTag();
+    public NbtCompound toNbt(NbtCompound compound) {
+        NbtList nbttaglist = new NbtList();
         if(CarpetSettings.blockEventSerializer) {
             for (BlockAction blockeventdata : getBlockEventQueue(world)) {
-                CompoundTag nbttagcompound = new CompoundTag();
+                NbtCompound nbttagcompound = new NbtCompound();
                 nbttagcompound.putInt("X", blockeventdata.getPos().getX());
                 nbttagcompound.putInt("Y", blockeventdata.getPos().getY());
                 nbttagcompound.putInt("Z", blockeventdata.getPos().getZ());
-                nbttagcompound.putInt("B", Block.getId(blockeventdata.getBlock()) & 4095);
+                nbttagcompound.putInt("B", Block.getIdByBlock(blockeventdata.getBlock()) & 4095);
                 nbttagcompound.putInt("ID", blockeventdata.getType());
                 nbttagcompound.putInt("P", blockeventdata.getData());
                 nbttaglist.add(nbttagcompound);
@@ -79,19 +81,19 @@ public class ScheduledBlockEventSerializer extends PersistentState {
         }
 
         /**
-         * Searches for the {@link MethodHandle} accessing the field {@link WorldServer#blockEventQueue}
-         * @return a {@link MethodHandle} of type {@code ()[Lnet/minecraft/world/WorldServer$ServerBlockEventList;}
+         * Searches for the {@link MethodHandle} accessing the field {@link ServerWorld#field_2815}
+         * @return a {@link MethodHandle} of type {@code ()[Lnet/minecraft/world/ServerWorld$BlockActionList;}
          */
         private static MethodHandle getMethodHandle() {
             MethodHandles.Lookup lookup = MethodHandles.lookup();
             Class<?> worldServerCls = ServerWorld.class;
             for (Field f : worldServerCls.getDeclaredFields()) {
                 Class<?> type = f.getType();
-                // We're looking for WorldServer.ServerBlockEventList[] which is an array
+                // We're looking for ServerWorld.BlockActionList[] which is an array
                 if (!type.isArray()) continue;
                 Class<?> baseCls = type.getComponentType();
                 if (baseCls.getEnclosingClass() != worldServerCls) continue;
-                // WorldServer.ServerBlockEventList is the only inner class of WorldServer so this should be the field we want
+                // ServerWorld.BlockActionList is the only inner class of ServerWorld so this should be the field we want
                 try {
                     f.setAccessible(true);
                     return lookup.unreflectGetter(f);

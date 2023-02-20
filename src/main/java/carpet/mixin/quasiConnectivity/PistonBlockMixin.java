@@ -12,7 +12,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PistonBlock.class)
 public class PistonBlockMixin {
-    @Inject(method = "shouldExtend", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/BlockPos;up()Lnet/minecraft/util/math/BlockPos;"), cancellable = true)
+    @Inject(
+            method = "shouldExtend",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/math/BlockPos;up()Lnet/minecraft/util/math/BlockPos;"
+            ),
+            cancellable = true
+    )
     private void quasiConnectivity(World worldIn, BlockPos pos, Direction facing, CallbackInfoReturnable<Boolean> cir) {
         if (!CarpetSettings.quasiConnectivity) cir.setReturnValue(false);
     }

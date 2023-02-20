@@ -4,7 +4,7 @@ import carpet.CarpetSettings;
 import carpet.helpers.HopperCounter;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.ColoredBlock;
+import net.minecraft.block.WoolBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.DyeColor;
@@ -75,6 +75,6 @@ public class WoolTool
     {
         BlockState state = worldIn.getBlockState(pos);
         if (state.getBlock() != Blocks.WOOL) return null;
-        return state.get(ColoredBlock.COLOR);
+        return state.get(WoolBlock.COLOR);
     }
 }

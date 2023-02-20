@@ -10,7 +10,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(TntBlock.class)
 public class TntBlockMixin {
-    @Redirect(method = "onBlockAdded", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;isReceivingRedstonePower(Lnet/minecraft/util/math/BlockPos;)Z"))
+    @Redirect(
+            method = "onCreation",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;isReceivingRedstonePower(Lnet/minecraft/util/math/BlockPos;)Z"
+            )
+    )
     private boolean activateOnPlaced(World world, BlockPos pos) {
         // Carpet setting to remove updates when tnt is placed CARPET-XCOM
         return !CarpetSettings.TNTDoNotUpdate && world.isReceivingRedstonePower(pos);

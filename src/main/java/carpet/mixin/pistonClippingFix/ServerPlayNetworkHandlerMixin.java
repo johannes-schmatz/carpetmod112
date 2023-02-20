@@ -3,7 +3,7 @@ package carpet.mixin.pistonClippingFix;
 import carpet.CarpetSettings;
 import carpet.utils.extensions.ExtendedPlayerPistonClipping;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +27,13 @@ public class ServerPlayNetworkHandlerMixin {
     }
 
     // [CM] PistonClippingFix -- Added PistonClippingcounter check to the if statement
-    @Redirect(method = "onPlayerMove", at = @At(value = "FIELD", target = "Lnet/minecraft/server/network/ServerPlayerEntity;noClip:Z"))
+    @Redirect(
+            method = "onPlayerMove",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;noClip:Z"
+            )
+    )
     private boolean isNoClip(ServerPlayerEntity player) {
         return player.noClip || ((ExtendedPlayerPistonClipping) player).getClippingCounter() > 0;
     }

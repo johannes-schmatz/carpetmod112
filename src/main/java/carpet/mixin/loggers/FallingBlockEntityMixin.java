@@ -19,14 +19,20 @@ public abstract class FallingBlockEntityMixin extends Entity {
         super(worldIn);
     }
 
-    @Inject(method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/block/BlockState;)V", at = @At("RETURN"))
+    @Inject(
+            method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/block/BlockState;)V",
+            at = @At("RETURN")
+    )
     private void onInit(World worldIn, double x, double y, double z, BlockState fallingBlockState, CallbackInfo ci) {
         if (LoggerRegistry.__fallingBlocks) {
             logHelper = new TrajectoryLogHelper("fallingBlocks");
         }
     }
 
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(
+            method = "tick",
+            at = @At("HEAD")
+    )
     private void onUpdate(CallbackInfo ci) {
         if (LoggerRegistry.__fallingBlocks && logHelper != null) {
             logHelper.onTick(x, y, z, velocityX, velocityY, velocityZ);

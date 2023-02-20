@@ -9,9 +9,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
-import carpet.mixin.accessors.ServerChunkCacheAccessor;
+import carpet.mixin.accessors.ServerChunkProviderAccessor;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
@@ -40,15 +40,15 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerChunkCache;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ColumnPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkCache;
+import net.minecraft.world.chunk.ChunkProvider;
+import net.minecraft.world.chunk.ServerChunkProvider;
 
 /**
  * An adapter to Minecraft worlds for WorldEdit.
@@ -115,21 +115,21 @@ class CarpetWorld extends AbstractWorld {
         int z = position.getBlockZ();
 
         // First set the block
-        Chunk chunk = world.method_25975(x >> 4, z >> 4);
+        Chunk chunk = world.getChunk(x >> 4, z >> 4);
         BlockState oldState = Blocks.AIR.getDefaultState();
 
         if (notifyAndLight) {
             oldState = chunk.getBlockState(x & 15, y, z & 15);
         }
 
-        BlockState newState = Block.getBlockFromRawId(block.getId()).getDefaultState(block.getData());
-        boolean successful = chunk.method_27373(new BlockPos(x & 15, y, z & 15), newState) != null;
+        BlockState newState = Block.getById(block.getId()).stateFromData(block.getData());
+        boolean successful = chunk.getBlockState(new BlockPos(x & 15, y, z & 15), newState) != null; // setBlockState
 
         // Create the TileEntity
         if (successful) {
             CompoundTag tag = block.getNbtData();
             if (tag != null) {
-                net.minecraft.nbt.CompoundTag nativeTag = NBTConverter.toNative(tag);
+                net.minecraft.nbt.NbtCompound nativeTag = NBTConverter.toNative(tag);
                 nativeTag.putString("id", block.getNbtId());
                 TileEntityUtils.setTileEntity(getWorld(), position, nativeTag);
             }
@@ -138,13 +138,13 @@ class CarpetWorld extends AbstractWorld {
         BlockPos pos = new BlockPos(x, y, z);
         if (notifyAndLight) {
             if (newState.getOpacity() != oldState.getOpacity() || newState.getLuminance() != oldState.getLuminance())
-                world.method_26153(pos);
+                world.method_8568(pos);
         }
-        world.updateListeners(pos, oldState, newState, 3);
+        world.method_11481(pos, oldState, newState, 3);
         if (notifyAndLight) {
-            world.method_26017(pos, oldState.getBlock(), true);
+            world.method_8531(pos, oldState.getBlock(), true);
 
-            if (newState.hasComparatorOutput()) {
+            if (newState.method_11736()) {
                 world.updateHorizontalAdjacent(pos, newState.getBlock());
             }
         }
@@ -155,7 +155,7 @@ class CarpetWorld extends AbstractWorld {
     @Override
     public int getBlockLightLevel(Vector position) {
         checkNotNull(position);
-        return getWorld().getLightLevel(LightType.BLOCK, new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()));
+        return getWorld().getLightAtPos(LightType.BLOCK, new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()));
     }
 
     @Override
@@ -176,7 +176,7 @@ class CarpetWorld extends AbstractWorld {
     @Override
     public BaseBiome getBiome(Vector2D position) {
         checkNotNull(position);
-        return new BaseBiome(Biome.getRawId(getWorld().getBiome(new BlockPos(position.getBlockX(), 0, position.getBlockZ()))));
+        return new BaseBiome(Biome.getBiomeIndex(getWorld().getBiome(new BlockPos(position.getBlockX(), 0, position.getBlockZ()))));
     }
 
     @Override
@@ -185,9 +185,9 @@ class CarpetWorld extends AbstractWorld {
         checkNotNull(biome);
 
         BlockPos pos = new BlockPos(position.getBlockX(), 0, position.getBlockZ());
-        if (getWorld().canSetBlock(pos)) {
-            Chunk chunk = getWorld().getWorldChunk(pos);
-            chunk.method_27418()[((position.getBlockZ() & 0xF) << 4 | position.getBlockX() & 0xF)] = (byte) biome.getId();
+        if (getWorld().blockExists(pos)) {
+            Chunk chunk = getWorld().getChunk(pos);
+            chunk.getBiomeArray()[((position.getBlockZ() & 0xF) << 4 | position.getBlockX() & 0xF)] = (byte) biome.getId();
             return true;
         }
 
@@ -226,11 +226,11 @@ class CarpetWorld extends AbstractWorld {
             }
             try {
                 Set<Vector2D> chunks = region.getChunks();
-                ChunkCache provider = getWorld().getChunkManager();
-                if (!(provider instanceof ServerChunkCache)) {
+                ChunkProvider provider = getWorld().getChunkProvider();
+                if (!(provider instanceof ServerChunkProvider)) {
                     return false;
                 }
-                ServerChunkCache chunkServer = (ServerChunkCache) provider;
+                ServerChunkProvider chunkServer = (ServerChunkProvider) provider;
                 /*
                 Field u;
                 try {
@@ -240,7 +240,7 @@ class CarpetWorld extends AbstractWorld {
                 }
                 u.setAccessible(true);
                 */
-                Set<Long> unloadQueue = ((ServerChunkCacheAccessor) chunkServer).getDroppedChunks();
+                Set<Long> unloadQueue = ((ServerChunkProviderAccessor) chunkServer).getDroppedChunks();
                 /*
                 Field m;
                 try {
@@ -250,7 +250,7 @@ class CarpetWorld extends AbstractWorld {
                 }
                 m.setAccessible(true);
                 */
-                Long2ObjectMap<Chunk> loadedMap = ((ServerChunkCacheAccessor) chunkServer).getLoadedChunksMap();
+                Long2ObjectMap<Chunk> loadedMap = ((ServerChunkProviderAccessor) chunkServer).getLoadedChunksMap();
                 /*
                 Field lc;
                 try {
@@ -273,15 +273,15 @@ class CarpetWorld extends AbstractWorld {
                 //IChunkGenerator chunkProvider = chunkServer.chunkGenerator;
 
                 for (Vector2D coord : chunks) {
-                    long pos = ColumnPos.method_25891(coord.getBlockX(), coord.getBlockZ());
+                    long pos = ChunkPos.getIdFromCoords(coord.getBlockX(), coord.getBlockZ());
                     Chunk mcChunk;
-                    if (chunkServer.method_33456(coord.getBlockX(), coord.getBlockZ())) {
-                        mcChunk = chunkServer.method_33452(coord.getBlockX(), coord.getBlockZ());
-                        mcChunk.method_27398();
+                    if (chunkServer.isChunkGenerated(coord.getBlockX(), coord.getBlockZ())) {
+                        mcChunk = chunkServer.getLoadedChunk(coord.getBlockX(), coord.getBlockZ());
+                        mcChunk.unloadFromWorld();
                     }
                     unloadQueue.remove(pos);
                     loadedMap.remove(pos);
-                    mcChunk = chunkServer.method_27347(coord.getBlockX(), coord.getBlockZ());
+                    mcChunk = chunkServer.getOrGenerateChunks(coord.getBlockX(), coord.getBlockZ());
                     loadedMap.put(pos, mcChunk);
                     //loaded.add(mcChunk);
                     /*
@@ -327,7 +327,7 @@ class CarpetWorld extends AbstractWorld {
 
     @Override
     public boolean isValidBlockType(int id) {
-        return (id == 0) || (net.minecraft.block.Block.getBlockFromRawId(id) != null);
+        return (id == 0) || (net.minecraft.block.Block.getById(id) != null);
     }
 
     @Override
@@ -335,7 +335,7 @@ class CarpetWorld extends AbstractWorld {
         World world = getWorld();
         BlockPos pos = new BlockPos(position.getBlockX(), position.getBlockY(), position.getZ());
         BlockState state = world.getBlockState(pos);
-        int id = Block.getId(state.getBlock());
+        int id = Block.getIdByBlock(state.getBlock());
         int data = state.getBlock().getMeta(state);
         BlockEntity tile = getWorld().getBlockEntity(pos);
 
@@ -350,7 +350,7 @@ class CarpetWorld extends AbstractWorld {
     public BaseBlock getLazyBlock(Vector position) {
         World world = getWorld();
         BlockState state = world.getBlockState(new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()));
-        int id = Block.getId(state.getBlock());
+        int id = Block.getIdByBlock(state.getBlock());
         int data = state.getBlock().getMeta(state);
         return new LazyBlock(id, data, this, position);
     }
@@ -380,7 +380,7 @@ class CarpetWorld extends AbstractWorld {
     public List<? extends Entity> getEntities(Region region) {
         List<Entity> entities = new ArrayList();
         World world = getWorld();
-        List<net.minecraft.entity.Entity> ents = world.field_23572;
+        List<net.minecraft.entity.Entity> ents = world.loadedEntities;
         for (net.minecraft.entity.Entity entity : ents) {
             if (region.contains(new Vector(entity.x, entity.y, entity.z))) {
                 entities.add(new CarpetEntity(entity));
@@ -392,7 +392,7 @@ class CarpetWorld extends AbstractWorld {
     @Override
     public List<? extends Entity> getEntities() {
         List<Entity> entities = new ArrayList();
-        for (Object entity : getWorld().field_23572) {
+        for (Object entity : getWorld().entities) {
             entities.add(new CarpetEntity((net.minecraft.entity.Entity) entity));
         }
         return entities;
@@ -406,11 +406,11 @@ class CarpetWorld extends AbstractWorld {
         if (createdEntity != null) {
             CompoundTag nativeTag = entity.getNbtData();
             if (nativeTag != null) {
-                net.minecraft.nbt.CompoundTag tag = NBTConverter.toNative(entity.getNbtData());
+                net.minecraft.nbt.NbtCompound tag = NBTConverter.toNative(entity.getNbtData());
                 for (String name : Constants.NO_COPY_ENTITY_NBT_FIELDS) {
                     tag.remove(name);
                 }
-                createdEntity.fromTag(tag);
+                createdEntity.fromNbt(tag);
             }
 
             createdEntity.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());

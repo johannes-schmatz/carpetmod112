@@ -3,11 +3,11 @@ package carpet.mixin.ridingPlayerUpdateFix;
 import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.LlamaEntity;
+import net.minecraft.entity.LlamaEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,12 +24,18 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         super(worldIn, gameProfileIn);
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancement/criterion/TickCriterion;trigger(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/class_3238;method_14413(Lnet/minecraft/entity/player/ServerPlayerEntity;)V"
+            )
+    )
     private void ridingPlayerUpdateFix(CallbackInfo ci) {
         if (CarpetSettings.ridingPlayerUpdateFix) {
             Entity riding = getRootVehicle();
             if (riding instanceof AbstractMinecartEntity || riding instanceof LlamaEntity){
-                this.server.getPlayerManager().updateCameraPosition((ServerPlayerEntity) (Object) this);
+                this.server.getPlayerManager().method_2003((ServerPlayerEntity) (Object) this);
             }
         }
     }

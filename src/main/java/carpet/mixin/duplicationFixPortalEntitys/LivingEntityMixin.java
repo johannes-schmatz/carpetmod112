@@ -15,7 +15,11 @@ public abstract class LivingEntityMixin extends Entity {
         super(worldIn);
     }
 
-    @Inject(method = "canDropLootAndXp", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "shouldDropXp",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void dupeFix(CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.duplicationFixPortalEntitys && removed) cir.setReturnValue(false);
     }

@@ -22,12 +22,16 @@ import java.util.List;
 
 @Mixin(PistonBlockEntity.class)
 public abstract class PistonBlockEntityMixin extends BlockEntity {
-    @Shadow public abstract Box method_27144(BlockView p_184321_1_, BlockPos p_184321_2_);
+    @Shadow public abstract Box method_11701(BlockView p_184321_1_, BlockPos p_184321_2_);
     @Shadow private boolean extending;
-    @Shadow private Direction facing;
+    @Shadow private Direction direction;
     @Shadow private BlockState pushedBlock;
 
-    @Inject(method = "method_27160", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "method_13758",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void pocketPushing(float nextProgress, CallbackInfo ci) {
         if (CarpetSettings.pocketPushing) {
             translocateCollidedEntities();
@@ -36,10 +40,10 @@ public abstract class PistonBlockEntityMixin extends BlockEntity {
     }
 
     private void translocateCollidedEntities() {
-        Box axisalignedbb = this.method_27144(this.world, this.pos).offset(this.pos);
+        Box axisalignedbb = this.method_11701(this.world, this.pos).offset(this.pos);
         List<Entity> entities = this.world.getEntitiesIn(null, axisalignedbb);
         if (!entities.isEmpty()) {
-            Direction facing = this.extending ? this.facing : this.facing.getOpposite();
+            Direction facing = this.extending ? this.direction : this.direction.getOpposite();
             for (Entity entity : entities) {
                 if (entity.getPistonBehavior() != PistonBehavior.IGNORE) {
                     double dx = 0;
@@ -61,26 +65,26 @@ public abstract class PistonBlockEntityMixin extends BlockEntity {
                     }
                     switch (facing.getAxis()) {
                         case X:
-                            if (facing.getDirection() == Direction.AxisDirection.POSITIVE) {
-                                dx = axisalignedbb.x2 - box.x1;
+                            if (facing.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
+                                dx = axisalignedbb.maxX - box.minX;
                             } else {
-                                dx = box.x2 - axisalignedbb.x1;
+                                dx = box.maxX - axisalignedbb.minX;
                             }
                             dx = dx + 0.01D;
                             break;
                         case Y:
-                            if (facing.getDirection() == Direction.AxisDirection.POSITIVE) {
-                                dy = axisalignedbb.y2 - box.y1;
+                            if (facing.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
+                                dy = axisalignedbb.maxY - box.minY;
                             } else {
-                                dy = box.y2 - axisalignedbb.y1;
+                                dy = box.maxY - axisalignedbb.minY;
                             }
                             dy = dy + 0.01D;
                             break;
                         case Z:
-                            if (facing.getDirection() == Direction.AxisDirection.POSITIVE) {
-                                dz = axisalignedbb.z2 - box.z1;
+                            if (facing.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
+                                dz = axisalignedbb.maxZ - box.minZ;
                             } else {
-                                dz = box.z2 - axisalignedbb.z1;
+                                dz = box.maxZ - axisalignedbb.minZ;
                             }
                             dz = dz + 0.01D;
                             break;

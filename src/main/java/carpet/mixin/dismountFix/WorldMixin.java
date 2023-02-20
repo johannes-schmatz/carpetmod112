@@ -10,7 +10,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(World.class)
 public class WorldMixin {
-    @Redirect(method = "method_26050", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;stopRiding()V"))
+    @Redirect(
+            method = "checkChunk(Lnet/minecraft/entity/Entity;Z)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/Entity;stopRiding()V"
+            )
+    )
     private void dismountFix(Entity entity) {
         if (CarpetSettings.dismountFix) {
             // copy of the base Entity::dismountRidingEntity

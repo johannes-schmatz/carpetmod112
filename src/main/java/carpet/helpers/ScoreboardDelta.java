@@ -17,7 +17,7 @@ public class ScoreboardDelta {
     public static void update() {
         MinecraftServer server = CarpetServer.getMinecraftServer();
         for(int i = 0; i < 2; i++) {
-            Scoreboard scoreboard = server.getWorldById(0).getScoreboard();
+            Scoreboard scoreboard = server.getWorld(0).getScoreboard();
             ScoreboardObjective objective = scoreboard.getObjectiveForSlot(i);
             Collection<ScoreboardPlayerScore> list = scoreboard.getAllPlayerScores(objective);
 
@@ -34,7 +34,7 @@ public class ScoreboardDelta {
     public static void resetScoreboardDelta() {
         MinecraftServer server = CarpetServer.getMinecraftServer();
         for(int i = 0; i < 2; i++) {
-            Scoreboard scoreboard = server.getWorldById(0).getScoreboard();
+            Scoreboard scoreboard = server.getWorld(0).getScoreboard();
             ScoreboardObjective objective = scoreboard.getObjectiveForSlot(i);
             Collection<ScoreboardPlayerScore> list = scoreboard.getAllPlayerScores(objective);
 

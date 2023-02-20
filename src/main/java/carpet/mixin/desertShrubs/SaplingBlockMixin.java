@@ -17,7 +17,14 @@ import java.util.Random;
 
 @Mixin(SaplingBlock.class)
 public class SaplingBlockMixin {
-    @Inject(method = "method_26789", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/SaplingBlock;method_26790(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Ljava/util/Random;)V"), cancellable = true)
+    @Inject(
+            method = "grow(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Ljava/util/Random;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/SaplingBlock;generateTree(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Ljava/util/Random;)V"
+            ),
+            cancellable = true
+    )
     private void desertShrubs(World world, BlockPos pos, BlockState state, Random rand, CallbackInfo ci) {
         if (CarpetSettings.desertShrubs && world.getBiome(pos) == Biomes.DESERT && !BlockSaplingHelper.hasWater(world, pos)) {
             world.setBlockState(pos, Blocks.DEADBUSH.getDefaultState());

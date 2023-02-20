@@ -14,6 +14,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface RedstoneWireBlockAccessor {
     @Accessor boolean getWiresGivePower();
     @Accessor void setWiresGivePower(boolean wiresGivePower);
-    @Invoker boolean invokeCouldConnectTo(BlockView world, BlockPos pos, Direction side);
-    @Invoker("method_26762") BlockState invokeCalculateCurrentChanges(World world, BlockPos pos1, BlockPos pos2, BlockState state);
+    @Invoker("connectsTo") boolean invokeCouldConnectTo(BlockView world, BlockPos pos, Direction side);
+    @Invoker("update") BlockState invokeCalculateCurrentChanges(World world, BlockPos pos1, BlockPos pos2, BlockState state);
 }

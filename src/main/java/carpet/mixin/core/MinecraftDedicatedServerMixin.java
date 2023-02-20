@@ -10,7 +10,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftDedicatedServer.class)
 public class MinecraftDedicatedServerMixin {
-    @Inject(method = "setupServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/UserCache;setUseRemote(Z)V", shift = At.Shift.AFTER))
+    @Inject(
+            method = "setupServer",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/UserCache;setUseRemote(Z)V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void onServerLoaded(CallbackInfoReturnable<Boolean> cir) {
         CarpetServer.getInstance().onServerLoaded();
     }

@@ -22,7 +22,7 @@ public abstract class FallingBlockEntityMixin extends Entity {
     }
 
     @Unique private boolean cacheMatching() {
-        return cache[0] == x && cache[1] == y && cache[2] == z && cache[3] == velocityX && cache[4] == velocityY && cache[5] == velocityZ && cacheTime == getServer().getTicks();
+        return cache[0] == x && cache[1] == y && cache[2] == z && cache[3] == velocityX && cache[4] == velocityY && cache[5] == velocityZ && cacheTime == getMinecraftServer().getTicks();
     }
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/FallingBlockEntity;move(Lnet/minecraft/entity/MovementType;DDD)V"))
@@ -38,7 +38,7 @@ public abstract class FallingBlockEntityMixin extends Entity {
             cache[3] = velocityX;
             cache[4] = velocityY;
             cache[5] = velocityZ;
-            cacheTime = getServer().getTicks();
+            cacheTime = getMinecraftServer().getTicks();
             this.move(MovementType.SELF, this.velocityX, this.velocityY, this.velocityZ);
             if (!removed) {
                 cache[6] = x;
@@ -47,7 +47,7 @@ public abstract class FallingBlockEntityMixin extends Entity {
                 cache[9] = velocityX;
                 cache[10] = velocityY;
                 cache[11] = velocityZ;
-                cacheBool[0] = slowMovement;
+                cacheBool[0] = inLava;
                 cacheBool[1] = onGround;
             } else {
                 cache[0] = Integer.MAX_VALUE;
@@ -57,7 +57,7 @@ public abstract class FallingBlockEntityMixin extends Entity {
             velocityX = cache[9];
             velocityY = cache[10];
             velocityZ = cache[11];
-            slowMovement = cacheBool[0];
+            inLava = cacheBool[0];
             onGround = cacheBool[1];
         }
     }

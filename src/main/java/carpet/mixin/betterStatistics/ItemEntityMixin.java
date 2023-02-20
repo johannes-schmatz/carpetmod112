@@ -12,10 +12,16 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin {
-    @Shadow public abstract ItemStack getStack();
+    @Shadow public abstract ItemStack getItemStack();
 
-    @Redirect(method = "onPlayerCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/stats/Stats;method_33897(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"))
+    @Redirect(
+            method = "onPlayerCollision",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/stat/Stats;picked(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
+            )
+    )
     private Stat addObjectMeta(Item item) {
-        return StatHelper.getObjectsPickedUpStats(item, getStack().getDamage());
+        return StatHelper.getObjectsPickedUpStats(item, getItemStack().getDamage());
     }
 }

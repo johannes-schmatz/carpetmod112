@@ -21,10 +21,17 @@ public abstract class ServerWorldMixin extends World {
     }
 
     @Unique private boolean shouldLcg() {
-        return !CarpetSettings.enableStableLCGNetherEnd || dimension.getType().getRawId() == 0;
+        return !CarpetSettings.enableStableLCGNetherEnd || dimension.getDimensionType().getId() == 0;
     }
 
-    @Redirect(method = "tickChunk", at = @At(value = "INVOKE", target = "Ljava/util/Random;nextInt(I)I", remap = false))
+    @Redirect(
+            method = "tickBlocks",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Random;nextInt(I)I",
+                    remap = false
+            )
+    )
     private int nextInt(Random random, int bound) {
         return shouldLcg() ? random.nextInt(bound) : -1;
     }

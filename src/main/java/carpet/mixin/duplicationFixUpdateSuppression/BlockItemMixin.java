@@ -18,12 +18,24 @@ import org.spongepowered.asm.mixin.injection.Redirect;
     PlaceableItem.class
 })
 public class BlockItemMixin {
-    @Redirect(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;decrement(I)V"))
+    @Redirect(
+            method = "use",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/item/ItemStack;decrement(I)V"
+            )
+    )
     private void vanillaShrink(ItemStack stack, int quantity) {
         if (!CarpetSettings.duplicationFixUpdateSuppression) stack.decrement(quantity);
     }
 
-    @Redirect(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"))
+    @Redirect(
+            method = "use",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"
+            )
+    )
     private boolean setBlockState(World world, BlockPos pos, BlockState newState, int flags, PlayerEntity player, World worldIn, BlockPos pos1, Hand hand) {
         if (!CarpetSettings.duplicationFixUpdateSuppression) return world.setBlockState(pos, newState, flags);
         ItemStack stack = player.getStackInHand(hand);

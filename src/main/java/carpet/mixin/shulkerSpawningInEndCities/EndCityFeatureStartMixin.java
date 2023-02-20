@@ -1,15 +1,20 @@
 package carpet.mixin.shulkerSpawningInEndCities;
 
 import carpet.CarpetSettings;
-import net.minecraft.world.gen.feature.EndCityFeature;
+
+import net.minecraft.structure.EndCityStructure;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(EndCityFeature.Start.class)
+@Mixin(EndCityStructure.EndCityGeneratorConfig.class)
 public class EndCityFeatureStartMixin {
-    @Inject(method = "method_27889", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "isValid",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void alwaysSizeable(CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.shulkerSpawningInEndCities) cir.setReturnValue(true);
     }

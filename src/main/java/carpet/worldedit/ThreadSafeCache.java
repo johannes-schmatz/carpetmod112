@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import carpet.CarpetServer;
 
 /**
@@ -33,7 +33,7 @@ class ThreadSafeCache {
         if (now - lastRefresh > REFRESH_DELAY) {
             Set<UUID> onlineIds = new HashSet<UUID>();
 
-            for (Object object : CarpetServer.getMinecraftServer().getPlayerManager().getPlayerList()) {
+            for (Object object : CarpetServer.getMinecraftServer().getPlayerManager().getPlayers()) {
                 if (object != null) {
                     ServerPlayerEntity player = (ServerPlayerEntity) object;
                     onlineIds.add(player.getUuid());

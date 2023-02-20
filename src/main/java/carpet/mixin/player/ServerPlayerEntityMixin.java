@@ -5,7 +5,7 @@ import carpet.helpers.IPlayerSensitiveTileEntity;
 import carpet.utils.extensions.ActionPackOwner;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,11 +26,17 @@ public class ServerPlayerEntityMixin implements ActionPackOwner {
         actionPack.onUpdate();
     }
 
-    @Redirect(method = "sendBlockEntityUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/BlockEntity;toUpdatePacket()Lnet/minecraft/network/packet/s2c/play/BlockEntityUpdateS2CPacket;"))
+    @Redirect(
+            method = "updateBlockEntity",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/entity/BlockEntity;getUpdatePacket()Lnet/minecraft/network/packet/s2c/play/BlockEntityUpdateS2CPacket;"
+            )
+    )
     private BlockEntityUpdateS2CPacket getUpdatePacket(BlockEntity blockEntity) {
         if (blockEntity instanceof IPlayerSensitiveTileEntity) {
             return ((IPlayerSensitiveTileEntity) blockEntity).getUpdatePacketPlayerSensitive((ServerPlayerEntity) (Object) this);
         }
-        return blockEntity.toUpdatePacket();
+        return blockEntity.getUpdatePacket();
     }
 }

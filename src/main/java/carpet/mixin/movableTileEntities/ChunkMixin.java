@@ -15,8 +15,14 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class ChunkMixin {
     @Shadow @Final private World world;
 
-    @Redirect(method = "method_27373", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;getBlockEntity(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/chunk/Chunk$CreationType;)Lnet/minecraft/block/entity/BlockEntity;"))
-    private BlockEntity betterGetTileEntity(Chunk chunk, BlockPos pos, Chunk.CreationType creationMode) {
+    @Redirect(
+            method = "getBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/chunk/Chunk;getBlockEntity(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/chunk/Chunk$Status;)Lnet/minecraft/block/entity/BlockEntity;"
+            )
+    )
+    private BlockEntity betterGetTileEntity(Chunk chunk, BlockPos pos, Chunk.Status creationMode) {
         //this.getTileEntity(...) doesn't check pending TileEntities
         if (CarpetSettings.movableTileEntities || CarpetSettings.autocrafter) {
             return world.getBlockEntity(pos);

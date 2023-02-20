@@ -1,10 +1,11 @@
 package carpet.carpetclient;
 
 import carpet.CarpetSettings;
-import net.minecraft.class_6380;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.server.network.ServerPlayerEntity;
+
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.server.PlayerWorldManager;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -20,12 +21,12 @@ public class CarpetClientRandomtickingIndexing {
 
     public static void enableUpdate(ServerPlayerEntity player) {
         if (!enableUpdates) return;
-        int dimention = player.world.dimension.getType().getRawId() + 1;
+        int dimention = player.world.dimension.getDimensionType().getId() + 1;
         updates[dimention] = CarpetSettings.randomtickingChunkUpdates;
     }
 
     public static boolean sendUpdates(World world) {
-        int dimention = world.dimension.getType().getRawId() + 1;
+        int dimention = world.dimension.getDimensionType().getId() + 1;
         return updates[dimention];
     }
 
@@ -41,7 +42,7 @@ public class CarpetClientRandomtickingIndexing {
     private static void registerPlayer(ServerPlayerEntity sender) {
         players.add(sender);
         enableUpdates = true;
-        int dimention = sender.world.dimension.getType().getRawId() + 1;
+        int dimention = sender.world.dimension.getDimensionType().getId() + 1;
         updates[dimention] = CarpetSettings.randomtickingChunkUpdates;
     }
 
@@ -50,14 +51,14 @@ public class CarpetClientRandomtickingIndexing {
         if (players.size() == 0) enableUpdates = false;
     }
 
-    public static void sendRandomtickingChunkOrder(World world, class_6380 playerChunkMap) {
-        CompoundTag compound = new CompoundTag();
-        ListTag nbttaglist = new ListTag();
-        for (Iterator<Chunk> iterator = playerChunkMap.method_33585(); iterator.hasNext(); ) {
+    public static void sendRandomtickingChunkOrder(World world, PlayerWorldManager playerChunkMap) {
+        NbtCompound compound = new NbtCompound();
+        NbtList nbttaglist = new NbtList();
+        for (Iterator<Chunk> iterator = playerChunkMap.method_12810(); iterator.hasNext(); ) {
             Chunk c = iterator.next();
-            CompoundTag chunkData = new CompoundTag();
-            chunkData.putInt("x", c.x);
-            chunkData.putInt("z", c.z);
+            NbtCompound chunkData = new NbtCompound();
+            chunkData.putInt("x", c.chunkX);
+            chunkData.putInt("z", c.chunkZ);
             nbttaglist.add(chunkData);
         }
         compound.put("list", nbttaglist);
@@ -65,7 +66,7 @@ public class CarpetClientRandomtickingIndexing {
             CarpetClientMessageHandler.sendNBTRandomTickData(p, compound);
         }
 
-        int dimention = world.dimension.getType().getRawId() + 1;
+        int dimention = world.dimension.getDimensionType().getId() + 1;
         updates[dimention] = false;
     }
 

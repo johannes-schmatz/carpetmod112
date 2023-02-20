@@ -11,12 +11,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ServerWorldMixin implements ExtendedServerWorldPistonGhostBlockFix {
     private boolean blockActionsProcessed;
 
-    @Inject(method = "tickTime", at = @At("HEAD"))
+    @Inject(
+            method = "tick",
+            at = @At("HEAD")
+    )
     private void onTickStart(CallbackInfo ci) {
         blockActionsProcessed = false;
     }
 
-    @Inject(method = "sendBlockActions", at = @At("RETURN"))
+    @Inject(
+            method = "method_2131",
+            at = @At("RETURN")
+    )
     private void onBlockEventsEnd(CallbackInfo ci) {
         blockActionsProcessed = true;
     }

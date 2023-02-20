@@ -13,12 +13,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin {
-    @Shadow @Final private EntityTracker wanderingTraderManager;
+    @Shadow @Final private EntityTracker entityTracker;
 
-    @Inject(method = "method_33481", at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;warn(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", shift = At.Shift.AFTER, remap = false))
+    @Inject(
+            method = "method_12781",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lorg/apache/logging/log4j/Logger;warn(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V",
+                    shift = At.Shift.AFTER,
+                    remap = false
+            )
+    )
     private void sendDuplicateEntitiesToClients(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.sendDuplicateEntitiesToClients) {
-            wanderingTraderManager.method_33431(entity);
+            entityTracker.method_2101(entity);
         }
     }
 }

@@ -1,7 +1,6 @@
 package carpet.mixin.entityDuplicationFix;
 
 import carpet.CarpetSettings;
-import net.minecraft.client.render.entity.feature.SkinOverlayOwner;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,32 +15,33 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
-import net.minecraft.util.math.ColumnPos;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.ChunkStorage;
+import net.minecraft.world.chunk.ThreadedAnvilChunkStorage;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
-public abstract class ThreadedAnvilChunkStorageMixin implements SkinOverlayOwner {
-    @Shadow @Final private final Map<ColumnPos, CompoundTag> field_25416 = new HashMap<>();
-    @Shadow private boolean chunkHolderListDirty;
+public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
+    @Shadow @Final private final Map<ChunkPos, NbtCompound> chunksToSave = new HashMap<>();
+    @Shadow private boolean isSaving;
     @Shadow @Final private static Logger LOGGER;
-    @Shadow @Final private File field_25418;
+    @Shadow @Final private File saveLocation;
 
-    @Shadow protected abstract void method_27474(ColumnPos pos, CompoundTag compound) throws IOException;
+    @Shadow protected abstract void write(ChunkPos pos, NbtCompound compound) throws IOException;
 
-    private final Map<ColumnPos, CompoundTag> chunksInWrite = new HashMap<>();
+    private final Map<ChunkPos, NbtCompound> chunksInWrite = new HashMap<>();
     // Insert new chunk into pending queue, replacing any older one at the same position
-    synchronized private void queueChunkToRemove(ColumnPos pos, CompoundTag data) {
-        field_25416.put(pos, data);
+    private synchronized void queueChunkToRemove(ChunkPos pos, NbtCompound data) {
+        chunksToSave.put(pos, data);
     }
 
     // Fetch another chunk to save to disk and atomically move it into
     // the queue of chunk(s) being written.
-    synchronized private Map.Entry<ColumnPos, CompoundTag> fetchChunkToWrite() {
-        if (field_25416.isEmpty()) return null;
-        Iterator<Map.Entry<ColumnPos, CompoundTag>> iter =
-                field_25416.entrySet().iterator();
-        Map.Entry<ColumnPos, CompoundTag> entry = iter.next();
+    private synchronized Map.Entry<ChunkPos, NbtCompound> fetchChunkToWrite() {
+        if (chunksToSave.isEmpty()) return null;
+        Iterator<Map.Entry<ChunkPos, NbtCompound>> iter =
+                chunksToSave.entrySet().iterator();
+        Map.Entry<ChunkPos, NbtCompound> entry = iter.next();
         iter.remove();
         chunksInWrite.put(entry.getKey(), entry.getValue());
         return entry;
@@ -49,13 +49,13 @@ public abstract class ThreadedAnvilChunkStorageMixin implements SkinOverlayOwner
 
     // Once the write for a chunk is completely committed to disk,
     // this method discards it
-    synchronized private void retireChunkToWrite(ColumnPos pos, CompoundTag data) {
+    private synchronized void retireChunkToWrite(ChunkPos pos, NbtCompound data) {
         chunksInWrite.remove(pos);
     }
 
     // Check these data structures for a chunk being reloaded
-    synchronized private CompoundTag reloadChunkFromRemoveQueues(ColumnPos pos) {
-        CompoundTag data = field_25416.get(pos);
+    private synchronized NbtCompound reloadChunkFromRemoveQueues(ChunkPos pos) {
+        NbtCompound data = chunksToSave.get(pos);
         if (data != null) return data;
         return (CarpetSettings.entityDuplicationFix)?chunksInWrite.get(pos):data;
     }
@@ -68,42 +68,67 @@ public abstract class ThreadedAnvilChunkStorageMixin implements SkinOverlayOwner
 
     /* --- end of new code for MC-119971 --- */
 
-    @Redirect(method = {
-        "method_27476",
-        "method_27475"
-    }, at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;", remap = false))
-    private Object get(Map<ColumnPos, CompoundTag> map, Object key) {
-        return reloadChunkFromRemoveQueues((ColumnPos) key);
+    @Redirect(
+            method = {
+                    "loadChunk",
+                    "chunkExists"
+            },
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;",
+                    remap = false
+            )
+    )
+    private Object get(Map<ChunkPos, NbtCompound> map, Object key) {
+        return reloadChunkFromRemoveQueues((ChunkPos) key);
     }
 
-    @Redirect(method = "method_27464", at = @At(value = "INVOKE", target = "Ljava/util/Set;contains(Ljava/lang/Object;)Z", remap = false))
-    private boolean isInWrite(Set<ColumnPos> set, Object o) {
+    @Redirect(
+            method = "registerChunkChecker",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Set;contains(Ljava/lang/Object;)Z",
+                    remap = false
+            )
+    )
+    private boolean isInWrite(Set<ChunkPos> set, Object o) {
         if (CarpetSettings.entityDuplicationFix) return false;
         //noinspection SuspiciousMethodCalls
         return chunksInWrite.containsKey(o);
     }
 
-    @Redirect(method = "method_27464", at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", remap = false))
-    private Object queueRemove(Map<ColumnPos, CompoundTag> map, Object key, Object value) {
-        queueChunkToRemove((ColumnPos) key, (CompoundTag) value);
+    @Redirect(
+            method = "registerChunkChecker",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+                    remap = false
+            )
+    )
+    private Object queueRemove(Map<ChunkPos, NbtCompound> map, Object key, Object value) {
+        queueChunkToRemove((ChunkPos) key, (NbtCompound) value);
         return null;
     }
 
+    /**
+     * @author skyrising
+     * @reason carpet
+     */
     @Overwrite
-    public boolean shouldRenderOverlay() {
-        Map.Entry<ColumnPos, CompoundTag> entry = fetchChunkToWrite();
+    public boolean saveNextChunk() {
+        Map.Entry<ChunkPos, NbtCompound> entry = fetchChunkToWrite();
         if (entry == null) {
-            if (this.chunkHolderListDirty) {
-                LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", this.field_25418.getName());
+            if (this.isSaving) {
+                LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", this.saveLocation.getName());
             }
 
             return false;
         }
 
-        ColumnPos pos = entry.getKey();
-        CompoundTag tag = entry.getValue();
+        ChunkPos pos = entry.getKey();
+        NbtCompound tag = entry.getValue();
         try {
-            this.method_27474(pos, tag);
+            this.write(pos, tag);
         } catch (Exception exception) {
             LOGGER.error("Failed to save chunk", exception);
         }

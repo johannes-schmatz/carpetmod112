@@ -18,7 +18,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PlayerEntityMixin {
     @Shadow public PlayerAbilities abilities;
 
-    @Inject(method = "canPlaceOn", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "canModify",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void disableBedrockPlacement(BlockPos pos, Direction facing, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (!CarpetSettings.disableBedrockPlacement) return;
         if (stack.getItem() == Item.fromBlock(Blocks.BEDROCK) && !this.abilities.creativeMode) {

@@ -10,7 +10,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(AbstractMinecartEntity.class)
 public class AbstractMinecartEntityMixin {
-    @Redirect(method = "moveOnRail", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/LivingEntity;forwardSpeed:F"))
+    @Redirect(
+            method = "moveOnRail",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/entity/LivingEntity;field_16513:F"
+            )
+    )
     private float mobsDontControlMinecarts(LivingEntity entity) {
         if (!CarpetSettings.mobsDontControlMinecarts || entity instanceof PlayerEntity) return entity.forwardSpeed;
         return 0;

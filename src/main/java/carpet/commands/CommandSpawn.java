@@ -2,17 +2,17 @@ package carpet.commands;
 
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import carpet.CarpetSettings;
 import carpet.helpers.HopperCounter;
-import net.minecraft.class_6182;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.SpawnGroup;
+import net.minecraft.command.IncorrectUsageException;
+import net.minecraft.entity.EntityCategory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -24,30 +24,30 @@ import java.util.ArrayList;
 public class CommandSpawn extends CommandCarpetBase
 {
     @Override
-    public String method_29275(CommandSource sender)
+    public String getUsageTranslationKey(CommandSource sender)
     {
         return "Usage:\nspawn list <X> <Y> <Z>\nspawn entities/rates <... | passive | hostile | ambient | water>\nspawn mobcaps <set <num>, nether, overworld, end>\nspawn tracking <.../stop/start/hostile/passive/water/ambient>\nspawn mocking <true/false>";
     }
 
     @Override
-    public String method_29277()
+    public String getCommandName()
     {
         return "spawn";
     }
 
     @Override
-    public void method_29272(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (!command_enabled("commandSpawn", sender)) return;
         if (args.length == 0)
         {
-            throw new class_6182(method_29275(sender));
+            throw new IncorrectUsageException(getUsageTranslationKey(sender));
         }
-        World world = sender.getEntityWorld();
+        World world = sender.getWorld();
         if ("list".equalsIgnoreCase(args[0]))
         {
-            BlockPos blockpos = method_28713(sender, args, 1, false);
-            if (!world.canSetBlock(blockpos))
+            BlockPos blockpos = getBlockPos(sender, args, 1, false);
+            if (!world.blockExists(blockpos))
             {
                 throw new CommandException("commands.setblock.outOfWorld");
             }
@@ -73,8 +73,8 @@ public class CommandSpawn extends CommandCarpetBase
                     BlockPos usl = null;
                     if (args.length == 8)
                     {
-                        BlockPos a = method_28713(sender, args, 2, false);
-                        BlockPos b = method_28713(sender, args, 5, false);
+                        BlockPos a = getBlockPos(sender, args, 2, false);
+                        BlockPos b = getBlockPos(sender, args, 5, false);
                         lsl = new BlockPos(
                                 Math.min(a.getX(), b.getX()),
                                 Math.min(a.getY(), b.getY()),
@@ -85,18 +85,18 @@ public class CommandSpawn extends CommandCarpetBase
                                 Math.max(a.getZ(), b.getZ()) );
                     } else if (args.length != 2)
                     {
-                        method_28710(sender, this, "Wrong syntax: /spawn tracking start <X1 Y1 Z1 X2 Y2 Z2>");
+                        run(sender, this, "Wrong syntax: /spawn tracking start <X1 Y1 Z1 X2 Y2 Z2>");
                         return;
                     }
                     SpawnReporter.reset_spawn_stats(false);
                     SpawnReporter.track_spawns = (long) world.getServer().getTicks();
                     SpawnReporter.lower_spawning_limit = lsl;
                     SpawnReporter.upper_spawning_limit = usl;
-                    method_28710(sender, this, "Spawning tracking started.");
+                    run(sender, this, "Spawning tracking started.");
                 }
                 else
                 {
-                    method_28710(sender, this, "You are already tracking spawning.");
+                    run(sender, this, "You are already tracking spawning.");
                 }
             }
             else if ("stop".equalsIgnoreCase(args[1]))
@@ -106,7 +106,7 @@ public class CommandSpawn extends CommandCarpetBase
                 SpawnReporter.track_spawns = 0L;
                 SpawnReporter.lower_spawning_limit = null;
                 SpawnReporter.upper_spawning_limit = null;
-                method_28710(sender, this, "Spawning tracking stopped.");
+                run(sender, this, "Spawning tracking stopped.");
             }
             else
             {
@@ -121,7 +121,7 @@ public class CommandSpawn extends CommandCarpetBase
             if (args.length >= 2)
             {
                 
-                warp = method_28719(args[1], 20, 720000);
+                warp = parseClampedLong(args[1], 20, 720000);
                 if (args.length >= 3)
                 {
                     counter = args[2];
@@ -148,22 +148,22 @@ public class CommandSpawn extends CommandCarpetBase
                 player = (PlayerEntity)sender;
             }
             TickSpeed.tickrate_advance(player, warp, null, sender);
-            method_28710(sender, this, String.format("Started spawn test for %d ticks", warp));
+            run(sender, this, String.format("Started spawn test for %d ticks", warp));
             return;
             
         }
         else if ("mocking".equalsIgnoreCase(args[0]))
         {
-            boolean domock = method_28744(args[1]);
+            boolean domock = parseBoolean(args[1]);
             if (domock)
             {
                 SpawnReporter.initialize_mocking();
-                method_28710(sender, this, "Mock spawns started, Spawn statistics reset");
+                run(sender, this, "Mock spawns started, Spawn statistics reset");
             }
             else
             {
                 SpawnReporter.stop_mocking();
-                method_28710(sender, this, "Normal mob spawning, Spawn statistics reset");
+                run(sender, this, "Normal mob spawning, Spawn statistics reset");
             }
             return;
         }
@@ -171,7 +171,7 @@ public class CommandSpawn extends CommandCarpetBase
         {
             if (args.length >= 2 && "reset".equalsIgnoreCase(args[1]))
             {
-                for (SpawnGroup s: SpawnReporter.spawn_tries.keySet())
+                for (EntityCategory s: SpawnReporter.spawn_tries.keySet())
                 {
                     SpawnReporter.spawn_tries.put(s,1);
                 }
@@ -179,7 +179,7 @@ public class CommandSpawn extends CommandCarpetBase
             else if (args.length >= 3)
             {
                 String str = args[1];
-                int num = method_28719(args[2], 0, 1000);
+                int num = parseClampedInt(args[2], 0, 1000);
                 SpawnReporter.spawn_tries.put(SpawnReporter.get_creature_type_from_code(str), num);
             }
             if (sender instanceof ServerPlayerEntity)
@@ -202,10 +202,10 @@ public class CommandSpawn extends CommandCarpetBase
                     case "set":
                         if (args.length > 2)
                         {
-                            int desired_mobcap = method_28718(args[2], 0);
-                            double desired_ratio = (double)desired_mobcap/SpawnGroup.MONSTER.getCapacity();
+                            int desired_mobcap = parseClampedInt(args[2], 0);
+                            double desired_ratio = (double)desired_mobcap/EntityCategory.MONSTER.getSpawnCap();
                             SpawnReporter.mobcap_exponent = 4.0*Math.log(desired_ratio)/Math.log(2.0);
-                            method_28710(sender, this, String.format("Mobcaps for hostile mobs changed to %d, other groups will follow", desired_mobcap));
+                            run(sender, this, String.format("Mobcaps for hostile mobs changed to %d, other groups will follow", desired_mobcap));
                             return;
                         }
                         msg(sender, SpawnReporter.print_general_mobcaps(world));
@@ -238,12 +238,12 @@ public class CommandSpawn extends CommandCarpetBase
                 return;
             }
         }
-        throw new class_6182(method_29275(sender));
+        throw new IncorrectUsageException(getUsageTranslationKey(sender));
 
     }
 
     @Override
-    public List<String> method_29273(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
+    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
     {
         if (!CarpetSettings.commandSpawn)
         {
@@ -251,37 +251,37 @@ public class CommandSpawn extends CommandCarpetBase
         }
         if (args.length == 1)
         {
-            return method_28732(args, "list","mocking","tracking","mobcaps","rates", "entities", "test");
+            return method_2894(args, "list","mocking","tracking","mobcaps","rates", "entities", "test");
         }
         if ("list".equalsIgnoreCase(args[0]) && args.length <= 4)
         {
-            return method_28730(args, 1, pos);
+            return method_10707(args, 1, pos);
         }
         if (args.length == 2)
         {
             if ("tracking".equalsIgnoreCase(args[0]))
             {
-                return method_28732(args, "start", "stop", "hostile", "passive","ambient","water");
+                return method_2894(args, "start", "stop", "hostile", "passive","ambient","water");
             }
             if ("mocking".equalsIgnoreCase(args[0]))
             {
-                return method_28732(args, "true", "false");
+                return method_2894(args, "true", "false");
             }
             if ("entities".equalsIgnoreCase(args[0]))
             {
-                return method_28732(args, "hostile", "passive","ambient","water");
+                return method_2894(args, "hostile", "passive","ambient","water");
             }
             if ("rates".equalsIgnoreCase(args[0]))
             {
-                return method_28732(args, "reset", "hostile", "passive","ambient","water");
+                return method_2894(args, "reset", "hostile", "passive","ambient","water");
             }
             if ("mobcaps".equalsIgnoreCase(args[0]))
             {
-                return method_28732(args, "set","nether","overworld","end");
+                return method_2894(args, "set","nether","overworld","end");
             }
             if ("test".equalsIgnoreCase(args[0]))
             {
-                return method_28732(args, "24000", "72000");
+                return method_2894(args, "24000", "72000");
             }
         }
         if ("test".equalsIgnoreCase(args[0]) && (args.length == 3))
@@ -293,19 +293,19 @@ public class CommandSpawn extends CommandCarpetBase
             }
             String[] stockArr = new String[lst.size()];
             stockArr = lst.toArray(stockArr);
-            return method_28732(args, stockArr);
+            return method_2894(args, stockArr);
         }
         if ("mobcaps".equalsIgnoreCase(args[0]) && "set".equalsIgnoreCase(args[1]) && (args.length == 3))
         {
-            return method_28732(args, "70");
+            return method_2894(args, "70");
         }
         if ("tracking".equalsIgnoreCase(args[0]) && "start".equalsIgnoreCase(args[1]) && args.length > 2 && args.length <= 5)
         {
-            return method_28730(args, 2, pos);
+            return method_10707(args, 2, pos);
         }
         if ("tracking".equalsIgnoreCase(args[0]) && "start".equalsIgnoreCase(args[1]) && args.length > 5 && args.length <= 8)
         {
-            return method_28730(args, 5, pos);
+            return method_10707(args, 5, pos);
         }
         return Collections.emptyList();
     }

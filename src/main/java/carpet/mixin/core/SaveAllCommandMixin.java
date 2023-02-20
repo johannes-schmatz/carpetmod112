@@ -1,13 +1,13 @@
 package carpet.mixin.core;
 
-import net.minecraft.class_1999;
+import net.minecraft.command.AbstractCommand;
 import net.minecraft.server.dedicated.command.SaveAllCommand;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(SaveAllCommand.class)
-public abstract class SaveAllCommandMixin extends class_1999 {
+public abstract class SaveAllCommandMixin extends AbstractCommand {
     @Override
-    public int method_28700() {
+    public int getPermissionLevel() {
         return 2;
     }
 }

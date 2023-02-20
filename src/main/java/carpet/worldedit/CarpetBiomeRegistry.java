@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.HashBiMap;
 import com.sk89q.worldedit.world.biome.BaseBiome;
@@ -58,8 +58,8 @@ class CarpetBiomeRegistry implements BiomeRegistry {
             if ((biome == null) || (biomes.containsValue(biome))) {
                 continue;
             }
-            biomes.put(Biome.getRawId(biome), biome);
-            biomeData.put(Biome.getRawId(biome), new CarpetBiomeData(biome));
+            biomes.put(Biome.getBiomeIndex(biome), biome);
+            biomeData.put(Biome.getBiomeIndex(biome), new CarpetBiomeData(biome));
         }
 
         CarpetBiomeRegistry.biomes = biomes;

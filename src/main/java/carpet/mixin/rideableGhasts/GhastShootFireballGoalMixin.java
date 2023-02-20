@@ -18,6 +18,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class GhastShootFireballGoalMixin extends Goal {
     @Shadow @Final private GhastEntity ghast;
 
+    /**
+     * @author skyrising
+     * @reason carpet
+     */
     @Override
     @Overwrite
     public boolean canStart() {

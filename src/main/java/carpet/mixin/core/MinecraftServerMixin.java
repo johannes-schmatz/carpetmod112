@@ -32,42 +32,66 @@ import java.util.Date;
 public abstract class MinecraftServerMixin {
     @Shadow @Final private static Logger LOGGER;
     @Shadow private int ticks;
-    @Shadow @Final private ServerMetadata metadata;
+    @Shadow @Final private ServerMetadata serverMetadata;
     @Shadow private boolean running;
     @Shadow private long timeReference;
     @Shadow private boolean loading;
-    @Shadow private long field_4557;
+    @Shadow private long lastWarnTime;
     @Shadow public ServerWorld[] worlds;
     @Shadow private boolean stopped;
 
-    @Shadow public abstract void shutdown();
+    @Shadow public abstract void stopServer();
     @Shadow public abstract void exit();
     @Shadow public abstract void setCrashReport(CrashReport report);
     @Shadow public abstract CrashReport populateCrashReport(CrashReport report);
     @Shadow public abstract File getRunDirectory();
-    @Shadow public abstract void tick();
-    @Shadow public abstract void setFavicon(ServerMetadata response);
+    @Shadow public abstract void setupWorld();
+    @Shadow public abstract void setServerMeta(ServerMetadata response);
     @Shadow public abstract boolean setupServer() throws IOException;
-    @Shadow public static long getMeasuringTimeMs() { throw new AbstractMethodError(); }
+    @Shadow public static long getTimeMillis() { throw new AbstractMethodError(); }
 
     @Shadow private String motd;
 
-    @Inject(method = "createWorlds", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;prepareStartRegion()V"))
+    @Inject(
+            method = "setupWorld(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/world/level/LevelGeneratorType;Ljava/lang/String;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/MinecraftServer;prepareWorlds()V"
+            )
+    )
     private void onLoadAllWorlds(String saveName, String worldNameIn, long seed, LevelGeneratorType type, String generatorOptions, CallbackInfo ci) {
         CarpetServer.getInstance().onLoadAllWorlds();
     }
 
-    @Inject(method = "createWorlds", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;prepareStartRegion()V", shift = At.Shift.AFTER))
+    @Inject(
+            method = "setupWorld(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/world/level/LevelGeneratorType;Ljava/lang/String;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/MinecraftServer;prepareWorlds()V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void loadCarpetBots(String saveName, String worldNameIn, long seed, LevelGeneratorType type, String generatorOptions, CallbackInfo ci) {
         CarpetServer.getInstance().loadBots();
     }
 
-    @Inject(method = "save", at = @At("RETURN"))
+    @Inject(
+            method = "saveWorlds",
+            at = @At("RETURN")
+    )
     private void onWorldsSaved(boolean isSilent, CallbackInfo ci) {
         CarpetServer.getInstance().onWorldsSaved();
     }
 
-    @Inject(method = "tickWorlds", at = @At(value = "FIELD", target = "Lnet/minecraft/server/MinecraftServer;ticks:I", ordinal = 0, shift = At.Shift.AFTER))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/server/MinecraftServer;ticks:I",
+                    ordinal = 0,
+                    shift = At.Shift.AFTER
+            )
+    )
     private void startTick(CallbackInfo ci) {
         CarpetServer.getInstance().tick();
         if (CarpetProfiler.tick_health_requested != 0) {
@@ -75,7 +99,10 @@ public abstract class MinecraftServerMixin {
         }
     }
 
-    @Inject(method = "tickWorlds", at = @At("RETURN"))
+    @Inject(
+            method = "tick",
+            at = @At("RETURN")
+    )
     private void endTick(CallbackInfo ci) {
         // ChunkLogger - 0x-CARPET
         if(CarpetClientChunkLogger.logger.enabled) {
@@ -94,6 +121,7 @@ public abstract class MinecraftServerMixin {
 
     /**
      * @author gnembon
+     * @reason carpet
      */
     @Overwrite
     public String getServerModName() {
@@ -102,36 +130,40 @@ public abstract class MinecraftServerMixin {
 
     /**
      * @author gnembon, X-com, skyrising, 0x53ee71ebe11e
+     * @reason carpet
      */
     @Overwrite
     public void run() {
         try {
             if (this.setupServer()) {
-                this.timeReference = getMeasuringTimeMs();
+                this.timeReference = getTimeMillis();
                 long msGoal = 0L;
                 String motd = "_".equals(CarpetSettings.customMOTD) ? this.motd : CarpetSettings.customMOTD;
-                this.metadata.setDescription(new LiteralText(motd));
-                this.metadata.setVersion(new ServerMetadata.Version("1.12.2", 340));
-                this.setFavicon(this.metadata);
+                this.serverMetadata.setDescription(new LiteralText(motd));
+                this.serverMetadata.setVersion(new ServerMetadata.Version("1.12.2", 340));
+                this.setServerMeta(this.serverMetadata);
 
                 while (this.running) {
                     /* carpet mod commandTick */
                     //todo check if this check is necessary
                     if (TickSpeed.time_warp_start_time != 0) {
                         if (TickSpeed.continueWarp()) {
-                            this.tick();
-                            this.timeReference = getMeasuringTimeMs();
+                            this.setupWorld();
+                            this.timeReference = getTimeMillis();
                             this.loading = true;
                         }
                         continue;
                     }
                     /* end */
-                    long now = getMeasuringTimeMs();
+                    long now = getTimeMillis();
                     long timeDelta = now - this.timeReference;
 
-                    if (timeDelta > 2000L && this.timeReference - this.field_4557 >= 15000L) {
+                    if (timeDelta > 2000L && this.timeReference - this.lastWarnTime >= 15000L) {
+                        //LOGGER.warn( /* carpet */
+                        //        "Can't keep up! Did the system time change, or is the server overloaded? Running {}ms behind, skipping {} tick(s)", n, n / 50L
+                        //);
                         timeDelta = 2000L;
-                        this.field_4557 = this.timeReference;
+                        this.lastWarnTime = this.timeReference;
                     }
 
                     if (timeDelta < 0L) {
@@ -141,29 +173,34 @@ public abstract class MinecraftServerMixin {
 
                     msGoal += timeDelta;
                     this.timeReference = now;
-                    boolean falling_behind = false;
+                    boolean falling_behind = false; /* carpet mod */
 
-                    if (this.worlds[0].method_33479()) {
-                        this.tick();
+                    if (this.worlds[0].isReady()) {
+                        this.setupWorld();
                         msGoal = 0L;
                     } else {
+                        //while (msGoal > 50L) { /* carpet */
+                        //    msGoal -= 50L;
+                        //    this.setupWorld();
+                        //}
                         boolean keeping_up = false;
                         while (msGoal > TickSpeed.mspt) /* carpet mod 50L */ {
                             msGoal -= TickSpeed.mspt; /* carpet mod 50L */
                             if (CarpetSettings.watchdogFix && keeping_up) {
-                                this.timeReference = getMeasuringTimeMs();
+                                this.timeReference = getTimeMillis();
                                 this.loading = true;
                                 falling_behind = true;
                             }
-                            this.tick();
+                            this.setupWorld();
                             keeping_up = true;
                             if (CarpetSettings.disableVanillaTickWarp) {
-                                msGoal = getMeasuringTimeMs() - now;
+                                msGoal = getTimeMillis() - now;
                                 break;
                             }
                         }
                     }
 
+                    //Thread.sleep(Math.max(1L, 50L - msGoal)); /* carpet */
                     if (falling_behind) {
                         Thread.sleep(1L); /* carpet mod 50L */
                     } else {
@@ -195,7 +232,7 @@ public abstract class MinecraftServerMixin {
         } finally {
             try {
                 this.stopped = true;
-                this.shutdown();
+                this.stopServer();
             } catch (Throwable throwable) {
                 LOGGER.error("Exception stopping the server", throwable);
             } finally {

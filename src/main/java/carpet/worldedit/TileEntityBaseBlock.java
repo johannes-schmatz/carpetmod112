@@ -3,7 +3,7 @@ package carpet.worldedit;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.TileEntityBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 
 class TileEntityBaseBlock extends BaseBlock implements TileEntityBlock {
 
@@ -12,9 +12,9 @@ class TileEntityBaseBlock extends BaseBlock implements TileEntityBlock {
         setNbtData(NBTConverter.fromNative(copyNbtData(tile)));
     }
 
-    private static CompoundTag copyNbtData(BlockEntity tile) {
-        CompoundTag tag = new CompoundTag();
-        tile.toTag(tag);
+    private static NbtCompound copyNbtData(BlockEntity tile) {
+        NbtCompound tag = new NbtCompound();
+        tile.toNbt(tag);
         return tag;
     }
 

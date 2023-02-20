@@ -1,14 +1,15 @@
 package carpet.mixin.shulkerSpawningInEndCities;
 
 import carpet.CarpetSettings;
-import net.minecraft.entity.SpawnGroup;
-import net.minecraft.entity.mob.ShulkerEntity;
+
+import net.minecraft.entity.EntityCategory;
+import net.minecraft.entity.ShulkerEntity;
+import net.minecraft.structure.EndCityStructure;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.chunk.EndChunkGenerator;
-import net.minecraft.world.gen.feature.EndCityFeature;
+import net.minecraft.world.chunk.EndChunkGenerator;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,18 +25,25 @@ import java.util.List;
 public class EndChunkGeneratorMixin {
     private static final List<Biome.SpawnEntry> spawnList = Collections.singletonList(new Biome.SpawnEntry(ShulkerEntity.class, 10, 4, 4));
 
-    @Shadow @Final private EndCityFeature endCityFeature;
+    @Shadow @Final private EndCityStructure endCityFeature;
     @Shadow @Final private World world;
 
-    @Inject(method = "getValidSpawnEntries", at = @At("HEAD"), cancellable = true)
-    private void shulkerSpawning(SpawnGroup creatureType, BlockPos pos, CallbackInfoReturnable<List<Biome.SpawnEntry>> cir) {
-        if (CarpetSettings.shulkerSpawningInEndCities && creatureType == SpawnGroup.MONSTER && endCityFeature.method_27842(pos)) {
+    @Inject(
+            method = "getSpawnEntries",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void shulkerSpawning(EntityCategory creatureType, BlockPos pos, CallbackInfoReturnable<List<Biome.SpawnEntry>> cir) {
+        if (CarpetSettings.shulkerSpawningInEndCities && creatureType == EntityCategory.MONSTER && endCityFeature.method_9270(pos)) {
             cir.setReturnValue(spawnList);
         }
     }
 
-    @Inject(method = "generatureStructures", at = @At("HEAD"))
+    @Inject(
+            method = "method_4702",
+            at = @At("HEAD")
+    )
     private void recreateEndCityForShulkerSpawning(Chunk chunkIn, int x, int z, CallbackInfo ci) {
-        if (CarpetSettings.shulkerSpawningInEndCities) this.endCityFeature.generate(this.world, x, z, null);
+        if (CarpetSettings.shulkerSpawningInEndCities) this.endCityFeature.method_4004(this.world, x, z, null);
     }
 }

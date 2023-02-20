@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import carpet.CarpetServer;
 import carpet.utils.HUDController;
@@ -18,7 +18,7 @@ public abstract class LogHandler
         @Override
         public void handle(ServerPlayerEntity player, Text[] message, Object[] commandParams)
         {
-            Arrays.stream(message).forEach(player::sendSystemMessage);
+            Arrays.stream(message).forEach(player::sendMessage);
         }
     };
     public static final LogHandler HUD = new LogHandler()

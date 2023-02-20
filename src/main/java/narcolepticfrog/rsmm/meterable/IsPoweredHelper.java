@@ -37,7 +37,7 @@ public class IsPoweredHelper {
         } else if (block instanceof PoweredRailBlock) {
             return state.get(PoweredRailBlock.POWERED);
         } else if (block instanceof ComparatorBlock) {
-            if (state.get(ComparatorBlock.MODE) == ComparatorBlock.ComparatorMode.COMPARE) {
+            if (state.get(ComparatorBlock.MODE) == ComparatorBlock.ComparatorType.COMPARE) {
                 return state.get(ComparatorBlock.POWERED);
             } else {
                 return ((ComparatorBlockEntity) source.getBlockEntity(pos)).getOutputSignal() > 0;

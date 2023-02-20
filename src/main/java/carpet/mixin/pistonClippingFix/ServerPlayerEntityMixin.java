@@ -5,7 +5,7 @@ import carpet.utils.extensions.ExtendedPlayerPistonClipping;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 

@@ -6,6 +6,7 @@ import carpet.utils.extensions.NewLightWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.LightType;
+import net.minecraft.world.SaveHandler;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.dimension.Dimension;
@@ -23,12 +24,19 @@ public class WorldMixin implements NewLightWorld {
     @Shadow @Final public Profiler profiler;
     protected LightingEngine lightingEngine;
 
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void onCtor(WorldSaveHandler levelProperties, LevelProperties levelProperties2, Dimension dimension, Profiler profiler, boolean isClient, CallbackInfo ci) {
+    @Inject(
+            method = "<init>",
+            at = @At("RETURN")
+    )
+    private void onCtor(SaveHandler levelProperties, LevelProperties levelProperties2, Dimension dimension, Profiler profiler, boolean isClient, CallbackInfo ci) {
         this.lightingEngine = new LightingEngine((World) (Object) this);
     }
 
-    @Inject(method = "method_26095", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "method_8539",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void checkLightForNewLight(LightType lightType, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         if (!CarpetSettings.newLight) return;
         this.lightingEngine.scheduleLightUpdate(lightType, pos);

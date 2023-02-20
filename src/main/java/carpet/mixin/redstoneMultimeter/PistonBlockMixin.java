@@ -18,7 +18,15 @@ import java.util.List;
 
 @Mixin(PistonBlock.class)
 public class PistonBlockMixin {
-    @Inject(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;", ordinal = 2), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "move",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;",
+                    ordinal = 2
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void onPush(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir,
                         PistonHandler helper, List<BlockPos> positions, List<BlockState> states, List<BlockPos> list2, int k, BlockState[] aiblockstate, Direction movementDirection, int index, BlockPos currentPos) {
         if (CarpetSettings.redstoneMultimeter) {

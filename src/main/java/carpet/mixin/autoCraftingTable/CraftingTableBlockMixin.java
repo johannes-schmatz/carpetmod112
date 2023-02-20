@@ -7,7 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CraftingTableBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Mixin(CraftingTableBlock.class)
 public class CraftingTableBlockMixin extends Block implements BlockEntityProvider {
@@ -26,10 +26,16 @@ public class CraftingTableBlockMixin extends Block implements BlockEntityProvide
         super(materialIn);
     }
 
-    @Redirect(method = "onUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;openScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)V"))
+    @Redirect(
+            method = "use",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;openHandledScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)V"
+            )
+    )
     private void displayGui(PlayerEntity player, NamedScreenHandlerFactory gui, World world, BlockPos pos) {
         CraftingTableBlockEntity te = getTileEntity(world, pos);
-        player.openScreen(te != null ? te : gui);
+        player.openHandledScreen(te != null ? te : gui);
     }
 
     @Override
@@ -44,7 +50,7 @@ public class CraftingTableBlockMixin extends Block implements BlockEntityProvide
     }
 
     @Override
-    public boolean hasComparatorOutput(BlockState state) {
+    public boolean method_11577(BlockState state) {
         return true;
     }
 
@@ -60,7 +66,7 @@ public class CraftingTableBlockMixin extends Block implements BlockEntityProvide
     }
 
     @Override
-    public void onBlockRemoved(World world, BlockPos pos, BlockState state) {
+    public void onBreaking(World world, BlockPos pos, BlockState state) {
         // Maybe also check for some carpet rule
         if (hasBlockEntity()) {
             CraftingTableBlockEntity tileEntity = getTileEntity(world, pos);
@@ -70,7 +76,7 @@ public class CraftingTableBlockMixin extends Block implements BlockEntityProvide
             }
         }
         world.removeBlockEntity(pos);
-        super.onBlockRemoved(world, pos, state);
+        super.onBreaking(world, pos, state);
     }
 
     /**

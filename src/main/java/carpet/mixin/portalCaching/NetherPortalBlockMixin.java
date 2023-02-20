@@ -16,13 +16,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(NetherPortalBlock.class)
 public class NetherPortalBlockMixin {
-    @Inject(method = "method_26721", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/NetherPortalBlock$AreaHelper;createPortal()V", shift = At.Shift.AFTER), expect = 2)
+    @Inject(
+            method = "createPortalAt",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/NetherPortalBlock$AreaHelper;createPortal()V",
+                    shift = At.Shift.AFTER
+            ),
+            expect = 2
+    )
     private void clearOnSpawnPortal(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        if (CarpetSettings.portalCaching) ((ExtendedPortalForcer) ((ServerWorld) world).getPortalForcer()).clearHistoryCache();
+        if (CarpetSettings.portalCaching) ((ExtendedPortalForcer) ((ServerWorld) world).getPortalTeleporter()).clearHistoryCache();
     }
 
-    @Inject(method = "neighborUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z", shift = At.Shift.AFTER), expect = 2)
+    @Inject(
+            method = "neighborUpdate",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z",
+                    shift = At.Shift.AFTER
+            ),
+            expect = 2
+    )
     private void clearOnNeighborChange(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, CallbackInfo ci) {
-        if (CarpetSettings.portalCaching) ((ExtendedPortalForcer) ((ServerWorld) world).getPortalForcer()).clearHistoryCache();
+        if (CarpetSettings.portalCaching) ((ExtendedPortalForcer) ((ServerWorld) world).getPortalTeleporter()).clearHistoryCache();
     }
 }

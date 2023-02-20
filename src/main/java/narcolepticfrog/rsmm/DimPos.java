@@ -10,7 +10,7 @@ public class DimPos {
     private BlockPos pos;
 
     public DimPos(World w, BlockPos pos) {
-        this(w.dimension.getType().getRawId(), pos);
+        this(w.dimension.getDimensionType().getId(), pos);
     }
 
     public DimPos(int dim, BlockPos pos) {

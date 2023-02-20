@@ -13,17 +13,23 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin({
     Block.class,
     BlockWithEntity.class,
+    CobwebBlock.class,
     DeadBushBlock.class,
     IceBlock.class,
+    Leaves1Block.class,
     Leaves2Block.class,
-    LeavesBlock.class,
     SnowLayerBlock.class,
-    TallGrassBlock.class,
-    VineBlock.class,
-    CobwebBlock.class
+    TallPlantBlock.class,
+    VineBlock.class
 })
 public class BlockHarvestMixins {
-    @Redirect(method = "afterBreak", at = @At(value = "INVOKE", target = "Lnet/minecraft/stats/Stats;method_33886(Lnet/minecraft/block/Block;)Lnet/minecraft/stat/Stat;"))
+    @Redirect(
+            method = "method_8651",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/stat/Stats;mined(Lnet/minecraft/block/Block;)Lnet/minecraft/stat/Stat;"
+            )
+    )
     private Stat addBlockMeta(Block blockIn, World worldIn, PlayerEntity player, BlockPos pos, BlockState state) {
         return StatHelper.getBlockStateStats(state);
     }

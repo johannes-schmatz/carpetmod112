@@ -12,7 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FurnaceBlock.class)
 public class FurnaceBlockMixin {
-    @Inject(method = "onBlockAdded", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "onCreation",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void noDefaultDirectionOnAdd(World worldIn, BlockPos pos, BlockState state, CallbackInfo ci) {
         // A bug that causes bad rotations fixed in 1.13 CARPET-XCOM -> not needed in 1.13
         if (CarpetSettings.accurateBlockPlacement) ci.cancel();

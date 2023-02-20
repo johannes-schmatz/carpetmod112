@@ -5,7 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ChorusFlowerBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -22,8 +22,8 @@ public class ChorusFlowerBlockMixin extends Block {
 
     @Override
     public void onEntityCollision(World worldIn, BlockPos pos, BlockState state, Entity entityIn) {
-        if(!CarpetSettings.chorusFruitShootable || !(entityIn instanceof net.minecraft.entity.projectile.ProjectileEntity)) return;
+        if(!CarpetSettings.chorusFruitShootable || !(entityIn instanceof net.minecraft.entity.projectile.AbstractArrowEntity)) return;
         worldIn.setBlockState(pos, Blocks.AIR.getDefaultState(), 2);
-        dropStack(worldIn, pos, new ItemStack(Item.fromBlock(this)));
+        onBlockBreak(worldIn, pos, new ItemStack(Item.fromBlock(this)));
     }
 }

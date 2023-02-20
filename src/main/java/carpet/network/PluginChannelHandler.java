@@ -1,7 +1,7 @@
 package carpet.network;
 
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 
 public interface PluginChannelHandler {
     String[] getChannels();

@@ -33,7 +33,14 @@ public abstract class TntEntityMixin extends Entity {
         super(worldIn);
     }
 
-    @Redirect(method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/entity/LivingEntity;)V", at = @At(value = "INVOKE", target = "Ljava/lang/Math;random()D", remap = false))
+    @Redirect(
+            method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/entity/LivingEntity;)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/lang/Math;random()D",
+                    remap = false
+            )
+    )
     private double getRandomAngle() {
         if (CarpetSettings.hardcodeTNTangle >= 0) return CarpetSettings.hardcodeTNTangle / (Math.PI * 2);
         if (CarpetSettings.TNTAdjustableRandomAngle) return CommandTNT.rand.nextDouble();
@@ -41,7 +48,11 @@ public abstract class TntEntityMixin extends Entity {
         return Math.random();
     }
 
-    @Inject(method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/entity/LivingEntity;)V", at = @At("RETURN"), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/entity/LivingEntity;)V",
+            at = @At("RETURN"),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void onInit(World worldIn, double x, double y, double z, LivingEntity igniter, CallbackInfo ci, float angle) {
         if (CarpetSettings.tntPrimerMomentumRemoved) {
             this.velocityX = 0;
@@ -55,10 +66,16 @@ public abstract class TntEntityMixin extends Entity {
     }
 
     @Unique private boolean cacheMatching() {
-        return cache[0] == x && cache[1] == y && cache[2] == z && cache[3] == velocityX && cache[4] == velocityY && cache[5] == velocityZ && cacheTime == getServer().getTicks();
+        return cache[0] == x && cache[1] == y && cache[2] == z && cache[3] == velocityX && cache[4] == velocityY && cache[5] == velocityZ && cacheTime == getMinecraftServer().getTicks();
     }
 
-    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/TntEntity;move(Lnet/minecraft/entity/MovementType;DDD)V"))
+    @Redirect(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/TntEntity;move(Lnet/minecraft/entity/MovementType;DDD)V"
+            )
+    )
     private void movementOptimization(TntEntity tnt, MovementType type, double x, double y, double z) {
         if (!CarpetSettings.TNTmovementOptimization) {
             tnt.move(type, x, y, z);
@@ -72,7 +89,7 @@ public abstract class TntEntityMixin extends Entity {
             cache[3] = velocityX;
             cache[4] = velocityY;
             cache[5] = velocityZ;
-            cacheTime = getServer().getTicks();
+            cacheTime = getMinecraftServer().getTicks();
             this.move(MovementType.SELF, this.velocityX, this.velocityY, this.velocityZ);
             if (!removed) {
                 cache[6] = x;
@@ -81,7 +98,7 @@ public abstract class TntEntityMixin extends Entity {
                 cache[9] = velocityX;
                 cache[10] = velocityY;
                 cache[11] = velocityZ;
-                cacheBool[0] = slowMovement;
+                cacheBool[0] = inLava;
                 cacheBool[1] = onGround;
             } else {
                 cache[0] = Integer.MAX_VALUE;
@@ -91,14 +108,25 @@ public abstract class TntEntityMixin extends Entity {
             velocityX = cache[9];
             velocityY = cache[10];
             velocityZ = cache[11];
-            slowMovement = cacheBool[0];
+            inLava = cacheBool[0];
             onGround = cacheBool[1];
         }
     }
 
-    @Inject(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/TntEntity;velocityX:D", ordinal = 0), slice = @Slice(
-        from = @At(value = "FIELD", target = "Lnet/minecraft/entity/TntEntity;onGround:Z")
-    ))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/entity/TntEntity;velocityX:D",
+                    ordinal = 0
+            ),
+            slice = @Slice(
+                    from = @At(
+                            value = "FIELD",
+                            target = "Lnet/minecraft/entity/TntEntity;onGround:Z"
+                    )
+            )
+    )
     private void mergeTNT(CallbackInfo ci) {
         // Merge code for combining tnt into a single entity if they happen to exist in the same spot, same fuse, no motion CARPET-XCOM
         if(CarpetSettings.mergeTNT){
@@ -119,7 +147,14 @@ public abstract class TntEntityMixin extends Entity {
         }
     }
 
-    @Inject(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/TntEntity;fuseTimer:I", ordinal = 0))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/entity/TntEntity;fuseTimer:I",
+                    ordinal = 0
+            )
+    )
     private void checkMergeAllowed(CallbackInfo ci) {
         // Merge only tnt that have had a chance to move CARPET-XCOM
         if(!world.isClient && (this.velocityX != 0 || this.velocityY != 0 || this.velocityZ != 0)){
@@ -127,12 +162,21 @@ public abstract class TntEntityMixin extends Entity {
         }
     }
 
-    @Inject(method = "explode", at = @At("HEAD"))
+    @Inject(
+            method = "explode",
+            at = @At("HEAD")
+    )
     private void onExplode(CallbackInfo ci) {
         if (logHelper != null) logHelper.onExploded(x, y, z);
     }
 
-    @Redirect(method = "explode", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;createExplosion(Lnet/minecraft/entity/Entity;DDDFZ)Lnet/minecraft/world/explosion/Explosion;"))
+    @Redirect(
+            method = "explode",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;createExplosion(Lnet/minecraft/entity/Entity;DDDFZ)Lnet/minecraft/world/explosion/Explosion;"
+            )
+    )
     private Explosion explodeMerged(World world, Entity entity, double x, double y, double z, float strength, boolean damagesTerrain) {
         // Multi explode the amount of merged TNT CARPET-XCOM
         for (int i = 0; i < mergedTNT; i++) {

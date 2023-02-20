@@ -3,13 +3,13 @@ package carpet.worldedit;
 import carpet.CarpetSettings;
 import carpet.network.PluginChannelHandler;
 import net.minecraft.block.BlockState;
-import net.minecraft.class_5607;
+import net.minecraft.command.Command;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -50,7 +50,7 @@ public class WorldEditBridge
             CarpetWorldEdit.inst.onStartTick();
     }
     
-    public static void onCommand(class_5607 command, CommandSource sender, String[] args)
+    public static void onCommand(Command command, CommandSource sender, String[] args)
     {
         if (worldEditEnabled())
             CarpetWorldEdit.inst.onCommand(command, sender, args);
@@ -99,7 +99,7 @@ public class WorldEditBridge
             CarpetWorldEdit.inst.finishEditSession(player);
     }
     
-    public static void recordBlockEdit(ServerPlayerEntity player, World world, BlockPos pos, BlockState newBlock, CompoundTag newTileEntity)
+    public static void recordBlockEdit(ServerPlayerEntity player, World world, BlockPos pos, BlockState newBlock, NbtCompound newTileEntity)
     {
         if (worldEditEnabled())
             CarpetWorldEdit.inst.recordBlockEdit(player, world, pos, newBlock, newTileEntity);

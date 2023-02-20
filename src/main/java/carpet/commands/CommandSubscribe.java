@@ -7,12 +7,12 @@ public class CommandSubscribe extends CommandLog {
     private final String USAGE = "/subscribe <subscribeName> [?option]";
 
     @Override
-    public String method_29277() {
+    public String getCommandName() {
         return "subscribe";
     }
 
     @Override
-    public String method_29275(CommandSource sender) {
+    public String getUsageTranslationKey(CommandSource sender) {
         return USAGE;
     }
 }

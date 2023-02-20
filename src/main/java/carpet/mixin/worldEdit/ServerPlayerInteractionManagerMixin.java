@@ -4,7 +4,7 @@ import carpet.worldedit.WorldEditBridge;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -21,20 +21,31 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ServerPlayerInteractionManager.class)
 public class ServerPlayerInteractionManagerMixin {
     @Shadow public ServerPlayerEntity player;
-    @Shadow public World field_31754;
+    @Shadow public World world;
 
-    @Inject(method = "processBlockBreakingAction", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "processBlockBreakingAction",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void onWorldEditLeftClick(BlockPos pos, Direction side, CallbackInfo ci) {
-        if (!WorldEditBridge.onLeftClickBlock(field_31754, pos, player)) {
-            player.networkHandler.sendPacket(new BlockUpdateS2CPacket(field_31754, pos));
+        if (!WorldEditBridge.onLeftClickBlock(world, pos, player)) {
+            player.networkHandler.sendPacket(new BlockUpdateS2CPacket(world, pos));
             ci.cancel();
         }
     }
 
-    @Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;isSneaking()Z"), cancellable = true)
+    @Inject(
+            method = "method_12792",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;isSneaking()Z"
+            ),
+            cancellable = true
+    )
     private void onWorldEditRightClick(PlayerEntity player, World worldIn, ItemStack stack, Hand hand, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, CallbackInfoReturnable<ActionResult> cir) {
-        if (!WorldEditBridge.onRightClickBlock(field_31754, pos, this.player)) {
-            this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(field_31754, pos));
+        if (!WorldEditBridge.onRightClickBlock(world, pos, this.player)) {
+            this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(world, pos));
             cir.setReturnValue(ActionResult.FAIL);
         }
     }

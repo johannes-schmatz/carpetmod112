@@ -8,7 +8,10 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(CloneCommand.class)
 public class CloneCommandMixin {
-    @ModifyConstant(method = "method_29272", constant = @Constant(intValue = 32768))
+    @ModifyConstant(
+            method = "method_3279",
+            constant = @Constant(intValue = 32768)
+    )
     private int fillLimit(int orig) {
         return CarpetSettings.fillLimit;
     }

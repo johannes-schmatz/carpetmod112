@@ -100,7 +100,7 @@ public class CarpetProfiler
         {
             end_current_section();
         }
-        current_section = dimension + "." + BlockEntity.method_26928(e.getClass());
+        current_section = dimension + "." + BlockEntity.getIdentifier(e.getClass());
         current_section_start = System.nanoTime();
     }
 

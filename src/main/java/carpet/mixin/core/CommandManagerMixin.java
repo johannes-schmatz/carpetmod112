@@ -10,7 +10,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CommandManager.class)
 public class CommandManagerMixin {
-    @Inject(method = "<init>", at = @At("RETURN"))
+    @Inject(
+            method = "<init>",
+            at = @At("RETURN")
+    )
     private void registerCarpetCommands(MinecraftServer serverIn, CallbackInfo ci) {
         CarpetCommands.register((CommandManager) (Object) this);
     }

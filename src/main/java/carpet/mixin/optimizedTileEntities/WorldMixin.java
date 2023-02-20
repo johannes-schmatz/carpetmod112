@@ -11,9 +11,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = World.class)
+@Mixin(World.class)
 public class WorldMixin {
-    @Inject(method = "updateHorizontalAdjacent", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "updateHorizontalAdjacent",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void onComparatorUpdate(BlockPos pos, Block block, CallbackInfo ci) {
         if (CarpetSettings.optimizedTileEntities) {
             CarpetClientChunkLogger.setReason("Comparator updates & lazy tile entities");

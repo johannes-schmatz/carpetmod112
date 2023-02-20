@@ -1,5 +1,8 @@
 package carpet.helpers;
 //AUTHOR: PallaPalla
+import carpet.mixin.optimizedTileEntities.WorldMixin;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -22,7 +25,8 @@ public class BlockEntityOptimizer
     {
         /**
          * CARPET-optimizedTileEntities: Wakes up the tile entity so it updates again. Called upon receiving a comparator update in
-         * {@linkplain net.minecraft.world.World#updateComparatorOutputLevel(net.minecraft.util.math.BlockPos, net.minecraft.block.Block)}
+         * {@linkplain net.minecraft.world.World#updateHorizontalAdjacent(net.minecraft.util.math.BlockPos, net.minecraft.block.Block)}
+         * {@linkplain WorldMixin#onComparatorUpdate(BlockPos, Block, CallbackInfo)}
          */
         public void wakeUp();
     }
@@ -48,23 +52,23 @@ public class BlockEntityOptimizer
             BlockPos blockpos = pos.offset(enumfacing);
             boolean horizontal = enumfacing.getAxis() != Axis.Y;
 
-            if (worldIn.canSetBlock(blockpos))
+            if (worldIn.blockExists(blockpos))
             {
                 BlockState iblockstate = worldIn.getBlockState(blockpos);
                 
                 // Check for comparators like in vanilla. This check is only performed horizontally, as comparators are only horizontal
-                if (horizontal && Blocks.UNPOWERED_COMPARATOR.method_26548(iblockstate))
+                if (horizontal && Blocks.UNPOWERED_COMPARATOR.method_11603(iblockstate))
                 {
                     iblockstate.neighbourUpdate(worldIn, blockpos, blockIn, pos);
                 }
-                else if (horizontal && iblockstate.isSolidBlock())
+                else if (horizontal && iblockstate.method_11734())
                 {
                     blockpos = blockpos.offset(enumfacing);
-                    iblockstate = worldIn.getBlockState(blockpos);
+                    BlockState iblockstate1 = worldIn.getBlockState(blockpos);
 
-                    if (Blocks.UNPOWERED_COMPARATOR.method_26548(iblockstate))
+                    if (Blocks.UNPOWERED_COMPARATOR.method_11603(iblockstate1))
                     {
-                        iblockstate.neighbourUpdate(worldIn, blockpos, blockIn, pos);
+                        iblockstate1.neighbourUpdate(worldIn, blockpos, blockIn, pos);
                     }
                 }
                 
@@ -72,7 +76,7 @@ public class BlockEntityOptimizer
                 else if (iblockstate.getBlock() == Blocks.HOPPER)
                 {
                     BlockEntity blockEntity = worldIn.getBlockEntity(blockpos);
-                    if((enumfacing == Direction.DOWN || enumfacing == HopperBlock.method_26653(blockEntity.method_26938()).getOpposite())
+                    if((enumfacing == Direction.DOWN || enumfacing == HopperBlock.getDirection(blockEntity.getDataValue()).getOpposite())
                             && blockEntity instanceof LazyBlockEntity)
                     {
                         ((LazyBlockEntity) blockEntity).wakeUp();

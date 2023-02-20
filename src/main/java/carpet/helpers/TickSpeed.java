@@ -4,10 +4,10 @@ import carpet.CarpetMod;
 import carpet.CarpetServer;
 import carpet.pubsub.PubSubInfoProvider;
 import carpet.utils.Messenger;
-import net.minecraft.class_5629;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandRegistryProvider;
 import net.minecraft.util.math.MathHelper;
 
 public class TickSpeed
@@ -97,10 +97,10 @@ public class TickSpeed
         time_warp_start_time = 0;
         if (tick_warp_callback != null)
         {
-            class_5629 icommandmanager = tick_warp_sender.getServer().method_33193();
+            CommandRegistryProvider icommandmanager = tick_warp_sender.getMinecraftServer().getCommandManager();
             try
             {
-                int j = icommandmanager.method_29374(tick_warp_sender, tick_warp_callback);
+                int j = icommandmanager.execute(tick_warp_sender, tick_warp_callback);
 
                 if (j < 1)
                 {

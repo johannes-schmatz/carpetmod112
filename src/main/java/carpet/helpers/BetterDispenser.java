@@ -4,16 +4,11 @@ import java.util.List;
 
 import carpet.CarpetSettings;
 import net.minecraft.Bootstrap;
-import net.minecraft.block.AbstractFluidBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.FacingBlock;
-import net.minecraft.block.HorizontalFacingBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.*;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
 import net.minecraft.block.entity.DispenserBlockEntity;
+import net.minecraft.client.sound.SoundCategory;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -24,8 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.sound.Sounds;
 import net.minecraft.util.math.BlockPointer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -44,14 +38,14 @@ public class BetterDispenser {
     
     public static void dispenserAddons(){
         // Block rotation stuffs CARPET-XCOM
-        DispenserBlock.CUSTOM_BEHAVIORS.put(Item.fromBlock(Blocks.CACTUS), new Bootstrap.FallibleItemDispenserBehavior()
+        DispenserBlock.SPECIAL_ITEMS.put(Item.fromBlock(Blocks.CACTUS), new Bootstrap.class_3115()
         {
             private final ItemDispenserBehavior dispenseBehavior = new ItemDispenserBehavior();
             
             protected ItemStack dispenseSilently(BlockPointer source, ItemStack stack)
             {
                 if(!CarpetSettings.rotatorBlock){
-                    return this.dispenseBehavior.method_31989(source, stack);
+                    return this.dispenseBehavior.dispense(source, stack);
                 }
                 Direction sourceFace = (Direction)source.getBlockState().get(DispenserBlock.FACING);
                 World world = source.getWorld();
@@ -71,8 +65,8 @@ public class BetterDispenser {
                     world.setBlockState(blockpos, iblockstate.with(FacingBlock.FACING, face), 3);
                 
                 // Block rotation for blocks that can be placed in only 4 horizontal rotations.
-                }else if(block instanceof HorizontalFacingBlock){
-                    Direction face = (Direction)iblockstate.get(HorizontalFacingBlock.FACING);
+                }else if(block instanceof HorizotalFacingBlock){
+                    Direction face = (Direction)iblockstate.get(HorizotalFacingBlock.DIRECTION);
                     face = rotateAround(face, sourceFace.getAxis());
                     if(sourceFace.getId() % 2 == 0){ // same as above.
                         face = rotateAround(face, sourceFace.getAxis());
@@ -80,7 +74,7 @@ public class BetterDispenser {
                     }
                     if(sourceFace.getId() <= 1){ // Make sure to suppress rotation when index is lower then 2 as that will result in a faulty rotation for 
                                                     // blocks that only can be placed horizontaly.
-                        world.setBlockState(blockpos, iblockstate.with(HorizontalFacingBlock.FACING, face), 3);
+                        world.setBlockState(blockpos, iblockstate.with(HorizotalFacingBlock.DIRECTION, face), 3);
                     }
                 }
                 // Send block update to the block that just have been rotated.
@@ -91,13 +85,13 @@ public class BetterDispenser {
         });
         
         // Block fill bottle of water. XCOM-CARPET
-        DispenserBlock.CUSTOM_BEHAVIORS.put(Items.GLASS_BOTTLE, new ItemDispenserBehavior()
+        DispenserBlock.SPECIAL_ITEMS.put(Items.GLASS_BOTTLE, new ItemDispenserBehavior()
         {
             private final ItemDispenserBehavior dispenseBehavior = new ItemDispenserBehavior();
             public ItemStack dispenseSilently(BlockPointer source, ItemStack stack)
             {
                 if(!CarpetSettings.dispenserWaterBottle){
-                    return this.dispenseBehavior.method_31989(source, stack);
+                    return this.dispenseBehavior.dispense(source, stack);
                 }
                 
                 World world = source.getWorld();
@@ -126,7 +120,7 @@ public class BetterDispenser {
                 {
                     if (((DispenserBlockEntity)source.getBlockEntity()).addToFirstFreeSlot(itemstack) < 0)
                     {
-                        this.dispenseBehavior.method_31989(source, itemstack);
+                        this.dispenseBehavior.dispense(source, itemstack);
                     }
 
                     return stack;
@@ -135,10 +129,10 @@ public class BetterDispenser {
         });
         
         // Chest/hopper/tnt/furnnace Minecart thingy XCOM-CARPET
-        DispenserBlock.CUSTOM_BEHAVIORS.put(Item.fromBlock(Blocks.CHEST), new BehaviorDispenseMinecart(AbstractMinecartEntity.Type.CHEST));
-        DispenserBlock.CUSTOM_BEHAVIORS.put(Item.fromBlock(Blocks.HOPPER), new BehaviorDispenseMinecart(AbstractMinecartEntity.Type.HOPPER));
-        DispenserBlock.CUSTOM_BEHAVIORS.put(Item.fromBlock(Blocks.FURNACE), new BehaviorDispenseMinecart(AbstractMinecartEntity.Type.FURNACE));
-        DispenserBlock.CUSTOM_BEHAVIORS.put(Item.fromBlock(Blocks.TNT), new BehaviorDispenseMinecart(AbstractMinecartEntity.Type.TNT));
+        DispenserBlock.SPECIAL_ITEMS.put(Item.fromBlock(Blocks.CHEST), new BehaviorDispenseMinecart(AbstractMinecartEntity.Type.CHEST));
+        DispenserBlock.SPECIAL_ITEMS.put(Item.fromBlock(Blocks.HOPPER), new BehaviorDispenseMinecart(AbstractMinecartEntity.Type.HOPPER));
+        DispenserBlock.SPECIAL_ITEMS.put(Item.fromBlock(Blocks.FURNACE), new BehaviorDispenseMinecart(AbstractMinecartEntity.Type.FURNACE));
+        DispenserBlock.SPECIAL_ITEMS.put(Item.fromBlock(Blocks.TNT), new BehaviorDispenseMinecart(AbstractMinecartEntity.Type.TNT));
         /*
          * for tnt use this in the already existing tnt code if the removal isnt used.
          *      Bootstrap.BehaviorDispenseMinecart tntDispense = new Bootstrap.BehaviorDispenseMinecart(EntityMinecart.Type.TNT);
@@ -193,7 +187,7 @@ public class BetterDispenser {
             }
             
             BlockPos blockpos = source.getBlockPos().offset(source.getBlockState().get(DispenserBlock.FACING));
-            List<MinecartEntity> list = source.getWorld().getEntities(MinecartEntity.class, new Box(blockpos));
+            List<MinecartEntity> list = source.getWorld().getEntitiesInBox(MinecartEntity.class, new Box(blockpos));
     
             if (list.isEmpty())
             {
@@ -203,7 +197,7 @@ public class BetterDispenser {
             {
                 MinecartEntity minecart = list.get(0);
                 minecart.remove();
-                AbstractMinecartEntity entityminecart = AbstractMinecartEntity.create(minecart.world, minecart.x, minecart.y, minecart.z, this.minecartType);
+                AbstractMinecartEntity entityminecart = AbstractMinecartEntity.createMinecart(minecart.world, minecart.x, minecart.y, minecart.z, this.minecartType);
                 entityminecart.velocityX = minecart.velocityX;
                 entityminecart.velocityY = minecart.velocityY;
                 entityminecart.velocityZ = minecart.velocityZ;
@@ -222,17 +216,18 @@ public class BetterDispenser {
                 BlockPos blockpos = source.getBlockPos().offset(source.getBlockState().get(DispenserBlock.FACING));
                 TntEntity entitytntprimed = new TntEntity(world, (double)blockpos.getX() + 0.5D, (double)blockpos.getY(), (double)blockpos.getZ() + 0.5D, (LivingEntity)null);
                 world.spawnEntity(entitytntprimed);
-                world.playSound((PlayerEntity)null, entitytntprimed.x, entitytntprimed.y, entitytntprimed.z, SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                world.playSound((PlayerEntity)null, entitytntprimed.x, entitytntprimed.y, entitytntprimed.z, Sounds.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS,
+                        1.0F, 1.0F);
                 stack.decrement(1);
                 return stack;
             }else{
-                return this.dispenseBehavior.method_31989(source, stack);
+                return this.dispenseBehavior.dispense(source, stack);
             }
         }
 
         protected void playSound(BlockPointer source)
         {
-            source.getWorld().syncWorldEvent(1000, source.getBlockPos(), 0);
+            source.getWorld().syncGlobalEvent(1000, source.getBlockPos(), 0);
         }
     }
 }

@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FurnaceBlockEntity.class)
 public abstract class FurnaceBlockEntityMixin implements BlockEntityOptimizer.LazyBlockEntity {
-    @Shadow public abstract boolean method_26991();
+    @Shadow public abstract boolean isFueled();
 
     // CARPET-optimizedTileEntities: Whether the tile entity is asleep or not.
     // False by default so tile entities wake up upon chunk loading
@@ -22,13 +22,23 @@ public abstract class FurnaceBlockEntityMixin implements BlockEntityOptimizer.La
         this.sleeping = false;
     }
 
-    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "tick",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void optimize(CallbackInfo ci) {
         if (CarpetSettings.optimizedTileEntities && sleeping) ci.cancel();
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/FurnaceBlockEntity;markDirty()V"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/entity/FurnaceBlockEntity;markDirty()V"
+            )
+    )
     private void checkSleep(CallbackInfo ci) {
-        if (!method_26991()) sleeping = true;
+        if (!isFueled()) sleeping = true;
     }
 }

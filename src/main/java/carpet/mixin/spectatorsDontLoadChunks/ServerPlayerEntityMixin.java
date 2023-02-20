@@ -3,7 +3,7 @@ package carpet.mixin.spectatorsDontLoadChunks;
 import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
@@ -18,17 +18,29 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         super(worldIn, gameProfileIn);
     }
 
-    @Inject(method = "setGameMode", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;dropShoulderEntities()V"))
+    @Inject(
+            method = "method_3170",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;method_14157()V"
+            )
+    )
     private void onChangeToSpectator(GameMode gameType, CallbackInfo ci) {
         if (CarpetSettings.spectatorsDontLoadChunks) {
-            ((ServerWorld) world).getRaidManager().method_33588((ServerPlayerEntity) (Object) this);
+            ((ServerWorld) world).getPlayerWorldManager().method_2115((ServerPlayerEntity) (Object) this);
         }
     }
 
-    @Inject(method = "setGameMode", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;setCameraEntity(Lnet/minecraft/entity/Entity;)V"))
+    @Inject(
+            method = "method_3170",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;method_10763(Lnet/minecraft/entity/Entity;)V"
+            )
+    )
     private void onChangeFromSpectator(GameMode gameType, CallbackInfo ci) {
         if (CarpetSettings.spectatorsDontLoadChunks) {
-            ((ServerWorld) world).getRaidManager().method_33582((ServerPlayerEntity) (Object) this);
+            ((ServerWorld) world).getPlayerWorldManager().method_2109((ServerPlayerEntity) (Object) this);
         }
     }
 }

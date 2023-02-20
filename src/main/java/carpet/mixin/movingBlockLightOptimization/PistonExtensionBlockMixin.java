@@ -3,12 +3,13 @@ package carpet.mixin.movingBlockLightOptimization;
 import carpet.helpers.PistonHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
-import net.minecraft.block.Material;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.PistonExtensionBlock;
 import net.minecraft.block.PistonHeadBlock;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.EnumProperty;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -17,12 +18,16 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(PistonExtensionBlock.class)
 public abstract class PistonExtensionBlockMixin extends BlockWithEntity {
     @Shadow @Final public static DirectionProperty FACING;
-    @Shadow @Final public static EnumProperty<PistonHeadBlock.PistonType> TYPE;
+    @Shadow @Final public static EnumProperty<PistonHeadBlock.PistonHeadType> TYPE;
 
     protected PistonExtensionBlockMixin(Material materialIn) {
         super(materialIn);
     }
 
+    /**
+     * @author skyrising
+     * @reason carpet
+     */
     @Override
     @Overwrite
     public StateManager appendProperties() {
@@ -37,7 +42,7 @@ public abstract class PistonExtensionBlockMixin extends BlockWithEntity {
     }
 
     @Override
-    public int getLightLevel(BlockState state) {
+    public int getLuminance(BlockState state) {
         return state.get(PistonHelper.LIGHT);
     }
 }

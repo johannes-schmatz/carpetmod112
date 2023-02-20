@@ -7,10 +7,10 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(Chunk.class)
 public class WorldChunkMixin implements RepopulatableChunk {
-    @Shadow private boolean field_25379;
+    @Shadow private boolean terrainPopulated;
 
     @Override
     public void setUnpopulated() {
-        this.field_25379 = false;
+        this.terrainPopulated = false;
     }
 }

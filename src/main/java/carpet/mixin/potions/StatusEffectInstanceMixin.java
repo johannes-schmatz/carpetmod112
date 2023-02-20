@@ -11,26 +11,26 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(StatusEffectInstance.class)
 public class StatusEffectInstanceMixin implements ExtendedStatusEffectInstance {
-    @Shadow @Final private StatusEffect type;
+    @Shadow @Final private StatusEffect statusEffect;
     @Shadow @Final private static Logger LOGGER;
     @Shadow private boolean ambient;
     @Shadow private int amplifier;
     @Shadow private int duration;
-    @Shadow private boolean field_32943;
+    @Shadow private boolean showParticles;
 
     private StatusEffectInstance previous;
 
     @Override
     @SuppressWarnings("ConstantConditions")
     public StatusEffectInstance combine(StatusEffectInstance other) {
-        if (this.type != other.getEffectType()) LOGGER.warn("This method should only be called for matching effects!");
+        if (this.statusEffect != other.getStatusEffect()) LOGGER.warn("This method should only be called for matching effects!");
         if (other == (Object) this) return other;
         boolean combine = CarpetSettings.combinePotionDuration > 0 && ItemPotionHolder.itemPotion && other.getAmplifier() == this.amplifier;
         if (!combine && CarpetSettings.effectsFix && !this.ambient && other.getAmplifier() >= this.amplifier && other.getDuration() < this.duration) {
             boolean stack = true;
             for (StatusEffectInstance e = other; e != null; e = ((ExtendedStatusEffectInstance) e).getPrevious()) {
                 if (e == (Object) this) {
-                    LOGGER.warn("Tried to recursively combine effects " + this + " and " + other);
+                    LOGGER.warn("Tried to recursively combine effects {} and {}", this, other);
                     stack = false;
                     break;
                 }
@@ -59,7 +59,7 @@ public class StatusEffectInstanceMixin implements ExtendedStatusEffectInstance {
             this.ambient = other.isAmbient();
         }
 
-        this.field_32943 = other.shouldShowParticles();
+        this.showParticles = other.shouldShowParticles();
         return (StatusEffectInstance) (Object) this;
     }
 

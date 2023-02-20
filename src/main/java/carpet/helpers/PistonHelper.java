@@ -18,7 +18,7 @@ public final class PistonHelper {
     // Movable Tile entity fix CARPET-2No2Name
     public static boolean isPushableTileEntityBlock(Block block) {
         //Making PISTON_EXTENSION (BlockPistonMoving) pushable would not work as its createNewTileEntity()-method returns null
-        return block != Blocks.ENDER_CHEST && block != Blocks.ENCHANTING_TABLE && block != Blocks.END_GATEWAY
+        return block != Blocks.ENDERCHEST && block != Blocks.ENCHANTING_TABLE && block != Blocks.END_GATEWAY
                 && block != Blocks.END_PORTAL && block != Blocks.SPAWNER && block != Blocks.PISTON_EXTENSION;
     }
 

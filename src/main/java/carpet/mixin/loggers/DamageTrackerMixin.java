@@ -13,7 +13,14 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(DamageTracker.class)
 public class DamageTrackerMixin {
-    @Inject(method = "getDeathMessage", at = @At(value = "CONSTANT", args = "stringValue=death.fell.accident."),  locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "getDeathMessage",
+            at = @At(
+                    value = "CONSTANT",
+                    args = "stringValue=death.fell.accident."
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void damageDebug(CallbackInfoReturnable<Text> cir, DamageRecord combatEntry) {
         if(LoggerRegistry.__damageDebug){ // Added debugger for the instance people need help debuging why there recipes don't work. CARPET-XCOM
             LoggerRegistry.getLogger("damageDebug").log(()-> new Text[]{

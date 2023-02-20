@@ -2,7 +2,7 @@ package carpet.helpers;
 
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class LagSpikeHelper {
 
@@ -22,7 +22,7 @@ public class LagSpikeHelper {
      * Safe to call without carpet rule as {@link #pendingLagPhase} is always {@code null} in vanilla
      */
     public static void processLagSpikes(@Nullable World world, TickPhase phase, Enum<?> subPhase) {
-        if (phase == pendingLagPhase && subPhase == pendingLagSubPhase && (world == null || world.dimension.getType() == pendingLagDimension)) {
+        if (phase == pendingLagPhase && subPhase == pendingLagSubPhase && (world == null || world.dimension.getDimensionType() == pendingLagDimension)) {
             try {
                 Thread.sleep(pendingLagTime);
             } catch (InterruptedException e) {

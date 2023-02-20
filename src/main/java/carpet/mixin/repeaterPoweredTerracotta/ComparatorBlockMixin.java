@@ -9,10 +9,10 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ComparatorBlock.class)
 public abstract class ComparatorBlockMixin extends AbstractRedstoneGateBlockMixin {
-    @Shadow protected abstract int method_26560(BlockState state);
+    @Shadow protected abstract int getUpdateDelayInternal(BlockState state);
 
     @Override
     protected int getDelay(BlockState state, World world, BlockPos pos) {
-        return method_26560(state);
+        return getUpdateDelayInternal(state);
     }
 }

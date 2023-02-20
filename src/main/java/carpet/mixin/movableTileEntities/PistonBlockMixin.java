@@ -25,7 +25,13 @@ import java.util.List;
 
 @Mixin(PistonBlock.class)
 public class PistonBlockMixin {
-    @Redirect(method = "isMovable", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;hasBlockEntity()Z"))
+    @Redirect(
+            method = "method_9001",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/Block;hasBlockEntity()Z"
+            )
+    )
     private static boolean isImmovableTileEntity(Block block) {
         if (!block.hasBlockEntity()) return false;
         if (CarpetSettings.movableTileEntities) return !PistonHelper.isPushableTileEntityBlock(block);
@@ -33,7 +39,16 @@ public class PistonBlockMixin {
     }
 
     private static final ThreadLocal<List<BlockEntity>> movedTileEntities = new ThreadLocal<>();
-    @Inject(method = "move", at = @At(value = "INVOKE", target = "Ljava/util/List;size()I", remap = false, ordinal = 4), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "move",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/List;size()I",
+                    remap = false,
+                    ordinal = 4
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void createTileEntityList(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir, PistonHandler helper, List<BlockPos> positions) {
         if(CarpetSettings.movableTileEntities || CarpetSettings.autocrafter){
             List<BlockEntity> tileEntities = new ArrayList<>();
@@ -52,15 +67,37 @@ public class PistonBlockMixin {
 
     // Redirect can't local-capture so we need redirect to nothing and inject
 
-    @Redirect(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/PistonExtensionBlock;createBlockEntityPiston(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;ZZ)Lnet/minecraft/block/entity/BlockEntity;", ordinal = 0))
+    @Redirect(
+            method = "move",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/block/PistonExtensionBlock;createPistonEntity(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;ZZ)Lnet/minecraft/block/entity/BlockEntity;",
+                    ordinal = 0
+            )
+    )
     private BlockEntity dontCreateTilePiston(BlockState blockState, Direction facing, boolean extending, boolean shouldHeadBeRendered) { return null; }
-    @Redirect(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockEntity(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;)V", ordinal = 0))
+    @Redirect(
+            method = "move",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setBlockEntity(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;)V",
+                    ordinal = 0
+            )
+    )
     private void dontAddTileEntity(World world, BlockPos pos, BlockEntity tileEntity) {}
 
-    @Inject(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockEntity(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;)V", ordinal = 0), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(
+            method = "move",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;setBlockEntity(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;)V",
+                    ordinal = 0
+            ),
+            locals = LocalCapture.CAPTURE_FAILHARD
+    )
     private void handleMovableTileEntity(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir,
              PistonHandler helper, List<BlockPos> positions, List<BlockState> states, List<BlockPos> list2, int k, BlockState[] aiblockstate, Direction enumfacing, int index, BlockPos currentPos, BlockState currentState) {
-        BlockEntity tilePiston = PistonExtensionBlock.createBlockEntityPiston(states.get(index), direction, extending, false);
+        BlockEntity tilePiston = PistonExtensionBlock.createPistonEntity(states.get(index), direction, extending, false);
         if (CarpetSettings.autocrafter && currentState instanceof CraftingTableBlock || CarpetSettings.movableTileEntities && PistonHelper.isPushableTileEntityBlock(currentState.getBlock())) {
             ((ExtendedPistonBlockEntityMBE) tilePiston).setCarriedTileEntity(movedTileEntities.get().get(index));
         }

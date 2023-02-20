@@ -8,7 +8,10 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(PotionItem.class)
 public class PotionItemMixin {
-    @ModifyConstant(method = "getMaxUseTime", constant = @Constant(intValue = 32))
+    @ModifyConstant(
+            method = "getMaxUseTime",
+            constant = @Constant(intValue = 32)
+    )
     private int instantDrink(int orig) {
         if (CarpetSettings.instantDrinkPotion) return 1;
         return orig;

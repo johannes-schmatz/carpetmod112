@@ -11,11 +11,11 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -45,11 +45,11 @@ public class Waypoint implements Comparable<Waypoint> {
     }
 
     public DimensionType getDimension() {
-        return world.dimension.getType();
+        return world.dimension.getDimensionType();
     }
 
     public String getFullName() {
-        return getDimension().getSaveDir() + ":" + name;
+        return getDimension().getName() + ":" + name;
     }
 
     @Override
@@ -78,36 +78,37 @@ public class Waypoint implements Comparable<Waypoint> {
     public void teleport(Entity entity) {
         if (entity.world != this.world) {
             // Adapted from spectator teleport code (ServerPlayNetworkHandler::onSpectatorTeleport)
-            MinecraftServer server = entity.getServer();
+            MinecraftServer server = entity.getMinecraftServer();
             ServerPlayerEntity player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
             ServerWorld worldFrom = (ServerWorld) entity.world;
             ServerWorld worldTo = this.world;
-            int dimension = worldTo.dimension.getType().getRawId();
-            entity.dimensionId = dimension;
+            int dimension = worldTo.dimension.getDimensionType().getId();
+            entity.dimension = dimension;
             if (player != null) {
-                player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(dimension, worldFrom.getDifficulty(), worldFrom.getLevelProperties().getGeneratorType(), player.interactionManager.getGameMode()));
-                server.getPlayerManager().sendCommandTree(player);
+                player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(dimension, worldFrom.getGlobalDifficulty(), worldFrom.getLevelProperties().getGeneratorType(),
+                        player.interactionManager.getGameMode()));
+                server.getPlayerManager().method_12831(player);
             }
             worldFrom.removeEntity(entity);
-            worldFrom.method_25975(entity.chunkX, entity.chunkZ).remove(entity, entity.chunkY);
+            worldFrom.getChunk(entity.chunkX, entity.chunkZ).removeEntity(entity, entity.chunkY);
             entity.removed = false;
             entity.refreshPositionAndAngles(x, y, z, (float) yaw, (float) pitch);
 
             if (entity.isAlive())
             {
                 worldTo.spawnEntity(entity);
-                worldTo.method_26050(entity, false);
+                worldTo.checkChunk(entity, false);
             }
 
             entity.setWorld(worldTo);
             if (player != null) {
-                server.getPlayerManager().method_33707(player, worldFrom);
+                server.getPlayerManager().method_1986(player, worldFrom);
             }
-            entity.requestTeleport(x, y, z);
+            entity.refreshPositionAfterTeleport(x, y, z);
             if (player != null) {
                 player.interactionManager.setWorld(worldTo);
                 server.getPlayerManager().sendWorldInfo(player, worldTo);
-                server.getPlayerManager().method_33734(player);
+                server.getPlayerManager().method_2009(player);
             }
         } else if (entity instanceof ServerPlayerEntity) {
             ((ServerPlayerEntity) entity).networkHandler.requestTeleport(x, y, z, (float) yaw, (float) pitch);
@@ -117,7 +118,7 @@ public class Waypoint implements Comparable<Waypoint> {
     }
 
     public boolean canManipulate(CommandSource sender) {
-        return sender.allowCommandExecution(2, "") || (this.creator != null && this.creator.equalsIgnoreCase(sender.getName()));
+        return sender.canUseCommand(2, "") || (this.creator != null && this.creator.equalsIgnoreCase(sender.getTranslationKey()));
     }
 
     public static Set<Waypoint> getAllWaypoints(ServerWorld ...worlds) {
@@ -146,7 +147,7 @@ public class Waypoint implements Comparable<Waypoint> {
             if (waypoints.containsKey(name)) return waypoints.get(name);
         }
         for (ServerWorld world : worlds) {
-            if (dimension != null && !dimension.equals(world.dimension.getType())) continue;
+            if (dimension != null && !dimension.equals(world.dimension.getDimensionType())) continue;
             Map<String, Waypoint> waypoints = ((WaypointContainer) world).getWaypoints();
             if (waypoints.containsKey(name)) return waypoints.get(name);
         }
@@ -154,8 +155,8 @@ public class Waypoint implements Comparable<Waypoint> {
     }
 
     public static File getWaypointFile(World world) {
-        String filename = "waypoints" + world.dimension.getType().getPersistentStateSuffix() + ".json";
-        return new File(world.method_25960().method_28318(), filename);
+        String filename = "waypoints" + world.dimension.getDimensionType().getSuffix() + ".json";
+        return new File(world.getSaveHandler().getWorldFolder(), filename);
     }
 
     public static Gson getGson(MinecraftServer server) {
@@ -205,7 +206,7 @@ public class Waypoint implements Comparable<Waypoint> {
             for (Waypoint w : waypoints) {
                 out.name(w.name);
                 out.beginObject();
-                out.name("dimension").value(w.world.dimension.getType().getSaveDir());
+                out.name("dimension").value(w.world.dimension.getDimensionType().getName());
                 out.name("x").value(w.x);
                 out.name("y").value(w.y);
                 out.name("z").value(w.z);
@@ -224,7 +225,7 @@ public class Waypoint implements Comparable<Waypoint> {
             while (in.hasNext()) {
                 String name = in.nextName();
                 String creator = null;
-                ServerWorld world = server.getWorldById(0);
+                ServerWorld world = server.getWorld(0);
                 Double x = null;
                 Double y = null;
                 Double z = null;
@@ -234,7 +235,7 @@ public class Waypoint implements Comparable<Waypoint> {
                 while (in.hasNext()) {
                     switch (in.nextName()) {
                         case "dimension": {
-                            world = server.getWorldById(DimensionType.method_27530(in.nextString()).getRawId());
+                            world = server.getWorld(DimensionType.fromName(in.nextString()).getId());
                             break;
                         }
                         case "x": {

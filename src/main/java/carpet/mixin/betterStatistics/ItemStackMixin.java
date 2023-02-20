@@ -13,22 +13,46 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class ItemStackMixin {
     @Shadow private int damage;
 
-    @Redirect(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/stats/Stats;method_33892(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"))
+    @Redirect(
+            method = "use",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/stat/Stats;used(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
+            )
+    )
     private Stat addUseMeta1(Item item) {
         return StatHelper.getObjectUseStats(item, damage);
     }
 
-    @Redirect(method = "postHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/stats/Stats;method_33892(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"))
+    @Redirect(
+            method = "onEntityHit",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/stat/Stats;used(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
+            )
+    )
     private Stat addUseMeta2(Item item) {
         return StatHelper.getObjectUseStats(item, damage);
     }
 
-    @Redirect(method = "postMine", at = @At(value = "INVOKE", target = "Lnet/minecraft/stats/Stats;method_33892(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"))
+    @Redirect(
+            method = "method_11306",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/stat/Stats;used(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
+            )
+    )
     private Stat addUseMeta3(Item item) {
         return StatHelper.getObjectUseStats(item, damage);
     }
 
-    @Redirect(method = "onCraft", at = @At(value = "INVOKE", target = "Lnet/minecraft/stats/Stats;method_33885(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"))
+    @Redirect(
+            method = "onCraft",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/stat/Stats;crafted(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
+            )
+    )
     private Stat addCraftMeta(Item item) {
         return StatHelper.getCraftStats(item, damage);
     }

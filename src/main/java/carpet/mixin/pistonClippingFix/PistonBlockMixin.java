@@ -13,7 +13,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PistonBlock.class)
 public class PistonBlockMixin {
-    @Inject(method = "method_27136", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;addBlockAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V"))
+    @Inject(
+            method = "tryMove",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/World;addBlockAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V"
+            )
+    )
     private void synchronize(World worldIn, BlockPos pos, BlockState state, CallbackInfo ci) {
         if (CarpetSettings.pistonClippingFix > 0) PistonFixes.synchronizeClient();
     }

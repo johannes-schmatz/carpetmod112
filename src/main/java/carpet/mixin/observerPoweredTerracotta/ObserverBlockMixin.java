@@ -5,7 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FacingBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.ObserverBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -20,7 +20,10 @@ public class ObserverBlockMixin extends FacingBlock {
         super(materialIn);
     }
 
-    @ModifyConstant(method = "method_26712", constant = @Constant(intValue = 2))
+    @ModifyConstant(
+            method = "method_13712",
+            constant = @Constant(intValue = 2)
+    )
     private int adjustDelay(int delay, BlockState state, World world, BlockPos pos) {
         if (CarpetSettings.observerPoweredTerracotta){
             Direction enumfacing = state.get(FACING);

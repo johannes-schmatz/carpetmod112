@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin extends Entity {
-    @Shadow public abstract ItemStack getStack();
+    @Shadow public abstract ItemStack getItemStack();
 
     private ItemLogHelper logHelper;
 
@@ -26,31 +26,53 @@ public abstract class ItemEntityMixin extends Entity {
         super(worldIn);
     }
 
-    @Inject(method = "<init>(Lnet/minecraft/world/World;DDD)V", at = @At("RETURN"))
+    @Inject(
+            method = "<init>(Lnet/minecraft/world/World;DDD)V",
+            at = @At("RETURN")
+    )
     private void onInit(World world, double x, double y, double z, CallbackInfo ci) {
         if (LoggerRegistry.__items) {
             logHelper = new ItemLogHelper("items");
         }
     }
 
-    @Inject(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/ItemEntity;age:I", ordinal = 2))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/entity/ItemEntity;age:I",
+                    ordinal = 2
+            )
+    )
     private void onTick(CallbackInfo ci) {
         if (LoggerRegistry.__items && logHelper != null) {
             logHelper.onTick(x, y, z, velocityX, velocityY, velocityZ);
         }
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ItemEntity;remove()V"))
+    @Inject(
+            method = "tick",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/ItemEntity;remove()V"
+            )
+    )
     private void onFinish(CallbackInfo ci) {
         if (LoggerRegistry.__items && logHelper != null) {
             logHelper.onFinish("Despawn Timer");
         }
     }
 
-    @Inject(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ItemEntity;remove()V"))
+    @Inject(
+            method = "damage",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/ItemEntity;remove()V"
+            )
+    )
     private void onBroken(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.cactusCounter && source == DamageSource.CACTUS) {
-            HopperCounter.cactus.add(world.getServer(), getStack());
+            HopperCounter.cactus.add(world.getServer(), getItemStack());
         }
 
         if (LoggerRegistry.__items && logHelper != null) {

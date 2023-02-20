@@ -2,11 +2,11 @@ package carpet.commands;
 
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import carpet.CarpetSettings;
 import carpet.utils.ChunkLoading;
-import net.minecraft.class_6182;
+import net.minecraft.command.IncorrectUsageException;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
@@ -16,13 +16,13 @@ import net.minecraft.util.math.BlockPos;
 public class CommandUnload13 extends CommandCarpetBase
 {
     @Override
-    public String method_29275(CommandSource sender)
+    public String getUsageTranslationKey(CommandSource sender)
     {
         return "Usage: unload <brief|verbose|order|protect> <X1> <Y1> <Z1> [<x2> <y2> <z2>]";
     }
 
     @Override
-    public String method_29277()
+    public String getCommandName()
     {
         return "unload13";
     }
@@ -31,24 +31,24 @@ public class CommandUnload13 extends CommandCarpetBase
     {
         for (String line: messages)
         {
-            method_28710(sender, this, line);
+            run(sender, this, line);
         }
     }
 
     @Override
-    public void method_29272(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (!command_enabled("commandUnload", sender)) return;
         if (args.length != 0 && args.length != 1 && args.length != 2 && args.length != 4 && args.length != 7)
         {
-            throw new class_6182(method_29275(sender));
+            throw new IncorrectUsageException(getUsageTranslationKey(sender));
         }
         BlockPos pos = sender.getBlockPos();
         BlockPos pos2 = null;
         if (args.length == 0)
         {
-            ServerWorld world = (ServerWorld) (sender.getEntityWorld() );
-            method_28710(sender, this, "Chunk unloading report for "+world.dimension.getType());
+            ServerWorld world = (ServerWorld) (sender.getWorld() );
+            run(sender, this, "Chunk unloading report for "+world.dimension.getDimensionType());
             List<String> report = ChunkLoading.test_save_chunks_113(world, pos, false);
             print_multi_message(report, sender);
             return;
@@ -60,11 +60,11 @@ public class CommandUnload13 extends CommandCarpetBase
         int custom_dim_id = 0;
         if (args.length >= 4)
         {
-            pos = method_28713(sender, args, 1, false);
+            pos = getBlockPos(sender, args, 1, false);
         }
         if (args.length >= 7)
         {
-            pos2 = method_28713(sender, args, 4, false);
+            pos2 = getBlockPos(sender, args, 4, false);
         }
         if ("overworld".equalsIgnoreCase(args[0]))
         {
@@ -91,24 +91,24 @@ public class CommandUnload13 extends CommandCarpetBase
 
         if (order)
         {
-            List<String> orders = ChunkLoading.check_unload_order_13((ServerWorld)sender.getEntityWorld(), pos, pos2);
+            List<String> orders = ChunkLoading.check_unload_order_13((ServerWorld)sender.getWorld(), pos, pos2);
             print_multi_message(orders, sender);
             return;
         }
         if (protect)
         {
-            List<String> orders = ChunkLoading.protect_13((ServerWorld)sender.getEntityWorld(), pos, pos2, args[0]);
+            List<String> orders = ChunkLoading.protect_13((ServerWorld)sender.getWorld(), pos, pos2, args[0]);
             print_multi_message(orders, sender);
             return;
         }
-        ServerWorld world = (ServerWorld) (custom_dim?server.getWorldById(custom_dim_id):sender.getEntityWorld() );
-        method_28710(sender, this, "Chunk unloading report for "+world.dimension.getType());
+        ServerWorld world = (ServerWorld) (custom_dim?server.getWorld(custom_dim_id):sender.getWorld() );
+        run(sender, this, "Chunk unloading report for "+world.dimension.getDimensionType());
         List<String> report = ChunkLoading.test_save_chunks_113(world, pos, verbose);
         print_multi_message(report, sender);
     }
 
     @Override
-    public List<String> method_29273(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
+    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
     {
         if (!CarpetSettings.commandUnload)
         {
@@ -116,19 +116,19 @@ public class CommandUnload13 extends CommandCarpetBase
         }
         if (args.length == 1)
         {
-            return method_28732(args, "verbose", "brief", "order", "nether", "overworld", "end", "protect");
+            return method_2894(args, "verbose", "brief", "order", "nether", "overworld", "end", "protect");
         }
         if (args.length == 2 && ( "nether".equalsIgnoreCase(args[0]) || "overworld".equalsIgnoreCase(args[0]) || "end".equalsIgnoreCase(args[0]) ))
         {
-            return method_28732(args, "verbose");
+            return method_2894(args, "verbose");
         }
         if (args.length > 1 && args.length <= 4)
         {
-            return method_28730(args, 1, pos);
+            return method_10707(args, 1, pos);
         }
         if (args.length > 4 && args.length <= 7)
         {
-            return method_28730(args, 4, pos);
+            return method_10707(args, 4, pos);
         }
         return Collections.emptyList();
     }

@@ -1,7 +1,7 @@
 package narcolepticfrog.rsmm.events;
 
 import java.util.List;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 
 public interface ServerPacketListener {

@@ -29,6 +29,7 @@ import carpet.utils.extensions.WorldWithBlockEventSerializer;
 import carpet.worldedit.WorldEditBridge;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +38,6 @@ import net.minecraft.block.FallingBlock;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.ColumnPos;
 
 import static carpet.CarpetSettings.RuleCategory.*;
 
@@ -162,9 +162,9 @@ public final class CarpetSettings
 
     private static boolean validateInstantFallingFlag(boolean value) {
         if (value) {
-            FallingBlock.field_24383 = true;
+            FallingBlock.instantFall = true;
         }else {
-            FallingBlock.field_24383 = false;
+            FallingBlock.instantFall = false;
         }
         return true;
     }
@@ -361,6 +361,7 @@ public final class CarpetSettings
         return value == -1 || value >= 0;
     }
 
+    // TODO: make this be settable in game (in the verify method set it to the server)
     @Rule(desc = "Sets a different motd message on client trying to connect to the server", category = CREATIVE, options = "_", extra = {
             "use '_' to use the startup setting from server.properties"
     })
@@ -388,7 +389,7 @@ public final class CarpetSettings
         if (server == null) return true;
         if (value == 0) {
             if (server.isDedicated()) {
-                value = ((MinecraftDedicatedServer) server).method_33353("view-distance", 10);
+                value = ((MinecraftDedicatedServer) server).getIntOrDefault("view-distance", 10);
             } else {
                 return false;
             }
@@ -418,8 +419,8 @@ public final class CarpetSettings
         if (server == null) return true;
         if (!value && server.worlds != null) {
             World overworld = server.worlds[0];
-            for (ColumnPos chunk : new TickingArea.SpawnChunks().listIncludedChunks(overworld))
-                overworld.getChunkManager().method_27347(chunk.x, chunk.z);
+            for (ChunkPos chunk : new TickingArea.SpawnChunks().listIncludedChunks(overworld))
+                overworld.getChunkProvider().getOrGenerateChunks(chunk.x, chunk.z);
         }
         return true;
     }
@@ -1367,7 +1368,7 @@ public final class CarpetSettings
     {
         try
         {
-            File settings_file = server.getLevelStorage().method_28330(server.getLevelName(), "carpet.conf");
+            File settings_file = server.getSaveStorage().method_11957(server.getLevelName(), "carpet.conf");
             BufferedReader b = new BufferedReader(new FileReader(settings_file));
             String line = "";
             Map<String,String> result = new HashMap<String, String>();
@@ -1408,7 +1409,7 @@ public final class CarpetSettings
         if (locked) return;
         try
         {
-            File settings_file = server.getLevelStorage().method_28330(server.getLevelName(), "carpet.conf");
+            File settings_file = server.getSaveStorage().method_11957(server.getLevelName(), "carpet.conf");
             FileWriter fw = new FileWriter(settings_file);
             for (String key: values.keySet())
             {

@@ -10,8 +10,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import net.minecraft.world.chunk.EndChunkGenerator;
+
 import java.util.Random;
-import net.minecraft.world.gen.chunk.EndChunkGenerator;
 
 @Mixin(EndChunkGenerator.class)
 public class EndChunkGeneratorMixin implements ExtendedEndChunkGenerator {
@@ -19,7 +20,13 @@ public class EndChunkGeneratorMixin implements ExtendedEndChunkGenerator {
     private long lastRandomSeed = 0;
     private boolean randomSeedUsed = false;
 
-    @Redirect(method = "generateChunk", at = @At(value = "INVOKE", target = "Ljava/util/Random;setSeed(J)V"))
+    @Redirect(
+            method = "generate",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/Random;setSeed(J)V"
+            )
+    )
     private void onGenerate(Random random, long seed) {
         if (CarpetSettings.endChunkSeed != 0) seed = CarpetSettings.endChunkSeed;
         random.setSeed(seed);
@@ -27,14 +34,20 @@ public class EndChunkGeneratorMixin implements ExtendedEndChunkGenerator {
         this.randomSeedUsed = false;
     }
 
-    @Inject(method = "decorate", at = @At("HEAD"))
+    @Inject(
+            method = "populate",
+            at = @At("HEAD")
+    )
     private void onPopulate(int x, int z, CallbackInfo ci) {
         if (CarpetSettings.endChunkSeed != 0) {
             this.random.setSeed(CarpetSettings.endChunkSeed);
         }
     }
 
-    @Inject(method = "decorate", at = @At("RETURN"))
+    @Inject(
+            method = "populate",
+            at = @At("RETURN")
+    )
     private void onPopulateEnd(int x, int z, CallbackInfo ci) {
         this.randomSeedUsed = true;
     }

@@ -1,6 +1,6 @@
 package carpet.commands;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import carpet.CarpetSettings;
 import carpet.utils.CarpetProfiler;
@@ -15,19 +15,19 @@ import java.util.List;
 public class CommandProfile extends CommandCarpetBase
 {
     @Override
-    public String method_29277()
+    public String getCommandName()
     {
         return "profile";
     }
 
     @Override
-    public String method_29275(CommandSource sender)
+    public String getUsageTranslationKey(CommandSource sender)
     {
         return "Usage: /profile <entities>";
     }
 
     @Override
-    public void method_29272(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (!command_enabled("commandProfile", sender)) return;
         if (args.length > 0 && "entities".equalsIgnoreCase(args[0]))
@@ -42,7 +42,7 @@ public class CommandProfile extends CommandCarpetBase
     }
 
     @Override
-    public List<String> method_29273(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
+    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
     {
         if (!CarpetSettings.commandProfile)
         {
@@ -50,7 +50,7 @@ public class CommandProfile extends CommandCarpetBase
         }
         if (args.length == 1)
         {
-            return method_28732(args, "entities");
+            return method_2894(args, "entities");
         }
         return Collections.<String>emptyList();
     }

@@ -4,10 +4,10 @@ import carpet.CarpetSettings;
 import com.google.common.base.Predicate;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.PathAwareEntity;
 import net.minecraft.entity.ai.goal.FollowTargetGoal;
 import net.minecraft.entity.ai.goal.TrackTargetGoal;
 import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,38 +25,61 @@ import java.util.List;
 
 @Mixin(FollowTargetGoal.class)
 public abstract class FollowTargetGoalMixin<T extends LivingEntity> extends TrackTargetGoal {
-    @Shadow @Final protected Predicate<? super T> field_33585;
-    @Shadow protected T targetEntity;
+    @Shadow @Final protected Predicate<? super T> targetPredicate;
+    @Shadow protected T target;
 
     public FollowTargetGoalMixin(PathAwareEntity creature, boolean checkSight) {
         super(creature, checkSight);
     }
 
     @SuppressWarnings("unchecked")
-    @Redirect(method = "canStart", at = @At(value = "INVOKE", target = "Ljava/util/List;get(I)Ljava/lang/Object;", remap = false))
+    @Redirect(
+            method = "canStart",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Ljava/util/List;get(I)Ljava/lang/Object;",
+                    remap = false
+            )
+    )
     private <E> E replaceListGet(List<E> list, int index) {
         E first = list.get(index);
         if (!CarpetSettings.invisibilityFix || !(first instanceof PlayerEntity)) return first;
-        return (E) this.mob.world.getClosestPlayer(this.mob.x, this.mob.y + (double) this.mob.getStandingEyeHeight(), this.mob.z, this.getFollowRange(), this.getFollowRange(), player -> {
-            ItemStack headSlot = player.getEquippedStack(EquipmentSlot.HEAD);
 
-            if (headSlot.getItem() == Items.SKULL) {
-                int meta = headSlot.getDamage();
-                boolean skeletonSkull = mob instanceof SkeletonEntity && meta == 0;
-                boolean zombieSkull = mob instanceof ZombieEntity && meta == 2;
-                boolean creeperSkull = mob instanceof CreeperEntity && meta == 4;
+        return (E) this.mob.world.method_11477(
+                this.mob.x,
+                this.mob.y + (double) this.mob.getEyeHeight(),
+                this.mob.z,
+                this.getFollowRange(),
+                this.getFollowRange(),
+                player -> {
+                    ItemStack headSlot = player.getStack(EquipmentSlot.HEAD);
 
-                if (skeletonSkull || zombieSkull || creeperSkull) {
-                    return 0.5;
-                }
-            }
+                    if (headSlot.getItem() == Items.SKULL) {
+                        int meta = headSlot.getDamage();
+                        boolean skeletonSkull = mob instanceof SkeletonEntity && meta == 0;
+                        boolean zombieSkull = mob instanceof ZombieEntity && meta == 2;
+                        boolean creeperSkull = mob instanceof CreeperEntity && meta == 4;
 
-            return 1.0;
-        }, (Predicate<PlayerEntity>) this.field_33585);
+                        if (skeletonSkull || zombieSkull || creeperSkull) {
+                            return 0.5;
+                        }
+                    }
+
+                    return 1.0;
+                },
+                (Predicate<PlayerEntity>) this.targetPredicate
+        );
     }
 
-    @Inject(method = "canStart", at = @At(value = "RETURN", ordinal = 2), cancellable = true)
+    @Inject(
+            method = "canStart",
+            at = @At(
+                    value = "RETURN",
+                    ordinal = 2
+            ),
+            cancellable = true
+    )
     private void returnFalseIfNull(CallbackInfoReturnable<Boolean> cir) {
-        if (this.targetEntity == null) cir.setReturnValue(false);
+        if (this.target == null) cir.setReturnValue(false);
     }
 }

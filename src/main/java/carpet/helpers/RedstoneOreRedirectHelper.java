@@ -10,7 +10,7 @@ import net.minecraft.block.RepeaterBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.EnumSet;
 
 public class RedstoneOreRedirectHelper
@@ -24,9 +24,9 @@ public class RedstoneOreRedirectHelper
         {
             return true;
         }
-        else if (Blocks.UNPOWERED_REPEATER.method_26548(blockState))
+        else if (Blocks.UNPOWERED_REPEATER.method_11603(blockState))
         {
-            Direction enumfacing = (Direction)blockState.get(RepeaterBlock.FACING);
+            Direction enumfacing = (Direction)blockState.get(RepeaterBlock.DIRECTION);
             return enumfacing == side || enumfacing.getOpposite() == side;
         }
         else if (Blocks.OBSERVER == blockState.getBlock())
@@ -35,7 +35,7 @@ public class RedstoneOreRedirectHelper
         }
         else
         {
-            return (blockState.emitsRedstonePowe() || block == Blocks.REDSTONE_ORE || block == Blocks.LIT_REDSTONE_ORE) && side != null;
+            return (blockState.emitsRedstonePower() || block == Blocks.REDSTONE_ORE || block == Blocks.LIT_REDSTONE_ORE) && side != null;
         }
     }
     
@@ -67,7 +67,7 @@ public class RedstoneOreRedirectHelper
             {
                 EnumSet<Direction> enumset = EnumSet.<Direction>noneOf(Direction.class);
                 
-                for (Direction enumfacing : Direction.Type.HORIZONTAL)
+                for (Direction enumfacing : Direction.DirectionType.HORIZONTAL)
                 {
                     if (((RedstoneWireBlockAccessor) wire).invokeCouldConnectTo(blockAccess, pos, enumfacing))
                     {

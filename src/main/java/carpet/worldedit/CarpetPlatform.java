@@ -7,7 +7,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import carpetmod.Build;
 import com.sk89q.worldedit.entity.Player;
@@ -28,7 +28,7 @@ import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
@@ -54,9 +54,9 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
         int index = name.indexOf(':');
 
         if (index != -1 && index != 0 && index != name.length() - 1) {
-            Block block = Block.fromName(name);
+            Block block = Block.get(name);
             if (block != null) {
-                return Block.getId(block);
+                return Block.getIdByBlock(block);
             }
         }
 
@@ -77,7 +77,7 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
 
     @Override
     public boolean isValidMobType(String type) {
-        return EntityType.isRegistered(new Identifier(type));
+        return EntityType.isValid(new Identifier(type));
     }
 
     @Override
@@ -129,11 +129,11 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
     @Override
     public void registerCommands(Dispatcher dispatcher) {
         if (server == null) return;
-        CommandManager mcMan = (CommandManager) server.method_33193();
+        CommandManager mcMan = (CommandManager) server.getCommandManager();
 
         for (final CommandMapping command : dispatcher.getCommands()) {
             CommandWrapper wrapper = new CommandWrapper(command);
-            mcMan.method_29056(wrapper);
+            mcMan.registerCommand(wrapper);
         }
     }
 
@@ -179,7 +179,7 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
     public Collection<Actor> getConnectedUsers() {
         List<Actor> users = new ArrayList<Actor>();
         PlayerManager scm = server.getPlayerManager();
-        for (ServerPlayerEntity entity : scm.getPlayerList()) {
+        for (ServerPlayerEntity entity : scm.getPlayers()) {
             if (entity != null) {
                 users.add(new CarpetPlayer(entity));
             }

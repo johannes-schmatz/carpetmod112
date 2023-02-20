@@ -9,7 +9,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(CakeBlock.class)
 public class CakeBlockMixin {
-    @Redirect(method = "tryEat", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;canConsume(Z)Z"))
+    @Redirect(
+            method = "method_8698",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;canConsume(Z)Z"
+            )
+    )
     private boolean canEat(PlayerEntity player, boolean ignoreHunger) {
         return CarpetSettings.cakeAlwaysEat || player.canConsume(ignoreHunger);
     }

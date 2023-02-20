@@ -1,8 +1,9 @@
 package carpet.mixin.renewableElderGuardians;
 
 import carpet.CarpetSettings;
-import net.minecraft.entity.LightningEntity;
-import net.minecraft.entity.mob.ElderGuardianEntity;
+
+import net.minecraft.entity.ElderGuardianEntity;
+import net.minecraft.entity.LightningBoltEntity;
 import net.minecraft.entity.mob.GuardianEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -16,12 +17,12 @@ public abstract class GuardianEntityMixin extends HostileEntity {
     }
 
     @Override
-    public void onStruckByLightning(LightningEntity lightningBolt) {
+    public void onLightningStrike(LightningBoltEntity lightningBolt) {
         if (!this.world.isClient && !this.removed && CarpetSettings.renewableElderGuardians) {
             ElderGuardianEntity elderGuardian = new ElderGuardianEntity(this.world);
             elderGuardian.refreshPositionAndAngles(this.x, this.y, this.z, this.yaw, this.pitch);
             elderGuardian.initialize(this.world.getLocalDifficulty(new BlockPos(elderGuardian)), null);
-            elderGuardian.setAiDisabled(this.isAiDisabled());
+            elderGuardian.setAiDisabled(this.hasNoAi());
 
             if (this.hasCustomName()) {
                 elderGuardian.setCustomName(this.getCustomName());
@@ -31,7 +32,7 @@ public abstract class GuardianEntityMixin extends HostileEntity {
             this.world.spawnEntity(elderGuardian);
             this.remove();
         } else {
-            super.onStruckByLightning(lightningBolt);
+            super.onLightningStrike(lightningBolt);
         }
     }
 }

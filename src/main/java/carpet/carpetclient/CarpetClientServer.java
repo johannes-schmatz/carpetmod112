@@ -1,14 +1,12 @@
 package carpet.carpetclient;
 
-import java.util.LinkedHashSet;
-
 import carpet.CarpetServer;
 import carpet.network.PacketSplitter;
 import carpet.network.PluginChannelHandler;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -29,7 +27,7 @@ public class CarpetClientServer implements PluginChannelHandler {
     }
 
     public void onCustomPayload(CustomPayloadC2SPacket packet, ServerPlayerEntity player) {
-        switch (packet.method_32939()) {
+        switch (packet.getChannel()) {
             case CARPET_CHANNEL_NAME:
                 PacketByteBuf buffer = PacketSplitter.receive(player, packet);
                 if(buffer != null) {
@@ -38,11 +36,11 @@ public class CarpetClientServer implements PluginChannelHandler {
                 break;
             case MINE_CHANNEL_NAME:
                 // Mining packets for carpet client to get around few bugs and careful break. CARPET-XCOM
-                PacketByteBuf payload = packet.method_32941();
+                PacketByteBuf payload = packet.getPayload();
                 payload.readBoolean();
                 boolean start = payload.readBoolean();
                 BlockPos pos = payload.readBlockPos();
-                Direction facing = Direction.byId(payload.readUnsignedByte());
+                Direction facing = Direction.getById(payload.readUnsignedByte());
                 activateInstantMine = payload.readBoolean();
                 if (start) {
                     if (!this.minecraftServer.isSpawnProtected(player.world, pos, player) && player.world.getWorldBorder().contains(pos)) {
@@ -51,7 +49,7 @@ public class CarpetClientServer implements PluginChannelHandler {
                         player.networkHandler.sendPacket(new BlockUpdateS2CPacket(player.world, pos));
                     }
                 } else {
-                    player.interactionManager.method_33535(pos);
+                    player.interactionManager.method_10764(pos);
                 }
                 activateInstantMine = true;
                 break;

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 
 public class PacketSplitter {
@@ -36,8 +36,8 @@ public class PacketSplitter {
     }
 
     public static PacketByteBuf receive(ServerPlayerEntity player, CustomPayloadC2SPacket message, int maxLength) {
-        Pair<ServerPlayerEntity, String> key = Pair.of(player, message.method_32939());
-        return readingSessions.computeIfAbsent(key, ReadingSession::new).receive(message.method_32941(), maxLength);
+        Pair<ServerPlayerEntity, String> key = Pair.of(player, message.getChannel());
+        return readingSessions.computeIfAbsent(key, ReadingSession::new).receive(message.getPayload(), maxLength);
     }
 
     private static class ReadingSession {

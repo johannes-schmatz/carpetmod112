@@ -8,7 +8,10 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(PistonHandler.class)
 public class PistonHandlerMixin {
-    @ModifyConstant(method = "tryMove", constant = @Constant(intValue = 12))
+    @ModifyConstant(
+            method = "method_9017",
+            constant = @Constant(intValue = 12)
+    )
     private int pushLimit(int original) {
         return CarpetSettings.pushLimit;
     }

@@ -11,7 +11,7 @@ import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -58,7 +58,7 @@ public class RSMMServer implements StateChangeListener, PistonPushListener, Tick
     private MeterGroup getOrCreateMeterGroup(ServerPlayerEntity player) {
         UUID playerUUID = player.getUuid();
         if (!playerSubscriptions.containsKey(playerUUID)) {
-            playerSubscriptions.put(playerUUID, player.getName());
+            playerSubscriptions.put(playerUUID, player.getTranslationKey());
         }
         String groupName = playerSubscriptions.get(playerUUID);
         if (!meterGroups.containsKey(groupName)) {
@@ -260,7 +260,7 @@ public class RSMMServer implements StateChangeListener, PistonPushListener, Tick
 
             @Override
             public void onCustomPayload(CustomPayloadC2SPacket packet, ServerPlayerEntity player) {
-                ServerPacketEventDispatcher.dispatchCustomPayload(player, packet.method_32939(), packet.method_32941());
+                ServerPacketEventDispatcher.dispatchCustomPayload(player, packet.getChannel(), packet.getPayload());
             }
         };
     }
