@@ -487,12 +487,11 @@ public class SpawnReporter
         if (accessor.invokeCanImmediatelyDespawn() || entity.isPersistent()) return false;
         World world = entity.world;
         boolean playerInDimension = false;
-        for (int i = 0; i < world.playerEntities.size(); i++) { // TODO: rewrite with PlayerEntity player : world.playerEntities
-            PlayerEntity entityplayer = world.playerEntities.get(i);
-            if (!entityplayer.isSpectator()) {
+        for (PlayerEntity playerEntity : world.playerEntities) {
+            if (!playerEntity.isSpectator()) {
                 playerInDimension = true;
-                double distanceSq = entityplayer.squaredDistanceTo(entity.x, entity.y, entity.z);
-                if (distanceSq <= 16384.0D) {
+                double distanceSq = playerEntity.squaredDistanceTo(entity.x, entity.y, entity.z);
+                if (distanceSq <= 128.0 * 128.0) {
                     return false;
                 }
             }

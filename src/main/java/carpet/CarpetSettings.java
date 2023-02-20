@@ -1093,13 +1093,13 @@ public final class CarpetSettings
                             try {
                                 val = Integer.parseInt(option);
                             } catch (NumberFormatException e) {
-                                throw new AssertionError("Rule \"" + name + "\" has invalid option \"" + option + "\"");
+                                throw new AssertionError("Rule \"" + name + "\" has invalid option \"" + option + "\"", e);
                             }
                         } else if (field.getType() == double.class) {
                             try {
                                 val = Double.parseDouble(option);
                             } catch (NumberFormatException e) {
-                                throw new AssertionError("Rule \"" + name + "\" has invalid option \"" + option + "\"");
+                                throw new AssertionError("Rule \"" + name + "\" has invalid option \"" + option + "\"", e);
                             }
                         } else {
                             val = option;
@@ -1118,7 +1118,7 @@ public final class CarpetSettings
                     try {
                         method = CarpetSettings.class.getDeclaredMethod(validator, field.getType());
                     } catch (NoSuchMethodException e) {
-                        throw new AssertionError("Validator \"" + validator + "\" for rule \"" + name + "\" doesn't exist");
+                        throw new AssertionError("Validator \"" + validator + "\" for rule \"" + name + "\" doesn't exist", e);
                     }
                     if (!Modifier.isStatic(method.getModifiers()) || method.getReturnType() != boolean.class) {
                         throw new AssertionError("Validator \"" + validator + "\" for rule \"" + name + "\" must be a static method returning a boolean");

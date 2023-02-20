@@ -20,9 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(HopperBlockEntity.class)
 public abstract class HopperBlockEntityMixin extends class_2737 {
     @Shadow public abstract int getInvSize();
-    @Shadow public abstract double getX();
-    @Shadow public abstract double getY();
-    @Shadow public abstract double getZ();
 
     @Inject(
             method = "insert",
@@ -48,8 +45,7 @@ public abstract class HopperBlockEntityMixin extends class_2737 {
     @Unique
     private String getCounterName() {
         if (CarpetSettings.hopperCounters == CarpetSettings.HopperCounters.all) return "all";
-        // TODO: why create BlockPos from doubles, gets floored anyways
-        BlockPos woolPos = new BlockPos(getX(), getY(), getZ()).offset(HopperBlock.getDirection(this.getDataValue()));
+        BlockPos woolPos = getPos().offset(HopperBlock.getDirection(this.getDataValue()));
         CarpetClientChunkLogger.setReason("Hopper loading");
         DyeColor wool_color = WoolTool.getWoolColorAtPosition(getEntityWorld(), woolPos);
         CarpetClientChunkLogger.resetToOldReason();
