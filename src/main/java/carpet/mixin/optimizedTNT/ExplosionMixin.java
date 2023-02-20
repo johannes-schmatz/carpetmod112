@@ -4,6 +4,8 @@ import carpet.CarpetSettings;
 import carpet.helpers.OptimizedTNT;
 import carpet.mixin.accessors.ExplosionAccessor;
 import net.minecraft.world.explosion.Explosion;
+
+import carpet.mixin_accessors.loggers.LogableExplosion;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -30,7 +32,7 @@ public class ExplosionMixin {
     )
     private void onExplosionB(boolean spawnParticles, CallbackInfo ci) {
         if (CarpetSettings.optimizedTNT) {
-            OptimizedTNT.doExplosionB((ExplosionAccessor) this, spawnParticles);
+            OptimizedTNT.doExplosionB((ExplosionAccessor) this, (LogableExplosion) this, spawnParticles);
             ci.cancel();
         }
     }

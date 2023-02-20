@@ -215,6 +215,7 @@
     "loggers.DamageTrackerMixin",
     "loggers.EntityTrackerEntryMixin",
     "loggers.EntityTrackerMixin",
+    "loggers.ExplosionMixin",
     "loggers.FallingBlockEntityMixin",
     "loggers.HostileEntityMixin",
     "loggers.ItemEntityMixin",

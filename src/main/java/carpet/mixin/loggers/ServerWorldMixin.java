@@ -2,6 +2,7 @@ package carpet.mixin.loggers;
 
 import carpet.CarpetSettings;
 import carpet.logging.LoggerRegistry;
+import carpet.logging.logHelpers.ExplosionLogHelper;
 import carpet.utils.Messenger;
 import carpet.utils.extensions.ExtendedWorld;
 import net.minecraft.server.MinecraftServer;
@@ -62,6 +63,17 @@ public abstract class ServerWorldMixin extends World {
         }
         if (CarpetSettings.setSeed != 0) {
             this.random.setSeed(CarpetSettings.setSeed ^ 0x5DEECE66DL);
+        }
+    }
+
+    @Inject(
+            method = "tick",
+            at = @At("TAIL")
+    )
+    private void logLastExplosion(CallbackInfo ci) {
+        // Solution for final explosion check -- not a great solution - CARPET-SYLKOS
+        if(LoggerRegistry.__explosions) {
+            ExplosionLogHelper.logLastExplosion();
         }
     }
 }

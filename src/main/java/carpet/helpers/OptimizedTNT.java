@@ -2,7 +2,9 @@ package carpet.helpers;
 //Author: xcom & masa
 
 import carpet.CarpetSettings;
+import carpet.logging.LoggerRegistry;
 import carpet.mixin.accessors.ExplosionAccessor;
+import carpet.mixin_accessors.loggers.LogableExplosion;
 import carpet.utils.Messenger;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -164,7 +166,7 @@ public class OptimizedTNT
         densityCache.clear();
     }
 
-    public static void doExplosionB(ExplosionAccessor e, boolean spawnParticles)
+    public static void doExplosionB(ExplosionAccessor e, LogableExplosion e1, boolean spawnParticles)
     {
         World world = e.getWorld();
         double posX = e.getX();
@@ -244,6 +246,10 @@ public class OptimizedTNT
                     world.setBlockState(blockpos1, Blocks.FIRE.getDefaultState());
                 }
             }
+        }
+
+        if (LoggerRegistry.__explosions) {
+            e1.getLogHelper().onExplosionDone(e.getWorld().getLastUpdateTime());
         }
     }
 
