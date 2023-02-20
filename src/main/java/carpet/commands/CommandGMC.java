@@ -2,6 +2,8 @@ package carpet.commands;
 
 import java.util.Collections;
 import java.util.List;
+
+import carpet.logging.LoggerRegistry;
 import org.jetbrains.annotations.Nullable;
 
 import carpet.CarpetSettings;
@@ -63,7 +65,7 @@ public class CommandGMC extends CommandCarpetBase
             ((CameraPlayer) entityplayer).storeCameraData(hasNightvision);
             GameMode gametype = GameMode.SPECTATOR;
             entityplayer.method_3170(gametype);
-            if(!hasNightvision) {
+            if(!hasNightvision && !LoggerRegistry.getLogger("normalCameraVision").subscribed(entityplayer)) {
                 StatusEffectInstance potioneffect = new StatusEffectInstance(nightvision, 999999, 0, false, false);
                 entityplayer.addStatusEffect(potioneffect);
             }

@@ -47,6 +47,7 @@ public class LoggerRegistry
     public static boolean __damageDebug;
     public static boolean __invisDebug;
     public static boolean __carefulBreak;
+    public static boolean __normalCameraVision;
 
     public static void initLoggers(MinecraftServer server)
     {
@@ -73,6 +74,7 @@ public class LoggerRegistry
         registerDebugger("invisDebug", new Logger(server, "invisDebug", null, null, LogHandler.CHAT));
 
         registerGeneric("carefulBreak", new Logger(server, "carefulBreak", null, null, LogHandler.CHAT));
+        registerGeneric("normalCameraVision", new Logger(server, "normalCameraVision", null, null, LogHandler.CHAT));
     }
 
     private static File getSaveFile(MinecraftServer server) { return server.getSaveStorage().method_11957(server.getLevelName(), "loggerData.json"); }
