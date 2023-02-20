@@ -27,8 +27,9 @@ import carpet.patches.WoolBlock;
 import carpet.utils.TickingArea;
 import carpet.utils.extensions.WorldWithBlockEventSerializer;
 import carpet.worldedit.WorldEditBridge;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.integrated.IntegratedServer;
+
+import net.minecraft.server.ServerMetadata;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
@@ -361,11 +362,21 @@ public final class CarpetSettings
         return value == -1 || value >= 0;
     }
 
-    // TODO: make this be settable in game (in the verify method set it to the server)
-    @Rule(desc = "Sets a different motd message on client trying to connect to the server", category = CREATIVE, options = "_", extra = {
+    @Rule(desc = "Sets a different motd message on client trying to connect to the server", category = CREATIVE, options = "_", validator =
+            "validateCustomMotd", extra = {
             "use '_' to use the startup setting from server.properties"
     })
     public static String customMOTD = "_";
+    private static boolean validateCustomMotd(String value) {
+        MinecraftServer server = CarpetServer.getNullableMinecraftServer();
+        if (server == null) return true;
+        ServerMetadata metadata = server.getServerMetadata();
+
+        String motd = "_".equals(value) ? server.getServerMotd() : value;
+        metadata.setDescription(new LiteralText(motd));
+
+        return true;
+    }
 
     @Rule(desc = "1.8 double retraction from pistons.", category = EXPERIMENTAL, extra = {
             "Gives pistons the ability to double retract without side effects."
