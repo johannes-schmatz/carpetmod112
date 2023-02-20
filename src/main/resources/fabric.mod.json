@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "carpetmod",
-  "version": "${version}",
+  "version": "v21_01_06-dev",
   "name": "CarpetMod",
   "description": "Take full control of what matters from the technical perspective in the game.",
   "authors": [

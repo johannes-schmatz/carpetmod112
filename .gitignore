@@ -1,3 +1,5 @@
+# .gitignore for brachyura
+
 # Eclipse
 /bin
 /.settings
@@ -7,19 +9,11 @@
 
 # IDEA
 /.idea
-/classes
 *.iml
-*.ipr
-*.iws
-/out/
-/buildSrc/out/
 
-# Gradle
-/build/
-/.gradle
-/*/build/
-/*/.gradle
+# brachyura
+/.brachyura
+/build
 
-# MC stuff
-/run/
-/test/
+# mc
+/run
