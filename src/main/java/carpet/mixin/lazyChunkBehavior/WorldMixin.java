@@ -19,7 +19,7 @@ public class WorldMixin {
 			)
 	)
 	public void tickRidingRedirect(Entity entity) {
-		if (CarpetSettings.commandLazyChunkBehavior || LazyChunkBehaviorHelper.shouldUpdate(entity)) {
+		if (!CarpetSettings.commandLazyChunkBehavior || LazyChunkBehaviorHelper.shouldUpdate(entity)) {
 			entity.tickRiding();
 		}
 	}
@@ -32,7 +32,7 @@ public class WorldMixin {
 			)
 	)
 	public void tickRedirect(Entity entity) {
-		if (CarpetSettings.commandLazyChunkBehavior || LazyChunkBehaviorHelper.shouldUpdate(entity)) {
+		if (!CarpetSettings.commandLazyChunkBehavior || LazyChunkBehaviorHelper.shouldUpdate(entity)) {
 			entity.tick();
 		}
 	}
