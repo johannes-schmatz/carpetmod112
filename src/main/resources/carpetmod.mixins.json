@@ -352,6 +352,7 @@
     "tileTickLimit.ServerWorldMixin",
     "tnt.TntEntityMixin",
     "tntDoNotUpdate.TntBlockMixin",
+    "tpAcrossDimensions.TpCommandMixin",
     "unloadedEntityFix.PistonBlockEntityMixin",
     "unloadedEntityFix.WorldMixin",
     "updateSuppressionCrashFix.MinecraftServerMixin",
