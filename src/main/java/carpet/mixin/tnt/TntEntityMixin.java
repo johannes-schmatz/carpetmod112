@@ -13,10 +13,7 @@ import net.minecraft.world.explosion.Explosion;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.Slice;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -31,6 +28,14 @@ public abstract class TntEntityMixin extends Entity {
     private static long cacheTime = 0;
     public TntEntityMixin(World worldIn) {
         super(worldIn);
+    }
+
+    @ModifyConstant(
+            method = "<init>*",
+            constant = @Constant(intValue = 80)
+    )
+    private int tntFuseLength(int ignored) {
+        return CarpetSettings.tntFuseLength;
     }
 
     @Redirect(
