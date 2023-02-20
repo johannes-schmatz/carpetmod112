@@ -97,6 +97,11 @@ public final class CarpetSettings
     })
     public static boolean commandEntityInfo = true;
 
+    @Rule(desc = "Enables /lazychunkbehavior command", category = COMMANDS, extra = {
+            "Makes a chunk act like a lazy chunk for entities and falling sand"
+    })
+    public static boolean commandLazyChunkBehavior = false;
+
     @Rule(desc = "Enables /unload command to inspect chunk unloading order", category = COMMANDS)
     public static boolean commandUnload = true;
 
