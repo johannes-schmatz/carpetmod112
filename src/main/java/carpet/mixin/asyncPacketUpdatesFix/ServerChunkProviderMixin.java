@@ -30,7 +30,7 @@ public class ServerChunkProviderMixin {
 					target = "Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;put(JLjava/lang/Object;)Ljava/lang/Object;",
 					remap = false
 			),
-			locals = LocalCapture.PRINT
+			locals = LocalCapture.CAPTURE_FAILHARD
 	)
 	private void asyncPacketUpdatesFix(int x, int z, CallbackInfoReturnable<Chunk> cir, Chunk lv) {
 		// Fix for chunks not updating after async updates CARPET-PUNCHSTER
