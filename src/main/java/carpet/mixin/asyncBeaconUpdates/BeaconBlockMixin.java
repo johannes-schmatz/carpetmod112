@@ -27,7 +27,15 @@ public abstract class BeaconBlockMixin extends BlockWithEntity {
     )
     private void asyncBeaconUpdates(BlockState state, World world, BlockPos pos, Block block, BlockPos neighborPos, CallbackInfo ci) {
         if (CarpetSettings.asyncBeaconUpdates && world.isReceivingRedstonePower(pos)) {
-            NetworkUtils.downloadExcecutor.submit(() -> world.method_13692(pos, this, true));
+            NetworkUtils.downloadExcecutor.submit(() -> {
+                try {
+                    world.method_13692(pos, this, true);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                } finally {
+                    System.out.println("Beacon thread exiting");
+                }
+            });
         }
     }
 }
