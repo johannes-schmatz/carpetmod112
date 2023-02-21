@@ -27,7 +27,7 @@ public class CommandChunk extends CommandCarpetBase
 
 	public String getUsageTranslationKey(CommandSource sender)
 	{
-		return "Usage: chunk <X> <Z> <load | info | unload>";
+		return "Usage: chunk <load | info | unload> <X> <Z>";
 	}
 
 	public String getCommandName()
@@ -47,12 +47,12 @@ public class CommandChunk extends CommandCarpetBase
 			throw new IncorrectUsageException(getUsageTranslationKey(sender));
 		}
 
-		int chunkX = parseChunkPosition(args[0], sender.getBlockPos().getX());
-		int chunkZ = parseChunkPosition(args[1], sender.getBlockPos().getZ());
-
 		world = sender.getWorld();
 		try {
-			switch (args[2]){
+			int chunkX = parseChunkPosition(args[1], sender.getBlockPos().getX());
+			int chunkZ = parseChunkPosition(args[2], sender.getBlockPos().getZ());
+
+			switch (args[0]){
 				case "load":
 					world.getChunk(chunkX, chunkZ);
 					sender.sendMessage(new LiteralText("Chunk " + chunkX + ", " + chunkZ + " loaded"));
@@ -100,11 +100,11 @@ public class CommandChunk extends CommandCarpetBase
 		int chunkZ = sender.getBlockPos().getZ() >> 4;
 
 		if (args.length == 1) {
-			return method_2894(args, Integer.toString(chunkX), "~");
-		} else if (args.length == 2) {
-			return method_2894(args, Integer.toString(chunkZ), "~");
-		} else if (args.length == 3) {
 			return method_2894(args, "info", "load", "unload");
+		} else if (args.length == 2) {
+			return method_2894(args, Integer.toString(chunkX), "~");
+		} else if (args.length == 3) {
+			return method_2894(args, Integer.toString(chunkZ), "~");
 		} else {
 			return Collections.emptyList();
 		}
