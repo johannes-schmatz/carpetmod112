@@ -94,6 +94,11 @@ public class OptimizedTNT
 
         explosionSound++;
 
+        // CARPET-SYLKOS
+        // TNT shouldn't apply velocity to entities
+        // This also yeets all the calculations tnt does for applying velocity and damage to entities
+        if(CarpetSettings.removeTNTVelocity) return;
+
         for (int k2 = 0; k2 < entitylist.size(); ++k2) {
             Entity entity = entitylist.get(k2);
 

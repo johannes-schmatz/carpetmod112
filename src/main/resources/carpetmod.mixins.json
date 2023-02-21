@@ -314,6 +314,7 @@
     "reloadEntitySpeedlossFix.EntityMixin",
     "reloadUpdateOrderFix.WorldChunkMixin",
     "removeConnectionTimeout.ServerLoginNetworkHandlerMixin",
+    "removeTNTVeclocity.ExplosionMixin",
     "renewableDragonEggs.DragonEggBlockMixin",
     "renewableElderGuardians.GuardianEntityMixin",
     "renewablePackedIce.FallingBlockEntityMixin",
