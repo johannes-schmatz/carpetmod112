@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 
 public class LazyChunkBehaviorHelper {
-	private static final ArrayList<Chunk> lazyProcessingChunks = new ArrayList<Chunk>();
+	private static final ArrayList<Chunk> lazyProcessingChunks = new ArrayList<>(); // TODO: store this?
 
 	public static void listLazyChunks(CommandSource sender){
 		if(!lazyProcessingChunks.isEmpty()) {

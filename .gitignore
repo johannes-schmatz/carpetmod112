@@ -12,8 +12,9 @@
 *.iml
 
 # brachyura
-/.brachyura
+.brachyura/**
 /build
 
 # mc
-/run
+run/**
+/.attach_pid*
