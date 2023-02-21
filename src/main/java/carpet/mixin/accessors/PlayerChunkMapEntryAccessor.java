@@ -13,4 +13,5 @@ public interface PlayerChunkMapEntryAccessor {
     @Accessor("players") List<ServerPlayerEntity> getPlayers();
     @Accessor("chunk") void setChunk(Chunk chunk);
     @Accessor("field_13865") void setSentToPlayers(boolean sent);
+    @Accessor("field_8888") void setChanges(int changes);
 }
