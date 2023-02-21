@@ -17,7 +17,12 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ServerChunkProvider;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,6 +72,9 @@ public class CommandLoadedChunks extends CommandCarpetBase
 				case "inspect":
 					inspect(server, sender, args);
 					break;
+				case "dump":
+					dump(server, sender, args);
+					break;
 				default:
 					throw new IncorrectUsageException(getUsageTranslationKey(sender));
 			}
@@ -75,6 +83,41 @@ public class CommandLoadedChunks extends CommandCarpetBase
 			throw new CommandException(exception.getMessage());
 		}
 
+	}
+
+	private Object getPrivateMethods(World world, String name){
+		ServerChunkProvider provider = (ServerChunkProvider) world.getChunkProvider();
+		Long2ObjectOpenHashMap<Chunk> loadedChunks = (Long2ObjectOpenHashMap<Chunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap();
+		try {
+			Field f = loadedChunks.getClass().getDeclaredField(name);
+			f.setAccessible(true);
+			return f.get(loadedChunks);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	protected void dump(MinecraftServer server, CommandSource sender, String[] args) throws IOException {
+		// TODO: arg with file name? and option for /tmp?
+		String fileName = "loadedchunks-" + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSSS").format(new Date()) + ".csv";
+		try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(fileName)))) {
+			pw.println("index,key,x,z,hash");
+			long[] keys = (long[]) getPrivateMethods(world, "key");
+			Object[] values = (Object[]) getPrivateMethods(world, "value");
+			int getHashSize = (int) getPrivateMethods(world, "n");
+			for (int i = 0, n = getHashSize; i <= n; i++) {
+				long key = keys[i];
+				Chunk val = (Chunk) values[i];
+				if (val == null) {
+					pw.println(i + ",,,,");
+				} else {
+					pw.printf("%d,%d,%d,%d,%d\n", i, key, val.chunkX, val.chunkZ, HashCommon.mix(key) & (n - 1));
+				}
+			}
+			pw.flush();
+		}
+		run(sender, this, "Written to %s", fileName);
 	}
 
 	protected Long2ObjectOpenHashMap<Chunk> getLoadedChunks (CommandSource sender){
@@ -257,7 +300,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
 		if (args.length == 1)
 		{
 			return method_2894(args,
-					"size", "inspect", "search", "remove", "add");
+					"size", "inspect", "search", "remove", "add", "dump");
 		}
 
 		switch (args[0]){
