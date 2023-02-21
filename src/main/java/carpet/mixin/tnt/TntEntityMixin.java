@@ -65,8 +65,19 @@ public abstract class TntEntityMixin extends Entity {
             this.velocityZ = 0;
         }
         if (LoggerRegistry.__tnt) {
-            logHelper = new TNTLogHelper();
+            if (logHelper == null) logHelper = new TNTLogHelper(); // don't replace if already there
             logHelper.onPrimed(x, y, z, angle);
+        }
+    }
+
+    @Inject(
+            method = "<init>(Lnet/minecraft/world/World;)V",
+            at = @At("RETURN")
+    )
+    private void onInitLogger(World arg, CallbackInfo ci) {
+        if (LoggerRegistry.__tnt) {
+            //logHelper = new TNTLogHelper();
+            //logHelper.onPrimed(x, y, z, 0);
         }
     }
 
