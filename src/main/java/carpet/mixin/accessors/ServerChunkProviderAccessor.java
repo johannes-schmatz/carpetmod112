@@ -8,6 +8,7 @@ import net.minecraft.world.chunk.ServerChunkProvider;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
 import java.util.Set;
 
@@ -17,4 +18,5 @@ public interface ServerChunkProviderAccessor {
     @Accessor("generator") ChunkGenerator getChunkGenerator();
     @Accessor("chunkWriter") ChunkStorage getChunkLoader();
     @Accessor("loadedChunksMap") Long2ObjectMap<Chunk> getLoadedChunksMap();
+    @Invoker("method_12777") Chunk invokeLoadChunk(int x, int z);
 }
