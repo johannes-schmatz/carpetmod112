@@ -52,7 +52,9 @@ public class CommandZetBlock extends SetBlockCommand {
 
 	/**
 	 * Callback for when the command is executed
-	 * TODO: overwritten method has same content, why overwrite? no it has not. there's a mixin for SetBlockCommand (which should not affect us then!)
+	 *TODO: overwritten method has same content, why overwrite? no it has not:
+	 * - there's a mixin for SetBlockCommand (which should not affect us then!)
+	 * - we don't care about loaded chunks
 	 */
 	public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
 	{
@@ -78,92 +80,85 @@ public class CommandZetBlock extends SetBlockCommand {
 
 			World world = sender.getWorld();
 
-			if (!world.blockExists(blockpos))
+			NbtCompound nbttagcompound = new NbtCompound();
+			boolean flag = false;
+
+			if (args.length >= 7 && block.hasBlockEntity())
 			{
-				throw new CommandException("commands.setblock.outOfWorld");
+				String s = method_10706(args, 6);
+
+				try
+				{
+					nbttagcompound = StringNbtReader.parse(s);
+					flag = true;
+				}
+				catch (NbtException nbtexception)
+				{
+					throw new CommandException("commands.setblock.tagError", new Object[] {nbtexception.getMessage()});
+				}
 			}
-			else
+
+			ServerPlayerEntity worldEditPlayer = sender instanceof ServerPlayerEntity ? (ServerPlayerEntity) sender : null;
+			NbtCompound worldEditTag = flag ? nbttagcompound : null;
+
+			if (args.length >= 6)
 			{
-				NbtCompound nbttagcompound = new NbtCompound();
-				boolean flag = false;
-
-				if (args.length >= 7 && block.hasBlockEntity())
+				if ("destroy".equals(args[5]))
 				{
-					String s = method_10706(args, 6);
+					WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos, Blocks.AIR.getDefaultState(), worldEditTag);
+					CapturedDrops.setCapturingDrops(true);
+					world.removeBlock(blockpos, true);
+					CapturedDrops.setCapturingDrops(false);
+					for (ItemEntity drop : CapturedDrops.getCapturedDrops())
+						WorldEditBridge.recordEntityCreation(worldEditPlayer, world, drop);
+					CapturedDrops.clearCapturedDrops();
 
-					try
+					if (block == Blocks.AIR)
 					{
-						nbttagcompound = StringNbtReader.parse(s);
-						flag = true;
-					}
-					catch (NbtException nbtexception)
-					{
-						throw new CommandException("commands.setblock.tagError", new Object[] {nbtexception.getMessage()});
+						run(sender, this, "commands.setblock.success");
+						return;
 					}
 				}
-
-				ServerPlayerEntity worldEditPlayer = sender instanceof ServerPlayerEntity ? (ServerPlayerEntity) sender : null;
-				NbtCompound worldEditTag = flag ? nbttagcompound : null;
-
-				if (args.length >= 6)
-				{
-					if ("destroy".equals(args[5]))
-					{
-						WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos, Blocks.AIR.getDefaultState(), worldEditTag);
-						CapturedDrops.setCapturingDrops(true);
-						world.removeBlock(blockpos, true);
-						CapturedDrops.setCapturingDrops(false);
-						for (ItemEntity drop : CapturedDrops.getCapturedDrops())
-							WorldEditBridge.recordEntityCreation(worldEditPlayer, world, drop);
-						CapturedDrops.clearCapturedDrops();
-
-						if (block == Blocks.AIR)
-						{
-							run(sender, this, "commands.setblock.success");
-							return;
-						}
-					}
-					else if ("keep".equals(args[5]) && !world.isAir(blockpos))
-					{
-						throw new CommandException("commands.setblock.noChange");
-					}
-				}
-
-				WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos, iblockstate, worldEditTag);
-
-				BlockEntity tileentity1 = world.getBlockEntity(blockpos);
-
-				if (tileentity1 != null && tileentity1 instanceof Inventory)
-				{
-					((Inventory)tileentity1).clear();
-				}
-
-				// SetBlockCommand has the 2 here replaced with something like
-				// 2 | (CarpetSettings.fillUpdates ? 1024 : 0)
-				// later on in World the 1024 flag also needs to be 0 to update the neighbour
-				if (!world.setBlockState(blockpos, iblockstate, 2))
+				else if ("keep".equals(args[5]) && !world.isAir(blockpos))
 				{
 					throw new CommandException("commands.setblock.noChange");
 				}
-				else
+			}
+
+			WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos, iblockstate, worldEditTag);
+
+			BlockEntity tileentity1 = world.getBlockEntity(blockpos);
+
+			if (tileentity1 != null && tileentity1 instanceof Inventory)
+			{
+				((Inventory)tileentity1).clear();
+			}
+
+			// SetBlockCommand has the 2 here replaced with something like
+			// 2 | (CarpetSettings.fillUpdates ? 1024 : 0)
+			// later on in World the 1024 flag also needs to be 0 to update the neighbour
+			if (!world.setBlockState(blockpos, iblockstate, 2))
+			{
+				throw new CommandException("commands.setblock.noChange");
+			}
+			else
+			{
+				if (flag)
 				{
-					if (flag)
+					BlockEntity tileentity = world.getBlockEntity(blockpos);
+
+					if (tileentity != null)
 					{
-						BlockEntity tileentity = world.getBlockEntity(blockpos);
-
-						if (tileentity != null)
-						{
-							nbttagcompound.putInt("x", blockpos.getX());
-							nbttagcompound.putInt("y", blockpos.getY());
-							nbttagcompound.putInt("z", blockpos.getZ());
-							tileentity.fromNbt(nbttagcompound);
-						}
+						nbttagcompound.putInt("x", blockpos.getX());
+						nbttagcompound.putInt("y", blockpos.getY());
+						nbttagcompound.putInt("z", blockpos.getZ());
+						tileentity.fromNbt(nbttagcompound);
 					}
-
-					world.method_8531(blockpos, iblockstate.getBlock(), false);
-					sender.setStat(CommandStats.Type.AFFECTED_BLOCKS, 1);
-					run(sender, this, "commands.setblock.success");
 				}
+
+				world.method_8531(blockpos, iblockstate.getBlock(), false);
+				sender.setStat(CommandStats.Type.AFFECTED_BLOCKS, 1);
+				run(sender, this, "commands.setblock.success");
 			}
 		}
 	}
