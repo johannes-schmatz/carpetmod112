@@ -331,6 +331,7 @@
 		"rideableGhasts.GhastEntityMixin",
 		"rideableGhasts.GhastShootFireballGoalMixin",
 		"ridingPlayerUpdateFix.ServerPlayerEntityMixin",
+		"saveSavestates.class_2960Mixin",
 		"scoreboardDelta.ScoreboardPlayerScoreMixin",
 		"scoreboardDelta.ScoreboardPlayerUpdateS2CPacketMixin",
 		"sendDuplicateEntitiesToClients.ServerWorldMixin",
