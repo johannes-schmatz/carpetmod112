@@ -32,7 +32,7 @@ public class CommandPalette extends CommandCarpetBase {
 	 */
 
 	public String getUsageTranslationKey(CommandSource sender) {
-		return "Usage: palette <info | fill | size | posInfo> <X> <Y> <Z> <full | normal> <4 to 13>";
+		return "Usage: palette <bits | fill | size | posInfo> <X> <Y> <Z> <full | normal> <4-8 | 13>";
 	}
 
 	public String getCommandName() {
@@ -205,27 +205,31 @@ public class CommandPalette extends CommandCarpetBase {
 			int blockStateMaskL = blockStateBits & leftMask;
 			int blockStateMaskR = blockStateBits & rightMask;
 			sender.sendMessage(new LiteralText("Left bit match:"));
-			for(int itr = 0; itr < Block.BLOCK_STATES.size(); itr++){
+			for (int itr = 0; itr < Block.BLOCK_STATES.size(); itr++) {
 				BlockState ibs = Block.BLOCK_STATES.fromId(itr);
-				if(ibs != null) {
+				if (ibs != null) {
 					int left = itr & leftMask;
-					if(left == blockStateMaskL){
-						String s = String.format("%"+bits+"s", Integer.toBinaryString(itr)).replace(' ', '0') + " " + ibs.toString().replace("minecraft:", "");
+					if (left == blockStateMaskL) {
+						String s = String.format("%" + bits + "s", Integer.toBinaryString(itr)).replace(' ', '0') + " " + ibs.toString().replace("minecraft:", "");
 						sender.sendMessage(new LiteralText(s));
 					}
 				}
 			}
 			sender.sendMessage(new LiteralText("Right bit match:"));
-			for(int itr = 0; itr < Block.BLOCK_STATES.size(); itr++){
+			for (int itr = 0; itr < Block.BLOCK_STATES.size(); itr++) {
 				BlockState ibs = Block.BLOCK_STATES.fromId(itr);
-				if(ibs != null) {
+				if (ibs != null) {
 					int right = itr & rightMask;
-					if(right == blockStateMaskR){
-						String s = String.format("%"+bits+"s", Integer.toBinaryString(itr)).replace(' ', '0') + " " + ibs.toString().replace("minecraft:", "");
+					if (right == blockStateMaskR) {
+						String s = String.format("%" + bits + "s", Integer.toBinaryString(itr)).replace(' ', '0') + " " + ibs.toString().replace("minecraft:", "");
 						sender.sendMessage(new LiteralText(s));
 					}
 				}
 			}
+		} else if (blockState != null && j != k) {
+			sender.sendMessage(new LiteralText("This location doesn't share two bit arrays."));
+		} else if (blockState != null && ((class_2743Accessor) bsc).getPalette() instanceof RegistryPalette) {
+			sender.sendMessage(new LiteralText("This subchunk doesn't have enough palettes, add more palettes."));
 		}
 	}
 
@@ -246,7 +250,7 @@ public class CommandPalette extends CommandCarpetBase {
 	private static BlockPos[] getArrayFromJK(int j, int k, int bits, BlockPos pos) {
 		BlockPos basePos = new BlockPos(pos.getX() >>> 4 << 4, pos.getY() >>> 4 << 4, pos.getZ() >>> 4 << 4);
 		ArrayList<BlockPos> list = new ArrayList<>();
-		for(int index = 0; index < 4096; index++){
+		for (int index = 0; index < 4096; index++) {
 			int i = index * bits;
 			int jj = i / 64;
 			int kk = ((index + 1) * bits - 1) / 64;
@@ -280,7 +284,7 @@ public class CommandPalette extends CommandCarpetBase {
 		} else if (ibsp instanceof HashMapPalette) {
 			sender.sendMessage(new LiteralText("Palette size: " + ((HashMapPaletteAccessor) ((HashMapPalette) ibsp)).getBitsPerBlock()));
 		} else if (ibsp instanceof RegistryPalette) {
-			sender.sendMessage(new LiteralText("Palette size MAX aka 4096"));
+			sender.sendMessage(new LiteralText("Palette size MAX aka " + Block.BLOCK_STATES.size()));
 		}
 	}
 
@@ -292,7 +296,7 @@ public class CommandPalette extends CommandCarpetBase {
 		} else if (args.length == 5 && (args[0].equals("posInfo") || args[0].equals("fill"))) {
 			return method_2894(args, "full", "normal");
 		} else if (args.length == 6 && args[0].equals("fill")) {
-			return method_2894(args, "4", "5", "13");
+			return method_2894(args, "4", "5", "6", "7", "8", "13");
 		} else if (args.length == 6 && args[0].equals("posInfo")) {
 			return method_10708(args, Block.REGISTRY.getKeySet());
 		} else {
