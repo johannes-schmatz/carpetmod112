@@ -1,8 +1,9 @@
 package carpet.mixin.core;
 
 import carpet.helpers.TickSpeed;
+import carpet.utils.JavaVersionUtil;
 import carpet.utils.extensions.ExtendedWorld;
-import net.minecraft.client.world.ClientWorld;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Tickable;
 import net.minecraft.world.World;
@@ -12,7 +13,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import java.lang.reflect.Field;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -48,13 +48,7 @@ public class WorldMixin implements ExtendedWorld {
     @Override
     public long getRandSeed() {
         if (seed == null) {
-            try {
-                Field field = Random.class.getDeclaredField("seed");
-                field.setAccessible(true);
-                seed = (AtomicLong) field.get(random);
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException(e);
-            }
+            seed = JavaVersionUtil.objectFieldAccessor(Random.class, "seed", AtomicLong.class).get(random);
         }
         return seed.get();
     }
