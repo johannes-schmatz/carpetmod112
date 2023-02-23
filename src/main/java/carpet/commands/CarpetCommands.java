@@ -6,15 +6,19 @@ import net.minecraft.server.command.CommandRegistry;
 public class CarpetCommands {
     public static void register(CommandRegistry handler) {
         // Sorted alphabetically to make merge conflicts less likely
+        // For Xcom: A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+
         handler.registerCommand(new CommandAutosave());
         handler.registerCommand(new CommandBlockInfo());
         handler.registerCommand(new CommandCarpet());
         handler.registerCommand(new CommandChunk());
+        handler.registerCommand(new CommandColon());
         handler.registerCommand(new CommandCounter());
         handler.registerCommand(new CommandDebugCarpet());
         handler.registerCommand(new CommandDebuglogger());
         handler.registerCommand(new CommandDistance());
         handler.registerCommand(new CommandEntityInfo());
+        handler.registerCommand(new CommandFeel());
         handler.registerCommand(new CommandFillBiome());
         handler.registerCommand(new CommandGMC());
         handler.registerCommand(new CommandGMS());

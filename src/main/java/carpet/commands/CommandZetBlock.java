@@ -101,6 +101,8 @@ public class CommandZetBlock extends SetBlockCommand {
 			ServerPlayerEntity worldEditPlayer = sender instanceof ServerPlayerEntity ? (ServerPlayerEntity) sender : null;
 			NbtCompound worldEditTag = flag ? nbttagcompound : null;
 
+			boolean updates = true;
+
 			if (args.length >= 6)
 			{
 				if ("destroy".equals(args[5]))
@@ -123,6 +125,10 @@ public class CommandZetBlock extends SetBlockCommand {
 				{
 					throw new CommandException("commands.setblock.noChange");
 				}
+				else if ("noupdate".equals(args[5]))
+				{
+					updates = false;
+				}
 			}
 
 			WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos, iblockstate, worldEditTag);
@@ -137,7 +143,7 @@ public class CommandZetBlock extends SetBlockCommand {
 			// SetBlockCommand has the 2 here replaced with something like
 			// 2 | (CarpetSettings.fillUpdates ? 1024 : 0)
 			// later on in World the 1024 flag also needs to be 0 to update the neighbour
-			if (!world.setBlockState(blockpos, iblockstate, 2))
+			if (!world.setBlockState(blockpos, iblockstate, 2 | (updates ? 0 : 1024)))
 			{
 				throw new CommandException("commands.setblock.noChange");
 			}
@@ -156,7 +162,9 @@ public class CommandZetBlock extends SetBlockCommand {
 					}
 				}
 
-				world.method_8531(blockpos, iblockstate.getBlock(), false);
+				if (updates) {
+					world.method_8531(blockpos, iblockstate.getBlock(), false);
+				}
 				sender.setStat(CommandStats.Type.AFFECTED_BLOCKS, 1);
 				run(sender, this, "commands.setblock.success");
 			}
@@ -179,7 +187,7 @@ public class CommandZetBlock extends SetBlockCommand {
 		}
 		else
 		{
-			return args.length == 6 ? method_2894(args, "replace", "destroy", "keep") : Collections.emptyList();
+			return args.length == 6 ? method_2894(args, "replace", "destroy", "keep", "noupdate") : Collections.emptyList();
 		}
 	}
 }
