@@ -41,7 +41,7 @@ public class MeterCommand extends CommandCarpetBase
             return;
         }
         ServerPlayerEntity player = (ServerPlayerEntity)sender;
-        RSMMServer rsmmServer = CarpetServer.getInstance().rsmmServer;
+        RSMMServer rsmmServer = CarpetServer.getInstance().legacyRsmmServer;
 
         if (args[0].equals("name")) {
             if (rsmmServer.getNumMeters(player) <= 0) {
@@ -113,7 +113,7 @@ public class MeterCommand extends CommandCarpetBase
         if (args.length == 1) {
             return method_2894(args, "name", "color", "removeAll", "group", "listGroups");
         } else if (args.length == 2 && args[0].equals("group")) {
-            return method_10708(args, CarpetServer.getInstance().rsmmServer.getGroupNames());
+            return method_10708(args, CarpetServer.getInstance().legacyRsmmServer.getGroupNames());
         } else {
             return Collections.<String>emptyList();
         }

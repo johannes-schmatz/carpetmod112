@@ -293,16 +293,21 @@ public final class CarpetSettings
     @SurvivalDefault
     public static boolean cactusCounter = false;
 
-    @Rule(desc = "Enables integration with redstone multimeter mod", category = {CREATIVE, SURVIVAL}, validator = "validateRedstoneMultimeter", extra = {
+    @Rule(desc = "Enables integration with NarcolepticFrog's Redstone Multimeter mod", category = {CREATIVE, SURVIVAL}, validator = "validateRedstoneMultimeterLegacy", extra = {
             "Required clients with RSMM Mod by Narcoleptic Frog. Enables multiplayer experience with RSMM Mod"
     })
-    public static boolean redstoneMultimeter = false;
+    public static boolean redstoneMultimeterLegacy = false;
 
-    private static boolean validateRedstoneMultimeter(boolean value) {
+    private static boolean validateRedstoneMultimeterLegacy(boolean value) {
         CarpetServer carpet = CarpetServer.getNullableInstance();
         if (carpet != null) carpet.rsmmChannel.setEnabled(value);
         return true;
     }
+
+    @Rule(desc = "Enables integration with the new Redstone Multimeter mod", category = {CREATIVE, SURVIVAL, COMMANDS}, extra = {
+            "To use, the new Redstone Multimeter mod must be installed client-side as well"
+    })
+    public static boolean redstoneMultimeter = false;
 
     @Rule(desc = "Pistons can push tile entities, like hoppers, chests etc.", category = EXPERIMENTAL)
     public static boolean movableTileEntities = false;

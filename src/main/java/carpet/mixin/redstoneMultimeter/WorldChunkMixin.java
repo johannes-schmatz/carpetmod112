@@ -22,6 +22,6 @@ public class WorldChunkMixin {
             at = @At("TAIL")
     )
     private void onSetBlockState(BlockPos pos, BlockState state, CallbackInfoReturnable<BlockState> cir) {
-        if (CarpetSettings.redstoneMultimeter) StateChangeEventDispatcher.dispatchEvent(world, pos);
+        if (CarpetSettings.redstoneMultimeterLegacy) StateChangeEventDispatcher.dispatchEvent(world, pos);
     }
 }

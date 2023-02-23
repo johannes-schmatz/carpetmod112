@@ -29,7 +29,7 @@ public class PistonBlockMixin {
     )
     private void onPush(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir,
                         PistonHandler helper, List<BlockPos> positions, List<BlockState> states, List<BlockPos> list2, int k, BlockState[] aiblockstate, Direction movementDirection, int index, BlockPos currentPos) {
-        if (CarpetSettings.redstoneMultimeter) {
+        if (CarpetSettings.redstoneMultimeterLegacy) {
             PistonPushEventDispatcher.dispatchEvent(worldIn, currentPos, movementDirection);
         }
     }

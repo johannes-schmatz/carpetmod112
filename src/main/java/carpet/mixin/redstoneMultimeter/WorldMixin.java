@@ -24,7 +24,7 @@ public abstract class WorldMixin {
             at = @At("RETURN")
     )
     private void onNeighborChanged(BlockPos pos, Block blockIn, BlockPos fromPos, CallbackInfo ci) {
-        if (CarpetSettings.redstoneMultimeter && !isClient) StateChangeEventDispatcher.dispatchEvent((World) (Object) this, pos);
+        if (CarpetSettings.redstoneMultimeterLegacy && !isClient) StateChangeEventDispatcher.dispatchEvent((World) (Object) this, pos);
     }
 
     @Inject(
@@ -36,7 +36,7 @@ public abstract class WorldMixin {
             )
     )
     private void onObservedNeighborChanged(BlockPos pos, Block blockIn, BlockPos fromPos, CallbackInfo ci) {
-        if (CarpetSettings.redstoneMultimeter) StateChangeEventDispatcher.dispatchEvent((World) (Object) this, pos);
+        if (CarpetSettings.redstoneMultimeterLegacy) StateChangeEventDispatcher.dispatchEvent((World) (Object) this, pos);
     }
 
     @Inject(
@@ -44,6 +44,6 @@ public abstract class WorldMixin {
             at = @At("RETURN")
     )
     private void onComparatorUpdate(BlockPos pos, Block blockIn, CallbackInfo ci) {
-        if (CarpetSettings.redstoneMultimeter) StateChangeEventDispatcher.dispatchEvent((World) (Object) this, pos);
+        if (CarpetSettings.redstoneMultimeterLegacy) StateChangeEventDispatcher.dispatchEvent((World) (Object) this, pos);
     }
 }

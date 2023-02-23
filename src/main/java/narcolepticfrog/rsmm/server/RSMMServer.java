@@ -2,7 +2,6 @@ package narcolepticfrog.rsmm.server;
 
 import carpet.CarpetServer;
 import carpet.network.PluginChannelHandler;
-import narcolepticfrog.rsmm.MeterCommand;
 import narcolepticfrog.rsmm.events.*;
 import narcolepticfrog.rsmm.network.RSMMCPacket;
 import narcolepticfrog.rsmm.network.RSMMSPacket;
@@ -10,7 +9,6 @@ import carpet.CarpetSettings;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
@@ -220,7 +218,7 @@ public class RSMMServer implements StateChangeListener, PistonPushListener, Tick
 
     @Override
     public void onCustomPayload(ServerPlayerEntity sender, String channel, PacketByteBuf data) {
-        if (CarpetSettings.redstoneMultimeter && "RSMM".equals(channel)) {
+        if (CarpetSettings.redstoneMultimeterLegacy && "RSMM".equals(channel)) {
             RSMMSPacket packet = RSMMSPacket.fromBuffer(data);
             if (packet == null) return;
             packet.process(getOrCreateMeterGroup(sender));

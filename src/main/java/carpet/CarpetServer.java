@@ -35,7 +35,8 @@ public class CarpetServer {
     public final MinecraftServer server;
 
     public PluginChannelManager pluginChannels;
-    public RSMMServer rsmmServer;
+    public RSMMServer legacyRsmmServer;
+    public MultimeterServer rsmmServer;
     public ToggleableChannelHandler rsmmChannel;
     public ToggleableChannelHandler wecuiChannel;
 
@@ -53,8 +54,10 @@ public class CarpetServer {
         pluginChannels.register(new PubSubMessenger(CarpetMod.PUBSUB));
         pluginChannels.register(new CarpetClientServer(server));
 
-        rsmmServer = new RSMMServer(server);
-        rsmmChannel = new ToggleableChannelHandler(pluginChannels, rsmmServer.createChannelHandler(), false);
+        rsmmServer = new MultimeterServer(server);
+        legacyRsmmServer = new RSMMServer(server);
+
+        rsmmChannel = new ToggleableChannelHandler(pluginChannels, legacyRsmmServer.createChannelHandler(), false);
         wecuiChannel = new ToggleableChannelHandler(pluginChannels, WorldEditBridge.createChannelHandler(), false);
     }
 
@@ -131,7 +134,7 @@ public class CarpetServer {
 
     public void tick() {
         TickSpeed.tick(server);
-        if (CarpetSettings.redstoneMultimeter)
+        if (CarpetSettings.redstoneMultimeterLegacy)
         {
             TickStartEventDispatcher.dispatchEvent(server.getTicks());
         }
