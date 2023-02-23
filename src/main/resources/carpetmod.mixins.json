@@ -243,7 +243,6 @@
 		"movableTileEntities.PistonBlockEntityMixin",
 		"movableTileEntities.PistonBlockMixin",
 		"movingBlockLightOptimization.PistonBlockMixin",
-		"movingBlockLightOptimization.PistonExtensionBlockMixin",
 		"netherRNG.NetherFortressFeatureMixin",
 		"newLight.ChunkDataS2CPacketMixin",
 		"newLight.ChunkMixin",

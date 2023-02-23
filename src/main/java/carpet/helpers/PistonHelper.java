@@ -9,8 +9,6 @@ import java.util.Collection;
 import java.util.HashSet;
 
 public final class PistonHelper {
-    public static final IntProperty OPACITY = IntProperty.of("opacity", 0, 15);
-    public static final IntProperty LIGHT = IntProperty.of("light", 0, 15);
     private static ThreadLocal<HashSet<BlockPos>> dupeFixLocations = new ThreadLocal<>();
 
     private PistonHelper() {}
