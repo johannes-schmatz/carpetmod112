@@ -67,7 +67,7 @@ public class CommandPalette extends CommandCarpetBase {
 					sender.sendMessage(new LiteralText("Palette bit size: " + bits));
 					return;
 				case "size":
-					getSize(sender, bsc);
+					getSize(sender, bsc, bits);
 					return;
 				case "posInfo":
 					boolean isFull = false;
@@ -277,14 +277,22 @@ public class CommandPalette extends CommandCarpetBase {
 		return new BlockPos(x, y, z);
 	}
 
-	private void getSize(CommandSource sender, class_2743 bsc) {
+	private void getSize(CommandSource sender, class_2743 bsc, int bits) {
 		Palette ibsp = ((class_2743Accessor) bsc).getPalette();
 		if (ibsp instanceof LinearPalette) {
-			sender.sendMessage(new LiteralText("Palette size: " + ((LinearPaletteAccessor) ((LinearPalette) ibsp)).getBitsPerBlock()));
+			// We can't have a local variable of type *Accessor here... mixin then says "Illegal class load request"
+			LinearPalette p = (LinearPalette) ibsp;
+			int size = ((LinearPaletteAccessor) p).getSize();
+			int bitsPerBlock = ((LinearPaletteAccessor) p).getBitsPerBlock();
+			sender.sendMessage(new LiteralText("Palette size: " + size + " bits: " + bitsPerBlock + " (" + bits + ")"));
 		} else if (ibsp instanceof HashMapPalette) {
-			sender.sendMessage(new LiteralText("Palette size: " + ((HashMapPaletteAccessor) ((HashMapPalette) ibsp)).getBitsPerBlock()));
+			HashMapPalette p = (HashMapPalette) ibsp;
+			int size = ((HashMapPaletteAccessor) p).getMap().size();
+			int bitsPerBlock = ((HashMapPaletteAccessor) p).getBitsPerBlock();
+			sender.sendMessage(new LiteralText("Palette size: " + size + " bits: " + bitsPerBlock + " (" + bits + ")"));
 		} else if (ibsp instanceof RegistryPalette) {
-			sender.sendMessage(new LiteralText("Palette size MAX aka " + Block.BLOCK_STATES.size()));
+			int size = Block.BLOCK_STATES.size();
+			sender.sendMessage(new LiteralText("Palette size MAX aka " + size + " bits: " + bits));
 		}
 	}
 

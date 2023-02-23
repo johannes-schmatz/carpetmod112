@@ -20,6 +20,7 @@
 		"accessors.HopperBlockEntityAccessor",
 		"accessors.IngredientAccessor",
 		"accessors.ItemEntityAccessor",
+		"accessors.LinearPaletteAccessor",
 		"accessors.LivingEntityAccessor",
 		"accessors.MinecraftServerAccessor",
 		"accessors.MobEntityAccessor",

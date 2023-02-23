@@ -8,4 +8,5 @@ import net.minecraft.world.chunk.palette.LinearPalette;
 @Mixin(LinearPalette.class)
 public interface LinearPaletteAccessor {
 	@Accessor int getBitsPerBlock();
+	@Accessor int getSize();
 }
