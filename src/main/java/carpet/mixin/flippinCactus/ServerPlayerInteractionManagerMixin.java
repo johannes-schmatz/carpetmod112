@@ -17,10 +17,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import redstone.multimeter.helper.WorldHelper;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public class ServerPlayerInteractionManagerMixin {
     @Shadow public ServerPlayerEntity player;
+
+    @Shadow public World world;
 
     @Inject(
             method = "method_12792",
@@ -37,5 +40,7 @@ public class ServerPlayerInteractionManagerMixin {
         if (BlockRotator.flipBlockWithCactus(world, pos, blockState, player, hand, facing, hitX, hitY, hitZ)) {
             cir.setReturnValue(ActionResult.PASS);
         }
+
+        WorldHelper.getMultimeter().logInteractBlock(world, pos); // RSMM
     }
 }

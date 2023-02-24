@@ -1,10 +1,10 @@
 package redstone.multimeter.util;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 
 public class IdentifierUtils {
 	
-	public static boolean isValid(ResourceLocation id) {
+	public static boolean isValid(Identifier id) {
 		return isValid(id.getNamespace(), id.getPath());
 	}
 	

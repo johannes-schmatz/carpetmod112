@@ -1,27 +1,24 @@
 package redstone.multimeter.server;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import carpet.CarpetSettings;
-import carpet.helpers.TickSpeed;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.DimensionType;
+import net.minecraft.server.PlayerManager;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.dimension.DimensionType;
 
-import redstone.multimeter.RedstoneMultimeter;
+import carpet.network.PluginChannelHandler;
+import narcolepticfrog.rsmm.events.PlayerConnectionEventDispatcher;
+import narcolepticfrog.rsmm.events.ServerPacketEventDispatcher;
 import redstone.multimeter.common.DimPos;
 import redstone.multimeter.common.TickPhase;
 import redstone.multimeter.common.TickPhaseTree;
@@ -74,11 +71,12 @@ public class MultimeterServer {
 	}
 	
 	public boolean isDedicated() {
-		return server.isDedicatedServer();
+		return server.isDedicated();
 	}
 	
 	public File getConfigFolder() {
-		return new File(server.getDataDirectory(), RedstoneMultimeter.CONFIG_PATH);
+		//return new File(server.getDataDirectory(), RedstoneMultimeter.CONFIG_PATH); // TODO rsmm
+		return null;
 	}
 	
 	public TickPhase getTickPhase() {
@@ -111,7 +109,7 @@ public class MultimeterServer {
 	}
 	
 	public long getCurrentTick() {
-		long tick = server.getWorld(DimensionType.OVERWORLD.getId()).getTotalWorldTime();
+		long tick = 0; //server.getWorld(DimensionType.OVERWORLD.getId()).getTotalWorldTime(); // TODO rsmm
 		
 		if (!tickedTime) {
 			tick++;
@@ -121,7 +119,8 @@ public class MultimeterServer {
 	}
 	
 	public boolean isPaused() {
-		return server.isPaused() || !TickSpeed.process_entities;
+		//return server.isPaused() || !TickSpeed.process_entities; // TODO rsmm
+		return false;
 	}
 	
 	public void tickStart() {
@@ -130,9 +129,9 @@ public class MultimeterServer {
 		if (!paused) {
 			tickedTime = false;
 			
-			if (server.getTickCounter() % 72000 == 0) {
-				cleanPlayerNameCache();
-			}
+			//if (server.getTickCounter() % 72000 == 0) { // TODO rsmm
+			//	cleanPlayerNameCache();
+			//}
 			if (shouldBuildTickPhaseTree()) {
 				tickPhaseTree.start();
 			}
@@ -164,7 +163,7 @@ public class MultimeterServer {
 		if (!paused) {
 			ServerTickPacket packet = new ServerTickPacket(getCurrentTick());
 			
-			for (EntityPlayerMP player : server.getPlayerList().getPlayers()) {
+			for (ServerPlayerEntity player : server.getPlayerManager().getPlayers()) {
 				if (multimeter.hasSubscription(player)) {
 					packetHandler.sendToPlayer(packet, player);
 				}
@@ -178,19 +177,19 @@ public class MultimeterServer {
 		multimeter.tickEnd(paused);
 	}
 	
-	public void onPlayerJoin(EntityPlayerMP player) {
+	public void onPlayerJoin(ServerPlayerEntity player) {
 		multimeter.onPlayerJoin(player);
-		playerNameCache.remove(player.getUniqueID());
+		playerNameCache.remove(player.getUuid());
 	}
 	
-	public void onPlayerLeave(EntityPlayerMP player) {
+	public void onPlayerLeave(ServerPlayerEntity player) {
 		multimeter.onPlayerLeave(player);
-		connectedPlayers.remove(player.getUniqueID());
-		playerNameCache.put(player.getUniqueID(), player.getName());
+		connectedPlayers.remove(player.getUuid());
+		playerNameCache.put(player.getUuid(), player.getTranslationKey());
 	}
 	
-	public void onHandshake(EntityPlayerMP player, String modVersion) {
-		if (connectedPlayers.put(player.getUniqueID(), modVersion) == null) {
+	public void onHandshake(ServerPlayerEntity player, String modVersion) {
+		if (connectedPlayers.put(player.getUuid(), modVersion) == null) {
 			HandshakePacket packet = new HandshakePacket();
 			packetHandler.sendToPlayer(packet, player);
 			
@@ -198,23 +197,23 @@ public class MultimeterServer {
 		}
 	}
 	
-	public void refreshTickPhaseTree(EntityPlayerMP player) {
+	public void refreshTickPhaseTree(ServerPlayerEntity player) {
 		if (tickPhaseTree.isComplete()) {
 			TickPhaseTreePacket packet = new TickPhaseTreePacket(tickPhaseTree.toNbt());
 			packetHandler.sendToPlayer(packet, player);
 		}
 	}
 	
-	public WorldServer getWorld(ResourceLocation dimensionId) {
+	public ServerWorld getWorld(Identifier dimensionId) {
 		DimensionType type = DimensionUtils.getType(dimensionId);
 		return server.getWorld(type.getId());
 	}
 	
-	public WorldServer getWorldOf(DimPos pos) {
+	public ServerWorld getWorldOf(DimPos pos) {
 		return getWorld(pos.getDimensionId());
 	}
 	
-	public IBlockState getBlockState(DimPos pos) {
+	public BlockState getBlockState(DimPos pos) {
 		World world = getWorldOf(pos);
 		
 		if (world != null) {
@@ -224,36 +223,36 @@ public class MultimeterServer {
 		return null;
 	}
 	
-	public PlayerList getPlayerManager() {
-		return server.getPlayerList();
+	public PlayerManager getPlayerManager() {
+		return server.getPlayerManager();
 	}
 	
-	public EntityPlayerMP getPlayer(UUID playerUUID) {
-		return server.getPlayerList().getPlayerByUUID(playerUUID);
+	public ServerPlayerEntity getPlayer(UUID playerUUID) {
+		return server.getPlayerManager().getPlayer(playerUUID);
 	}
 	
 	public String getPlayerName(UUID playerUUID) {
-		EntityPlayerMP player = getPlayer(playerUUID);
-		return player == null ? playerNameCache.get(playerUUID) : player.getName();
+		ServerPlayerEntity player = getPlayer(playerUUID);
+		return player == null ? playerNameCache.get(playerUUID) : player.getTranslationKey();
 	}
 	
-	public EntityPlayerMP getPlayer(String playerName) {
-		return server.getPlayerList().getPlayerByUsername(playerName);
+	public ServerPlayerEntity getPlayer(String playerName) {
+		return server.getPlayerManager().getPlayer(playerName);
 	}
 	
 	public boolean isMultimeterClient(UUID playerUUID) {
 		return connectedPlayers.containsKey(playerUUID);
 	}
 	
-	public boolean isMultimeterClient(EntityPlayerMP player) {
-		return connectedPlayers.containsKey(player.getUniqueID());
+	public boolean isMultimeterClient(ServerPlayerEntity player) {
+		return connectedPlayers.containsKey(player.getUuid());
 	}
 	
-	public Collection<EntityPlayerMP> collectPlayers(Collection<UUID> playerUUIDs) {
-		Set<EntityPlayerMP> players = new LinkedHashSet<>();
+	public Collection<ServerPlayerEntity> collectPlayers(Collection<UUID> playerUUIDs) {
+		Set<ServerPlayerEntity> players = new LinkedHashSet<>();
 		
 		for (UUID playerUUID : playerUUIDs) {
-			EntityPlayerMP player = getPlayer(playerUUID);
+			ServerPlayerEntity player = getPlayer(playerUUID);
 			
 			if (player != null) {
 				players.add(player);
@@ -263,7 +262,7 @@ public class MultimeterServer {
 		return players;
 	}
 	
-	public void sendMessage(EntityPlayerMP player, ITextComponent message, boolean actionBar) {
-		player.sendStatusMessage(message, actionBar);
+	public void sendMessage(ServerPlayerEntity player, Text message, boolean actionBar) {
+		player.sendMessage(message, actionBar);
 	}
 }

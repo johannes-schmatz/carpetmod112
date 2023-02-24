@@ -9,15 +9,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandNotFoundException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.command.*;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
 import redstone.multimeter.RedstoneMultimeter;
 import redstone.multimeter.common.meter.MeterGroup;
@@ -25,7 +21,7 @@ import redstone.multimeter.server.Multimeter;
 import redstone.multimeter.server.MultimeterServer;
 import redstone.multimeter.server.meter.ServerMeterGroup;
 
-public class MeterGroupCommand extends CommandBase {
+public class MeterGroupCommand extends AbstractCommand {
 	
 	private static final String COMMAND_NAME = "metergroup";
 	
@@ -69,12 +65,12 @@ public class MeterGroupCommand extends CommandBase {
 	}
 	
 	@Override
-	public String getName() {
+	public String getCommandName() {
 		return COMMAND_NAME;
 	}
 
 	@Override
-	public String getUsage(ICommandSender sender) {
+	public String getUsageTranslationKey(CommandSource sender) {
 		try {
 			if (isOwnerOfSubscription(sender)) {
 				return TOTAL_USAGE_OWNER;
@@ -87,7 +83,7 @@ public class MeterGroupCommand extends CommandBase {
 	}
 	
 	@Override
-	public List<String> getTabCompletions(MinecraftServer minecraftServer, ICommandSender sender, String[] args, BlockPos pos) {
+	public List<String> method_10738(MinecraftServer minecraftServer, CommandSource sender, String[] args, BlockPos pos) {
 		boolean isOwner = false;
 		
 		try {
@@ -99,15 +95,15 @@ public class MeterGroupCommand extends CommandBase {
 		switch (args.length) {
 		case 1:
 			if (isOwner) {
-				return getListOfStringsMatchingLastWord(args, "clear", "subscribe", "unsubscribe", "private", "members", "list");
+				return method_2894(args, "clear", "subscribe", "unsubscribe", "private", "members", "list");
 			} else {
-				return getListOfStringsMatchingLastWord(args, "clear", "subscribe", "unsubscribe", "list");
+				return method_2894(args, "clear", "subscribe", "unsubscribe", "list");
 			}
 		case 2:
 			switch (args[0]) {
 			case "subscribe":
 				try {
-					return getListOfStringsMatchingLastWord(args, listMeterGroups(sender));
+					return method_10708(args, listMeterGroups(sender));
 				} catch (CommandException e) {
 					
 				}
@@ -115,13 +111,13 @@ public class MeterGroupCommand extends CommandBase {
 				break;
 			case "private":
 				if (isOwner) {
-					return getListOfStringsMatchingLastWord(args, "true", "false");
+					return method_2894(args, "true", "false");
 				}
 				
 				break;
 			case "members":
 				if (isOwner) {
-					return getListOfStringsMatchingLastWord(args, "clear", "add", "remove", "list");
+					return method_2894(args, "clear", "add", "remove", "list");
 				}
 				
 				break;
@@ -132,10 +128,10 @@ public class MeterGroupCommand extends CommandBase {
 			if (isOwner && args[0].equals("members")) {
 				switch (args[1]) {
 				case "add":
-					return getListOfStringsMatchingLastWord(args, minecraftServer.getOnlinePlayerNames());
+					return method_2894(args, minecraftServer.getPlayerNames());
 				case "remove":
 					try {
-						return getListOfStringsMatchingLastWord(args, listMembers(sender).keySet());
+						return method_10708(args, listMembers(sender).keySet());
 					} catch (CommandException e) {
 						
 					}
@@ -151,9 +147,9 @@ public class MeterGroupCommand extends CommandBase {
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+	public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!isMultimeterClient(sender)) {
-			throw new CommandNotFoundException();
+			throw new NotFoundException();
 		}
 		
 		if (args.length > 0) {
@@ -164,7 +160,7 @@ public class MeterGroupCommand extends CommandBase {
 					return;
 				}
 				
-				throw new WrongUsageException(USAGE_LIST);
+				throw new IncorrectUsageException(USAGE_LIST);
 			case "subscribe":
 				if (args.length == 1) {
 					subscribe(sender, null);
@@ -185,7 +181,7 @@ public class MeterGroupCommand extends CommandBase {
 					return;
 				}
 				
-				throw new WrongUsageException(USAGE_UNSUBSCRIBE);
+				throw new IncorrectUsageException(USAGE_UNSUBSCRIBE);
 			case "private":
 				if (!isOwnerOfSubscription(sender)) {
 					break;
@@ -205,10 +201,10 @@ public class MeterGroupCommand extends CommandBase {
 						return;
 					}
 					
-					throw new WrongUsageException(USAGE_PRIVATE_SET);
+					throw new IncorrectUsageException(USAGE_PRIVATE_SET);
 				}
 				
-				throw new WrongUsageException(USAGE_PRIVATE);
+				throw new IncorrectUsageException(USAGE_PRIVATE);
 			case "members":
 				if (!isOwnerOfSubscription(sender)) {
 					break;
@@ -222,54 +218,54 @@ public class MeterGroupCommand extends CommandBase {
 							return;
 						}
 						
-						throw new WrongUsageException(USAGE_MEMBERS_LIST);
+						throw new IncorrectUsageException(USAGE_MEMBERS_LIST);
 					case "add":
 						if (args.length == 3) {
-							membersAdd(sender, getPlayers(server, sender, args[2]));
+							membersAdd(sender, method_14455(server, sender, args[2]));
 							return;
 						}
 						
-						throw new WrongUsageException(USAGE_MEMBERS_ADD);
+						throw new IncorrectUsageException(USAGE_MEMBERS_ADD);
 					case "remove":
 						if (args.length == 3) {
 							membersRemove(sender, args[2]);
 							return;
 						}
 						
-						throw new WrongUsageException(USAGE_MEMBERS_REMOVE);
+						throw new IncorrectUsageException(USAGE_MEMBERS_REMOVE);
 					case "clear":
 						if (args.length == 2) {
 							membersClear(sender);
 							return;
 						}
 						
-						throw new WrongUsageException(USAGE_MEMBERS_CLEAR);
+						throw new IncorrectUsageException(USAGE_MEMBERS_CLEAR);
 					}
 				}
 				
-				throw new WrongUsageException(USAGE_MEMBERS);
+				throw new IncorrectUsageException(USAGE_MEMBERS);
 			case "clear":
 				if (args.length == 1) {
 					clear(sender);
 					return;
 				}
 				
-				throw new WrongUsageException(USAGE_CLEAR);
+				throw new IncorrectUsageException(USAGE_CLEAR);
 			}
 		}
 		
-		throw new WrongUsageException(getUsage(sender));
+		throw new IncorrectUsageException(getUsageTranslationKey(sender));
 	}
 	
-	private boolean isMultimeterClient(ICommandSender sender) throws CommandException {
+	private boolean isMultimeterClient(CommandSource sender) throws CommandException {
 		return execute(sender, player -> multimeter.getMultimeterServer().isMultimeterClient(player));
 	}
 	
-	private boolean isOwnerOfSubscription(ICommandSender sender) throws CommandException {
+	private boolean isOwnerOfSubscription(CommandSource sender) throws CommandException {
 		return execute(sender, player -> multimeter.isOwnerOfSubscription(player));
 	}
 	
-	private Collection<String> listMeterGroups(ICommandSender sender) throws CommandException {
+	private Collection<String> listMeterGroups(CommandSource sender) throws CommandException {
 		List<String> names = new ArrayList<>();
 		
 		command(sender, player -> {
@@ -283,7 +279,7 @@ public class MeterGroupCommand extends CommandBase {
 		return names;
 	}
 	
-	private Map<String, UUID> listMembers(ICommandSender sender) throws CommandException {
+	private Map<String, UUID> listMembers(CommandSource sender) throws CommandException {
 		Map<String, UUID> names = new HashMap<>();
 		
 		command(sender, player -> {
@@ -303,112 +299,114 @@ public class MeterGroupCommand extends CommandBase {
 		return names;
 	}
 	
-	private void list(ICommandSender sender) throws CommandException {
+	private void list(CommandSource sender) throws CommandException {
 		Collection<String> names = listMeterGroups(sender);
 		
 		if (names.isEmpty()) {
-			sender.sendMessage(new TextComponentString("There are no meter groups yet!"));
+			sender.sendMessage(new LiteralText("There are no meter groups yet!"));
 		} else {
 			String message = "Meter groups:\n  " + String.join("\n  ", names);
-			sender.sendMessage(new TextComponentString(message));
+			sender.sendMessage(new LiteralText(message));
 		}
 	}
 	
-	private void subscribe(ICommandSender sender, String name) throws CommandException {
+	private void subscribe(CommandSource sender, String name) throws CommandException {
 		command(sender, player -> {
 			if (name == null) {
 				multimeter.subscribeToDefaultMeterGroup(player);
-				sender.sendMessage(new TextComponentString("Subscribed to default meter group"));
+				sender.sendMessage(new LiteralText("Subscribed to default meter group"));
 			} else if (multimeter.hasMeterGroup(name)) {
 				ServerMeterGroup meterGroup = multimeter.getMeterGroup(name);
 				
 				if (!meterGroup.isPrivate() || meterGroup.hasMember(player) || meterGroup.isOwnedBy(player)) {
 					multimeter.subscribeToMeterGroup(meterGroup, player);
-					sender.sendMessage(new TextComponentString(String.format("Subscribed to meter group \'%s\'", name)));
+					sender.sendMessage(new LiteralText(String.format("Subscribed to meter group \'%s\'", name)));
 				} else {
-					sender.sendMessage(new TextComponentString("That meter group is private!"));
+					sender.sendMessage(new LiteralText("That meter group is private!"));
 				}
 			} else {
 				if (MeterGroup.isValidName(name)) {
 					multimeter.createMeterGroup(player, name);
-					sender.sendMessage(new TextComponentString(String.format("Created meter group \'%s\'", name)));
+					sender.sendMessage(new LiteralText(String.format("Created meter group \'%s\'", name)));
 				} else {
-					sender.sendMessage(new TextComponentString(String.format("\'%s\' is not a valid meter group name!", name)));
+					sender.sendMessage(new LiteralText(String.format("\'%s\' is not a valid meter group name!", name)));
 				}
 			}
 		});
 	}
 	
-	private void unsubscribe(ICommandSender sender) throws CommandException {
+	private void unsubscribe(CommandSource sender) throws CommandException {
 		command(sender, (meterGroup, player) -> {
 			multimeter.unsubscribeFromMeterGroup(meterGroup, player);
-			sender.sendMessage(new TextComponentString(String.format("Unsubscribed from meter group \'%s\'", meterGroup.getName())));
+			sender.sendMessage(new LiteralText(String.format("Unsubscribed from meter group \'%s\'", meterGroup.getName())));
 		});
 	}
 	
-	private void queryPrivate(ICommandSender sender) throws CommandException {
+	private void queryPrivate(CommandSource sender) throws CommandException {
 		command(sender, (meterGroup, player) -> {
 			String status = meterGroup.isPrivate() ? "private" : "public";
-			sender.sendMessage(new TextComponentString(String.format("Meter group \'%s\' is %s", meterGroup.getName(), status)));
+			sender.sendMessage(new LiteralText(String.format("Meter group \'%s\' is %s", meterGroup.getName(), status)));
 		});
 	}
 	
-	private void setPrivate(ICommandSender sender, boolean isPrivate) throws CommandException {
+	private void setPrivate(CommandSource sender, boolean isPrivate) throws CommandException {
 		command(sender, (meterGroup, player) -> {
 			if (meterGroup.isOwnedBy(player)) {
 				meterGroup.setPrivate(isPrivate);
-				sender.sendMessage(new TextComponentString(String.format("Meter group \'%s\' is now %s", meterGroup.getName(), (isPrivate ? "private" : "public"))));
+				sender.sendMessage(new LiteralText(String.format("Meter group \'%s\' is now %s", meterGroup.getName(), (isPrivate ? "private" : "public"))));
 			} else {
-				sender.sendMessage(new TextComponentString("Only the owner of a meter group can change its privacy!"));
+				sender.sendMessage(new LiteralText("Only the owner of a meter group can change its privacy!"));
 			}
 		});
 	}
 	
-	private void membersList(ICommandSender sender) throws CommandException {
+	private void membersList(CommandSource sender) throws CommandException {
 		Map<String, UUID> members = listMembers(sender);
 		
 		commandMembers(sender, (meterGroup, owner) -> {
 			if (members.isEmpty()) {
-				sender.sendMessage(new TextComponentString(String.format("Meter group \'%s\' has no members yet!", meterGroup.getName())));
+				sender.sendMessage(new LiteralText(String.format("Meter group \'%s\' has no members yet!", meterGroup.getName())));
 			} else {
 				String message = String.format("Members of meter group \'%s\':\n  ", meterGroup.getName()) + String.join("\n  ", members.keySet());
-				sender.sendMessage(new TextComponentString(message));
+				sender.sendMessage(new LiteralText(message));
 			}
 		});
 	}
 	
-	private void membersAdd(ICommandSender sender, Collection<EntityPlayerMP> players) throws CommandException {
+	private void membersAdd(CommandSource sender, Collection<ServerPlayerEntity> players) throws CommandException {
 		commandMembers(sender, (meterGroup, owner) -> {
-			for (EntityPlayerMP player : players) {
+			for (ServerPlayerEntity player : players) {
 				if (player == owner) {
-					sender.sendMessage(new TextComponentString("You cannot add yourself as a member!"));
+					sender.sendMessage(new LiteralText("You cannot add yourself as a member!"));
 				} else if (meterGroup.hasMember(player)) {
-					sender.sendMessage(new TextComponentString(String.format("Player \'%s\' is already a member of meter group \'%s\'!", player.getName(), meterGroup.getName())));
+					sender.sendMessage(new LiteralText(String.format("Player \'%s\' is already a member of meter group \'%s\'!", player.getName(),
+							meterGroup.getName())));
 				} else if (!multimeter.getMultimeterServer().isMultimeterClient(player)) {
-					sender.sendMessage(new TextComponentString(String.format("You cannot add player \'%s\' as a member; they do not have %s installed!", player.getName(), RedstoneMultimeter.MOD_NAME)));
+					sender.sendMessage(new LiteralText(String.format("You cannot add player \'%s\' as a member; they do not have %s installed!", player.getName(),
+							RedstoneMultimeter.MOD_NAME)));
 				} else {
-					multimeter.addMemberToMeterGroup(meterGroup, player.getUniqueID());
-					sender.sendMessage(new TextComponentString(String.format("Player \'%s\' is now a member of meter group \'%s\'", player.getName(), meterGroup.getName())));
+					multimeter.addMemberToMeterGroup(meterGroup, player.getUuid());
+					sender.sendMessage(new LiteralText(String.format("Player \'%s\' is now a member of meter group \'%s\'", player.getName(), meterGroup.getName())));
 				}
 			}
 		});
 	}
 	
-	private void membersRemove(ICommandSender sender, String playerName) throws CommandException {
+	private void membersRemove(CommandSource sender, String playerName) throws CommandException {
 		commandMembers(sender, (meterGroup, owner) -> {
 			Entry<String, UUID> member = findMember(listMembers(sender), playerName);
 			
 			if (member == null) {
-				EntityPlayerMP player = multimeter.getMultimeterServer().getPlayer(playerName);
+				ServerPlayerEntity player = multimeter.getMultimeterServer().getPlayer(playerName);
 				
 				if (player == owner) {
-					sender.sendMessage(new TextComponentString("You cannot remove yourself as a member!"));
+					sender.sendMessage(new LiteralText("You cannot remove yourself as a member!"));
 				} else {
-					sender.sendMessage(new TextComponentString(String.format("Meter group \'%s\' has no member with the name \'%s\'!", meterGroup.getName(), playerName)));
+					sender.sendMessage(new LiteralText(String.format("Meter group \'%s\' has no member with the name \'%s\'!", meterGroup.getName(), playerName)));
 				}
 			} else {
 				multimeter.removeMemberFromMeterGroup(meterGroup, member.getValue());
-				sender.sendMessage(new TextComponentString(String.format("Player \'%s\' is no longer a member of meter group \'%s\'", member.getKey(), meterGroup.getName())));
+				sender.sendMessage(new LiteralText(String.format("Player \'%s\' is no longer a member of meter group \'%s\'", member.getKey(), meterGroup.getName())));
 			}
 		});
 	}
@@ -425,70 +423,70 @@ public class MeterGroupCommand extends CommandBase {
 		return null;
 	}
 	
-	private void membersClear(ICommandSender sender) throws CommandException {
+	private void membersClear(CommandSource sender) throws CommandException {
 		commandMembers(sender, (meterGroup, owner) -> {
 			multimeter.clearMembersOfMeterGroup(meterGroup);
-			sender.sendMessage(new TextComponentString(String.format("Removed all members from meter group \'%s\'", meterGroup.getName())));
+			sender.sendMessage(new LiteralText(String.format("Removed all members from meter group \'%s\'", meterGroup.getName())));
 		});
 	}
 	
-	private void commandMembers(ICommandSender sender, MeterGroupCommandExecutor command) throws CommandException {
+	private void commandMembers(CommandSource sender, MeterGroupCommandExecutor command) throws CommandException {
 		command(sender, (meterGroup, player) -> {
 			if (meterGroup.isOwnedBy(player)) {
 				command.execute(meterGroup, player);
 				
 				if (!meterGroup.isPrivate()) {
-					sender.sendMessage(new TextComponentString("NOTE: this meter group is public; adding/removing members will not have any effect until you make it private!"));
+					sender.sendMessage(new LiteralText("NOTE: this meter group is public; adding/removing members will not have any effect until you make it private!"));
 				}
 			}
 		});
 	}
 	
-	private void clear(ICommandSender sender) throws CommandException {
+	private void clear(CommandSource sender) throws CommandException {
 		command(sender, (meterGroup, player) -> {
 			multimeter.clearMeterGroup(meterGroup);
-			sender.sendMessage(new TextComponentString(String.format("Removed all meters in meter group \'%s\'", meterGroup.getName())));
+			sender.sendMessage(new LiteralText(String.format("Removed all meters in meter group \'%s\'", meterGroup.getName())));
 		});
 	}
 	
-	private void command(ICommandSender sender, MeterGroupCommandExecutor command) throws CommandException {
+	private void command(CommandSource sender, MeterGroupCommandExecutor command) throws CommandException {
 		command(sender, player -> {
 			ServerMeterGroup meterGroup = multimeter.getSubscription(player);
 			
 			if (meterGroup == null) {
-				sender.sendMessage(new TextComponentString("Please subscribe to a meter group first!"));
+				sender.sendMessage(new LiteralText("Please subscribe to a meter group first!"));
 			} else {
 				command.execute(meterGroup, player);
 			}
 		});
 	}
 	
-	private void command(ICommandSender sender, MultimeterCommandExecutor command) throws CommandException {
+	private void command(CommandSource sender, MultimeterCommandExecutor command) throws CommandException {
 		execute(sender, player -> { command.execute(player); return true; });
 	}
 	
-	private boolean execute(ICommandSender sender, CommandExecutor command) throws CommandException {
-		return command.execute(getCommandSenderAsPlayer(sender));
+	private boolean execute(CommandSource sender, CommandExecutor command) throws CommandException {
+		return command.execute(getAsPlayer(sender));
 	}
 	
 	@FunctionalInterface
 	private interface MultimeterCommandExecutor {
 		
-		public void execute(EntityPlayerMP player) throws CommandException;
+		public void execute(ServerPlayerEntity player) throws CommandException;
 		
 	}
 	
 	@FunctionalInterface
 	private interface MeterGroupCommandExecutor {
 		
-		public void execute(ServerMeterGroup meterGroup, EntityPlayerMP player) throws CommandException;
+		public void execute(ServerMeterGroup meterGroup, ServerPlayerEntity player) throws CommandException;
 		
 	}
 	
 	@FunctionalInterface
 	private interface CommandExecutor {
 		
-		public boolean execute(EntityPlayerMP player) throws CommandException;
+		public boolean execute(ServerPlayerEntity player) throws CommandException;
 		
 	}
 }

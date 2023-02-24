@@ -6,37 +6,37 @@ import carpet.CarpetSettings;
 
 import io.netty.buffer.Unpooled;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.PacketByteBuf;
 
 public abstract class AbstractPacketHandler {
 	
 	protected <P extends RSMMPacket> Packet<?> encode(P packet) {
-		ResourceLocation id = PacketManager.getId(packet);
+		Identifier id = PacketManager.getId(packet);
 		
 		if (id == null) {
 			throw new IllegalStateException("Unable to encode packet: " + packet.getClass());
 		}
 		
-		NBTTagCompound data = new NBTTagCompound();
+		NbtCompound data = new NbtCompound();
 		packet.encode(data);
 		
-		PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
 		
-		buffer.writeResourceLocation(id);
-		buffer.writeCompoundTag(data);
+		buffer.writeIdentifier(id);
+		buffer.writeNbtCompound(data);
 		
 		return toCustomPayload(PacketManager.getPacketChannelId(), buffer);
 	}
 	
-	protected abstract Packet<?> toCustomPayload(String id, PacketBuffer buffer);
+	protected abstract Packet<?> toCustomPayload(String id, PacketByteBuf buffer);
 	
 	public abstract <P extends RSMMPacket> void send(P packet);
 	
-	protected <P extends RSMMPacket> P decode(PacketBuffer buffer) throws IOException {
-		ResourceLocation id = buffer.readResourceLocation();
+	protected <P extends RSMMPacket> P decode(PacketByteBuf buffer) throws IOException {
+		Identifier id = buffer.readIdentifier();
 		P packet = PacketManager.createPacket(id);
 		
 		if (packet == null) {
@@ -44,7 +44,7 @@ public abstract class AbstractPacketHandler {
 		}
 		
 		if (CarpetSettings.redstoneMultimeter || packet.force()) {
-			NBTTagCompound data = buffer.readCompoundTag();
+			NbtCompound data = buffer.readNbtCompound();
 			packet.decode(data);
 		}
 		

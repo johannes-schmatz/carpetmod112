@@ -1,7 +1,8 @@
 package redstone.multimeter.common.network;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 
+import redstone.multimeter.RedstoneMultimeter;
 import redstone.multimeter.common.network.packets.*;
 import redstone.multimeter.registry.SupplierClazzRegistry;
 
@@ -10,14 +11,15 @@ public class PacketManager {
 	private static final SupplierClazzRegistry<RSMMPacket> PACKETS;
 	
 	public static String getPacketChannelId() {
-		return PACKETS.getId().getNamespace();
+		return RedstoneMultimeter.NAMESPACE;
+		//return PACKETS.getId().getNamespace();
 	}
 	
-	public static <P extends RSMMPacket> ResourceLocation getId(P packet) {
+	public static <P extends RSMMPacket> Identifier getId(P packet) {
 		return PACKETS.getId(packet);
 	}
 	
-	public static <P extends RSMMPacket> P createPacket(ResourceLocation id) {
+	public static <P extends RSMMPacket> P createPacket(Identifier id) {
 		return PACKETS.get(id);
 	}
 	

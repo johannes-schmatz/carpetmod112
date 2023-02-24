@@ -4,16 +4,19 @@ import java.util.Collection;
 
 import carpet.CarpetSettings;
 
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.SPacketCustomPayload;
+import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.util.PacketByteBuf;
 
+import carpet.network.PluginChannelHandler;
 import redstone.multimeter.common.network.AbstractPacketHandler;
+import redstone.multimeter.common.network.PacketManager;
 import redstone.multimeter.common.network.RSMMPacket;
 import redstone.multimeter.server.meter.ServerMeterGroup;
 
-public class ServerPacketHandler extends AbstractPacketHandler {
+public class ServerPacketHandler extends AbstractPacketHandler implements PluginChannelHandler {
 	
 	private final MultimeterServer server;
 	
@@ -22,25 +25,28 @@ public class ServerPacketHandler extends AbstractPacketHandler {
 	}
 
 	@Override
-	protected Packet<?> toCustomPayload(String id, PacketBuffer buffer) {
-		return new SPacketCustomPayload(id, buffer);
+	protected Packet<?> toCustomPayload(String id, PacketByteBuf buffer) {
+		return new CustomPayloadS2CPacket(id, buffer);
 	}
 	
 	@Override
 	public <P extends RSMMPacket> void send(P packet) {
 		Packet<?> mcPacket = encode(packet);
-		server.getPlayerManager().sendPacketToAllPlayers(mcPacket);
+		server.getPlayerManager().sendToAll(mcPacket);
+		// TODO: use carpet plugin channels?
 	}
 	
-	public <P extends RSMMPacket> void sendToPlayer(P packet, EntityPlayerMP player) {
-		player.connection.sendPacket(encode(packet));
+	public <P extends RSMMPacket> void sendToPlayer(P packet, ServerPlayerEntity player) {
+		player.networkHandler.sendPacket(encode(packet));
+		// TODO: use carpet plugin channels?
 	}
 	
-	public <P extends RSMMPacket> void sendToPlayers(P packet, Collection<EntityPlayerMP> players) {
+	public <P extends RSMMPacket> void sendToPlayers(P packet, Collection<ServerPlayerEntity> players) {
 		Packet<?> mcPacket = encode(packet);
+		// TODO: use carpet plugin channels?
 		
-		for (EntityPlayerMP player : players) {
-			player.connection.sendPacket(mcPacket);
+		for (ServerPlayerEntity player : players) {
+			player.networkHandler.sendPacket(mcPacket);
 		}
 	}
 	
@@ -48,7 +54,7 @@ public class ServerPacketHandler extends AbstractPacketHandler {
 		sendToPlayers(packet, server.collectPlayers(meterGroup.getSubscribers()));
 	}
 	
-	public void onPacketReceived(PacketBuffer buffer, EntityPlayerMP player) {
+	public void onPacketReceived(PacketByteBuf buffer, ServerPlayerEntity player) {
 		try {
 			RSMMPacket packet = decode(buffer);
 			
@@ -58,5 +64,15 @@ public class ServerPacketHandler extends AbstractPacketHandler {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public String[] getChannels() {
+		return new String[]{PacketManager.getPacketChannelId()};
+	}
+
+	@Override
+	public void onCustomPayload(CustomPayloadC2SPacket packet, ServerPlayerEntity player) {
+		onPacketReceived(packet.getPayload(), player);
 	}
 }

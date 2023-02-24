@@ -3,12 +3,12 @@ package redstone.multimeter.helper;
 import carpet.CarpetServer;
 import carpet.CarpetSettings;
 
-import net.minecraft.block.BlockEventData;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.server.world.BlockAction;
+import net.minecraft.util.ScheduledTick;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.World;
 
 import redstone.multimeter.common.TickTask;
@@ -20,11 +20,11 @@ public class WorldHelper {
 	public static int currentBlockEventDepth;
 	
 	public static MultimeterServer getMultimeterServer() {
-		return CarpetServer.rsmmServer;
+		return CarpetServer.getInstance().rsmmServer;
 	}
 	
 	public static Multimeter getMultimeter() {
-		return CarpetServer.rsmmServer.getMultimeter();
+		return CarpetServer.getInstance().rsmmServer.getMultimeter();
 	}
 	
 	public static void startTickTask(TickTask task, String... args) {
@@ -57,16 +57,16 @@ public class WorldHelper {
 		}
 	}
 	
-	public static void onBlockUpdate(World world, BlockPos pos, IBlockState state) {
+	public static void onBlockUpdate(World world, BlockPos pos, BlockState state) {
 		if (CarpetSettings.redstoneMultimeter) {
 			MultimeterServer server = getMultimeterServer();
 			Multimeter multimeter = server.getMultimeter();
 
 			multimeter.logBlockUpdate(world, pos);
 
-			if (state.getBlock().logPoweredOnBlockUpdate()) {
-				multimeter.logPowered(world, pos, state);
-			}
+			//if (state.getBlock().logPoweredOnBlockUpdate()) { // TODO rsmm
+			//	multimeter.logPowered(world, pos, state);
+			//}
 		}
 	}
 	
@@ -82,7 +82,7 @@ public class WorldHelper {
 		}
 	}
 	
-	public static void onBlockEntityTick(World world, TileEntity blockEntity) {
+	public static void onBlockEntityTick(World world, BlockEntity blockEntity) {
 		if (CarpetSettings.redstoneMultimeter) {
 			getMultimeter().logBlockEntityTick(world, blockEntity);
 		}
@@ -100,13 +100,13 @@ public class WorldHelper {
         }
     }
 	
-	public static void onScheduledTick(World world, NextTickListEntry scheduledTick) {
+	public static void onScheduledTick(World world, ScheduledTick scheduledTick) {
         if (CarpetSettings.redstoneMultimeter) {
             getMultimeter().logScheduledTick(world, scheduledTick);
         }
     }
 	
-	public static void onBlockEvent(World world, BlockEventData blockEvent) {
+	public static void onBlockEvent(World world, BlockAction blockEvent) {
         if (CarpetSettings.redstoneMultimeter) {
             getMultimeter().logBlockEvent(world, blockEvent, currentBlockEventDepth);
         }

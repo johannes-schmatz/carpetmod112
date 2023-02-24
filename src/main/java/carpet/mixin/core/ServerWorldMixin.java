@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.dimension.Dimension;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.level.LevelProperties;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,6 +17,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import redstone.multimeter.common.TickTask;
+import redstone.multimeter.helper.WorldHelper;
 
 import java.util.Iterator;
 
@@ -27,6 +30,8 @@ public abstract class ServerWorldMixin extends World {
 
     @Shadow protected abstract void method_2131();
 
+    // TODO: consider actually overwriting tick() once and for all!
+    // see the if (TickSpeed.processEntities) and how sky cancels the mixin instead
     @Redirect(
             method = "tick",
             at = @At(
@@ -47,7 +52,21 @@ public abstract class ServerWorldMixin extends World {
             )
     )
     private void setWorldTotalTime(LevelProperties worldInfo, long time) {
-        if (TickSpeed.process_entities) worldInfo.setTime(time);
+        if (TickSpeed.process_entities) {
+            boolean tick_time = dimension.getDimensionType() == DimensionType.OVERWORLD;
+
+            if (tick_time) {
+                WorldHelper.startTickTask(TickTask.TICK_TIME);
+            }
+
+            worldInfo.setTime(time);
+
+            if (tick_time) {
+                WorldHelper.getMultimeterServer().onOverworldTickTime();
+                WorldHelper.endTickTask();
+            }
+        }
+
     }
 
     @Redirect(
@@ -102,12 +121,14 @@ public abstract class ServerWorldMixin extends World {
         if (!TickSpeed.process_entities) {
             while (iterator.hasNext()) {
                 this.profiler.push("getChunk");
+                WorldHelper.swapTickTask(false, TickTask.TICK_CHUNK); // RSMM
                 Chunk chunk = iterator.next();
                 this.profiler.swap("checkNextLight");
                 chunk.method_3923();
                 this.profiler.swap("tickChunk");
                 chunk.populateBlockEntities(false);
                 this.profiler.pop();
+                WorldHelper.endTickTask(false); // RSMM
             }
             // now the iterator is done and the vanilla loop won't run
             // this acts like a `continue` after chunk.onTick(false)

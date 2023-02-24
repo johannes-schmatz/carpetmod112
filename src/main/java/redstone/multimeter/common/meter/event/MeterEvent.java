@@ -1,6 +1,6 @@
 package redstone.multimeter.common.meter.event;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NbtCompound;
 
 public class MeterEvent {
 	
@@ -24,20 +24,20 @@ public class MeterEvent {
 		return metadata;
 	}
 	
-	public NBTTagCompound toNbt() {
-		NBTTagCompound nbt = new NBTTagCompound();
+	public NbtCompound toNbt() {
+		NbtCompound nbt = new NbtCompound();
 		
-		nbt.setTag("type", type.toNbt());
-		nbt.setInteger("metadata", metadata);
+		nbt.put("type", type.toNbt());
+		nbt.putInt("metadata", metadata);
 		
 		return nbt;
 	}
 	
-	public static MeterEvent fromNbt(NBTTagCompound nbt) {
+	public static MeterEvent fromNbt(NbtCompound nbt) {
 		MeterEvent event = new MeterEvent();
 		
-		event.type = EventType.fromNbt(nbt.getTag("type"));
-		event.metadata = nbt.getInteger("metadata");
+		event.type = EventType.fromNbt(nbt.getCompound("type"));
+		event.metadata = nbt.getInt("metadata");
 		
 		return event;
 	}

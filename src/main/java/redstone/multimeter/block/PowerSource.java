@@ -1,6 +1,6 @@
 package redstone.multimeter.block;
 
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import redstone.multimeter.interfaces.IBlock;
@@ -19,6 +19,6 @@ public interface PowerSource extends IBlock {
 		return true;
 	}
 	
-	public int getPowerLevel(World world, BlockPos pos, IBlockState state);
+	public int getPowerLevel(World world, BlockPos pos, BlockState state);
 	
 }

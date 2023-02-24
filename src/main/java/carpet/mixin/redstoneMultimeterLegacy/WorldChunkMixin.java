@@ -1,4 +1,4 @@
-package carpet.mixin.redstoneMultimeter;
+package carpet.mixin.redstoneMultimeterLegacy;
 
 import carpet.CarpetSettings;
 import narcolepticfrog.rsmm.events.StateChangeEventDispatcher;

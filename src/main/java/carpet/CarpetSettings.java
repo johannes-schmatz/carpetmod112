@@ -300,7 +300,7 @@ public final class CarpetSettings
 
     private static boolean validateRedstoneMultimeterLegacy(boolean value) {
         CarpetServer carpet = CarpetServer.getNullableInstance();
-        if (carpet != null) carpet.rsmmChannel.setEnabled(value);
+        if (carpet != null) carpet.legacyRsmmChannel.setEnabled(value);
         return true;
     }
 

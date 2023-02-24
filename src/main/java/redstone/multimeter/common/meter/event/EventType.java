@@ -3,10 +3,10 @@ package redstone.multimeter.common.meter.event;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagByte;
-
 import redstone.multimeter.util.NbtUtils;
+
+import net.minecraft.nbt.NbtByte;
+import net.minecraft.nbt.NbtElement;
 
 public enum EventType {
 	
@@ -75,17 +75,17 @@ public enum EventType {
 		return 1 << index;
 	}
 	
-	public NBTBase toNbt() {
-		return new NBTTagByte((byte)index);
+	public NbtElement toNbt() {
+		return new NbtByte((byte)index);
 	}
 	
-	public static EventType fromNbt(NBTBase nbt) {
-		if (nbt.getId() != NbtUtils.TYPE_BYTE) {
+	public static EventType fromNbt(NbtElement nbt) {
+		if (nbt.getType() != NbtUtils.TYPE_BYTE) {
 			return UNKNOWN;
 		}
 		
-		NBTTagByte NBTTagByte = (NBTTagByte)nbt;
-		int index = NBTTagByte.getByte();
+		NbtByte tag = (NbtByte) nbt;
+		int index = tag.byteValue();
 		
 		return fromIndex(index);
 	}

@@ -12,6 +12,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import redstone.multimeter.common.TickTask;
+import redstone.multimeter.helper.WorldHelper;
 
 import static carpet.helpers.LagSpikeHelper.PrePostSubPhase.*;
 import static carpet.helpers.LagSpikeHelper.TickPhase.*;
@@ -30,7 +32,10 @@ public abstract class ServerWorldMixin extends World {
             )
     )
     private void preSpawning(CallbackInfo ci) {
+        WorldHelper.startTickTask(TickTask.MOB_SPAWNING); // RSMM
+
         CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "spawning");
+
         LagSpikeHelper.processLagSpikes(this, MOB_SPAWNING, PRE);
     }
 
@@ -44,7 +49,10 @@ public abstract class ServerWorldMixin extends World {
     )
     private void postSpawning(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, MOB_SPAWNING, POST);
+
         CarpetProfiler.end_current_section();
+
+        WorldHelper.endTickTask();
     }
 
     @Inject(
@@ -55,6 +63,8 @@ public abstract class ServerWorldMixin extends World {
             )
     )
     private void preChunkUnloading(CallbackInfo ci) {
+        WorldHelper.startTickTask(TickTask.CHUNK_SOURCE); // RSMM
+
         LagSpikeHelper.processLagSpikes(this, CHUNK_UNLOADING, PRE);
     }
 
@@ -68,6 +78,8 @@ public abstract class ServerWorldMixin extends World {
     )
     private void postChunkUnloading(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, CHUNK_UNLOADING, POST);
+
+        WorldHelper.endTickTask(); // RSMM
     }
 
     @Inject(
@@ -103,6 +115,7 @@ public abstract class ServerWorldMixin extends World {
             )
     )
     private void preRandomTick(CallbackInfo ci) {
+        WorldHelper.startTickTask(TickTask.TICK_CHUNKS); // RSMM
         CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "blocks");
         LagSpikeHelper.processLagSpikes(this, RANDOM_TICK, PRE);
     }
@@ -128,6 +141,8 @@ public abstract class ServerWorldMixin extends World {
             )
     )
     private void preChunkMap(CallbackInfo ci) {
+        WorldHelper.swapTickTask(TickTask.CHUNK_MAP); // RSMM
+
         LagSpikeHelper.processLagSpikes(this, PLAYER_CHUNK_MAP, PRE);
     }
 
@@ -141,6 +156,8 @@ public abstract class ServerWorldMixin extends World {
     )
     private void postChunkMap(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, PLAYER_CHUNK_MAP, POST);
+
+        WorldHelper.endTickTask(); // RSMM
     }
 
     @Inject(
@@ -151,6 +168,8 @@ public abstract class ServerWorldMixin extends World {
             )
     )
     private void preVillage(CallbackInfo ci) {
+        WorldHelper.startTickTask(TickTask.VILLAGES); // RSMM
+
         LagSpikeHelper.processLagSpikes(this, VILLAGE, PRE);
     }
 
@@ -164,6 +183,8 @@ public abstract class ServerWorldMixin extends World {
     )
     private void postVillage(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, VILLAGE, POST);
+
+        WorldHelper.swapTickTask(TickTask.PORTALS); // RSMM
     }
 
     @Inject(
@@ -187,5 +208,7 @@ public abstract class ServerWorldMixin extends World {
     )
     private void postBlockEvent(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, BLOCK_EVENT, POST);
+
+        WorldHelper.endTickTask(); // RSMM
     }
 }

@@ -23,6 +23,8 @@ import net.minecraft.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import redstone.multimeter.server.MultimeterServer;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -38,6 +40,7 @@ public class CarpetServer {
     public RSMMServer legacyRsmmServer;
     public MultimeterServer rsmmServer;
     public ToggleableChannelHandler rsmmChannel;
+    public ToggleableChannelHandler legacyRsmmChannel;
     public ToggleableChannelHandler wecuiChannel;
 
     private CarpetServer(MinecraftServer server) {
@@ -57,7 +60,8 @@ public class CarpetServer {
         rsmmServer = new MultimeterServer(server);
         legacyRsmmServer = new RSMMServer(server);
 
-        rsmmChannel = new ToggleableChannelHandler(pluginChannels, legacyRsmmServer.createChannelHandler(), false);
+        pluginChannels.register(rsmmServer.getPacketHandler()); // maybe make this a toggleable channel handler
+        legacyRsmmChannel = new ToggleableChannelHandler(pluginChannels, legacyRsmmServer.createChannelHandler(), false);
         wecuiChannel = new ToggleableChannelHandler(pluginChannels, WorldEditBridge.createChannelHandler(), false);
     }
 

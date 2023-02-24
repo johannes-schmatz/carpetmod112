@@ -1,6 +1,6 @@
 package redstone.multimeter.util;
 
-import net.minecraft.util.EnumFacing.Axis;
+import net.minecraft.util.math.Direction.Axis;
 
 public class AxisUtils {
 	
