@@ -127,6 +127,7 @@
 		"client.IntegratedServerMixin",
 		"combinePotionDuration.EntityStatusEffectS2CPacketMixin",
 		"combineXPOrbs.ExperienceOrbEntityMixin",
+		"core.BootstrapMixin",
 		"core.CommandManagerMixin",
 		"core.CompoundTagMixin",
 		"core.MinecraftDedicatedServerMixin",
