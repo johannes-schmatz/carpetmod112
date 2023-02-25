@@ -128,7 +128,7 @@ public class Buildscript extends LegacyFabricProject {
 					d.add(var3.getJarDependency(), var3.usage);
 					// ADDED
 					String userAgent = r.nextInt(100) + " br4chyur4 " + r.nextInt(100);
-					System.setProperty("http.agent", r);
+					System.setProperty("http.agent", userAgent);
 					// END ADDED
 				}
 			}
