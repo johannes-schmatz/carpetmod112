@@ -129,6 +129,11 @@ public class Buildscript extends LegacyFabricProject {
 					// ADDED
 					String userAgent = r.nextInt(100) + " br4chyur4 " + r.nextInt(100);
 					System.setProperty("http.agent", userAgent);
+					try {
+						Thread.sleep(r.nextInt(300) + 300);
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					}
 					// END ADDED
 				}
 			}
