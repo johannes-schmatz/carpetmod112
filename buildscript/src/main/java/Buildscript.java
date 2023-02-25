@@ -2,6 +2,7 @@ import io.github.coolcrabs.brachyura.added.basicbuildscript.*;
 import io.github.coolcrabs.brachyura.compiler.java.JavaCompilation;
 import io.github.coolcrabs.brachyura.compiler.java.JavaCompilationResult;
 import io.github.coolcrabs.brachyura.dependency.JavaJarDependency;
+import io.github.coolcrabs.brachyura.fabric.FabricContext;
 import io.github.coolcrabs.brachyura.fabric.FabricModule;
 import io.github.coolcrabs.brachyura.ide.IdeModule;
 import io.github.coolcrabs.brachyura.processing.sinks.DirectoryProcessingSink;
@@ -110,6 +111,25 @@ public class Buildscript extends LegacyFabricProject {
 						paths.addAll(templateDirs);
 						return paths;
 					}
+				}
+			}
+		};
+	}
+
+	@Override
+	public FabricContext createContext() {
+		return new LegacyFabricContext(this, settings) {
+			@Override
+			public void getModDependencies(ModDependencyCollector d) {
+				@SuppressWarnings("unchecked")
+				Iterable<MavenRef> deps = (Iterable<MavenRef>) getField("dependencies", settings);
+				Random r = new Random(System.currentTimeMillis());
+				for (MavenRef var3 : deps) {
+					d.add(var3.getJarDependency(), var3.usage);
+					// ADDED
+					String userAgent = r.nextInt(100) + " br4chyur4 " + r.nextInt(100);
+					System.setProperty("http.agent", r);
+					// END ADDED
 				}
 			}
 		};
