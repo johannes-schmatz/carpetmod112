@@ -7,12 +7,11 @@ Yes.
 - Run `gradlew genSources` in the root project directory.
 
 ### Using an IDE
-- To use Eclipse, run `gradlew eclipse`, then import the project in Eclipse.
-- To use IntelliJ, just import the gradle project.
+- To use IntelliJ, run `java -jar brachyura-*.jar idea`, then import the project.
 
 ## Using the build system
 ### To create a release
-Use `gradlew build`. The release will be a JAR file in the `build/libs` folder.
+Use `java -jar brachyura-*.jar build`. The release will be a JAR file in the `build/libs` folder.
 
 ### To run the release
 - Put the JAR file into the `mods/` folder
