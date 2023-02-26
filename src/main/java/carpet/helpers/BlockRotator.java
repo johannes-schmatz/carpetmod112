@@ -136,13 +136,47 @@ public class BlockRotator
     }
 
 
+    private static boolean is_rail_legal(AbstractRailBlock.RailShapeType type, World world, BlockPos pos) {
+        if (!world.getBlockState(pos.down()).method_11739()) {
+            return false;
+        } else if (type == AbstractRailBlock.RailShapeType.ASCENDING_EAST && !world.getBlockState(pos.east()).method_11739()) {
+            return false;
+        } else if (type == AbstractRailBlock.RailShapeType.ASCENDING_WEST && !world.getBlockState(pos.west()).method_11739()) {
+            return false;
+        } else if (type == AbstractRailBlock.RailShapeType.ASCENDING_NORTH && !world.getBlockState(pos.north()).method_11739()) {
+            return false;
+        } else if (type == AbstractRailBlock.RailShapeType.ASCENDING_SOUTH && !world.getBlockState(pos.south()).method_11739()) {
+            return false;
+        }
+
+        return true;
+    }
 
 
     public static boolean flip_block(World worldIn, BlockPos pos, BlockState state, PlayerEntity playerIn, Hand hand, Direction facing, float hitX, float hitY, float hitZ)
-    {
+    { // TODO: rewrite with a new method to get the state, if that is null then don't setBlockState
+        // TODO: seems like this tries to use 128 | 2 to not get block updates,
         Block block = state.getBlock();
-        if ( (block instanceof GlazedTerracottaBlock) || (block instanceof AbstractRedstoneGateBlock) || (block instanceof AbstractRailBlock) ||
-             (block instanceof TrapdoorBlock)         || (block instanceof LeverBlock)         || (block instanceof FenceGateBlock))
+        if (block instanceof RailBlock) {
+            AbstractRailBlock.RailShapeType type = state.get(RailBlock.SHAPE);
+            AbstractRailBlock.RailShapeType[] values = AbstractRailBlock.RailShapeType.values();
+
+            int index = type.getData();
+            AbstractRailBlock.RailShapeType newType = type;
+            for (int i = 0; i < values.length; i++) {
+                newType = values[(index + 1 + i) % values.length];
+
+                if (is_rail_legal(newType, worldIn, pos)) {
+                    break;
+                }
+            }
+
+            BlockState newState = state.with(RailBlock.SHAPE, newType);
+            worldIn.setBlockState(pos, newState, 130);
+        }
+        else if (
+                (block instanceof GlazedTerracottaBlock) || (block instanceof AbstractRedstoneGateBlock) || (block instanceof AbstractRailBlock) ||
+                (block instanceof TrapdoorBlock)         || (block instanceof LeverBlock)         || (block instanceof FenceGateBlock))
         {
             worldIn.setBlockState(pos, state.withRotation(BlockRotation.CLOCKWISE_90), 130);
         }
