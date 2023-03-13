@@ -17,7 +17,10 @@ public class CloneCommandMixin {
             method = "method_3279",
             constant = {
                     @Constant(intValue = 2),
-                    @Constant(intValue = 3)
+                    @Constant(
+                            intValue = 3,
+                            ordinal = 1
+                    )
             }
     )
     private int changeFlags(int flags) {
