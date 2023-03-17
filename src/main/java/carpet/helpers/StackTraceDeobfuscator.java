@@ -39,7 +39,7 @@ public class StackTraceDeobfuscator {
     private final Map<String, String> mappings;
 
     private StackTraceDeobfuscator(Map<String, String> mappings) {
-        this.mappings = mappings;
+        this.mappings = Collections.unmodifiableMap(mappings);
     }
 
     public static class Builder {
@@ -205,7 +205,12 @@ public class StackTraceDeobfuscator {
     }
 
     private StackTraceElement deobfuscate(StackTraceElement elem) {
-        return deobfCache.computeIfAbsent(elem, this::computeDeobfuscatedElement);
+        synchronized (deobfCache) {
+            // fix crash in deobfuscator?
+            // > and if many threads cancel the unload at the same time, then the chunk debug screen logic will try to deobfuscate many stacktrace arrays
+            // > simultaneously and will get confused and throw an array index out of bounds
+            return deobfCache.computeIfAbsent(elem, this::computeDeobfuscatedElement);
+        }
     }
 
 
