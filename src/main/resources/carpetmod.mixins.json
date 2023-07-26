@@ -185,6 +185,8 @@
 		"explosionNoBlockDamage.ExplosionMixin",
 		"extendedConnectivity.WorldMixin",
 		"fallingBlockResearch.FileIoThreadMixin",
+		"fallingBlockResearch.MinecraftServerMixin",
+		"fallingBlockResearch.NetworkUtilsMixin",
 		"fallingBlockResearch.RegionFileFormatMixin",
 		"fallingBlockResearch.ServerChunkProviderMixin",
 		"fallingBlockResearch.ThreadedAnvilChunkStorageMixin",

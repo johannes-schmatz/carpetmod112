@@ -51,5 +51,7 @@ public class CarpetCommands {
         // ----- RSMM Start ----- //
         handler.registerCommand(new MeterCommand());
         // ----- RSMM End ----- //
+
+        handler.registerCommand(new FallingBlockHelperCommand());
     }
 }
