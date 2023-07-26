@@ -19,9 +19,6 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public class Buildscript extends LegacyFabricProject {
-	static {
-		System.setProperty("http.agent", "brachuyra asdfa");
-	}
 	@SuppressWarnings("unused")
 	public Buildscript() {
 		super();
@@ -117,45 +114,7 @@ public class Buildscript extends LegacyFabricProject {
 		};
 	}
 
-	@Override
-	public FabricContext createContext() {
-		return new LegacyFabricContext(this, settings) {
-			@Override
-			public void getModDependencies(ModDependencyCollector d) {
-				@SuppressWarnings("unchecked")
-				Iterable<MavenRef> deps = (Iterable<MavenRef>) getField("dependencies", settings);
-				for (MavenRef var3 : deps) {
-					d.add(var3.getJarDependency(), var3.usage);
-					// ADDED
-					//String userAgent = r.nextInt(100) + " br4chyur4 " + r.nextInt(100);
-
-					// END ADDED
-				}
-			}
-		};
-	}
-	static { // ADDED
-		// sun.net.www.protocol.http.HttpURLConnection.userAgent
-
-		String userAgent = "Gradle/7.6 (Linux;6.1.12-200.fc37.x86_64;amd64) (Red Hat, Inc.;17.0.6;17.0.6+10)";
-		System.setProperty("http.agent", userAgent);
-
-		try {
-			Field field = sun.net.www.protocol.http.HttpURLConnection.class.getField("userAgent");
-			field.setAccessible(true);
-			Field un = Unsafe.class.getDeclaredField("theUnsafe");
-			un.setAccessible(true);
-			Unsafe u = (Unsafe) un.get(null);
-			//Unsafe u = Unsafe.getUnsafe();
-			Object fB = u.staticFieldBase(field);
-			long f = u.staticFieldOffset(field);
-			u.putObject(fB, f, userAgent);
-			//field.set(null, userAgent);
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
-	}
-
+	@Deprecated // replace with direct field access
 	private static Object getField(String name, Object o) {
 		try {
 			Field f = SettingsCollector.class.getDeclaredField(name);
