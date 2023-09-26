@@ -2,22 +2,23 @@ package carpet.mixin.llamaOverfeedingFix;
 
 import carpet.CarpetSettings;
 
-import net.minecraft.entity.LlamaEntity;
+import net.minecraft.unmapped.C_7410869;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(LlamaEntity.class)
+@Mixin(C_7410869.class)
 public class LlamaEntityMixin {
     @Redirect(
-            method = "method_13970",
+            method = "m_8210696",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LlamaEntity;method_13990()Z",
+                    target = "Lnet/minecraft/unmapped/C_7410869;isTame()Z",
                     ordinal = 0
             )
     )
-    private boolean isTameOrOverfeeding(LlamaEntity llama) {
-        return llama.method_13990() && !(CarpetSettings.llamaOverfeedingFix && llama.isInLove());
+    private boolean isTameOrOverfeeding(C_7410869 llama) {
+        return llama.isTame() && !(CarpetSettings.llamaOverfeedingFix && llama.isInLove());
     }
 }

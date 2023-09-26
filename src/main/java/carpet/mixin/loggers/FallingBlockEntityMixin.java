@@ -2,7 +2,7 @@ package carpet.mixin.loggers;
 
 import carpet.logging.LoggerRegistry;
 import carpet.logging.logHelpers.TrajectoryLogHelper;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.world.World;
@@ -20,7 +20,7 @@ public abstract class FallingBlockEntityMixin extends Entity {
     }
 
     @Inject(
-            method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/block/BlockState;)V",
+            method = "<init>(Lnet/minecraft/world/World;DDDLnet/minecraft/block/state/BlockState;)V",
             at = @At("RETURN")
     )
     private void onInit(World worldIn, double x, double y, double z, BlockState fallingBlockState, CallbackInfo ci) {

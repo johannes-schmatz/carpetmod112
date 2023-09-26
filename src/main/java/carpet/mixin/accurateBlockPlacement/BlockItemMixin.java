@@ -3,8 +3,8 @@ package carpet.mixin.accurateBlockPlacement;
 import carpet.CarpetSettings;
 import carpet.helpers.BlockRotator;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.block.state.BlockState;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.PlaceableItem;
 import net.minecraft.util.math.BlockPos;
@@ -23,7 +23,7 @@ public class BlockItemMixin {
             method = "use",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/Block;getStateFromData(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;FFFILnet/minecraft/entity/LivingEntity;)Lnet/minecraft/block/BlockState;"
+                    target = "Lnet/minecraft/block/Block;getPlacementState(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;FFFILnet/minecraft/entity/living/LivingEntity;)Lnet/minecraft/block/state/BlockState;"
             )
     )
     private BlockState getStateForPlacement(Block block, World world, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, int meta, LivingEntity placer) {
@@ -31,6 +31,6 @@ public class BlockItemMixin {
             BlockState carpetState = BlockRotator.alternativeBlockPlacement(block, world, pos, facing, hitX, hitY, hitZ, meta, placer);
             if (carpetState != null) return carpetState;
         }
-        return block.getStateFromData(world, pos, facing, hitX % 2.0F, hitY, hitZ, meta, placer);
+        return block.getPlacementState(world, pos, facing, hitX % 2.0F, hitY, hitZ, meta, placer);
     }
 }

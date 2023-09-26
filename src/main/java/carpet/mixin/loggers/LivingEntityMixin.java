@@ -1,12 +1,12 @@
 package carpet.mixin.loggers;
 
 import carpet.logging.logHelpers.DamageReporter;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.util.DamageUtils;
+import net.minecraft.entity.living.attribute.EntityAttributeInstance;
+import net.minecraft.entity.living.attribute.EntityAttribute;
+import net.minecraft.entity.living.attribute.EntityAttributes;
+import net.minecraft.unmapped.C_6686615;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,17 +20,17 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
-    @Shadow protected float field_6778;
+    @Shadow protected float damageAmount;
 
-    @Shadow protected abstract float applyArmorDamage(DamageSource source, float damage);
-    @Shadow public abstract int getArmorProtectionValue();
-    @Shadow public abstract EntityAttributeInstance initializeAttribute(EntityAttribute attribute);
+    @Shadow protected abstract float damageAfterArmorResistance(DamageSource source, float damage);
+    @Shadow public abstract int getArmorProtection();
+    @Shadow public abstract EntityAttributeInstance getAttribute(EntityAttribute attribute);
 
     @Inject(
             method = "damage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LivingEntity;getHealth()F"
+                    target = "Lnet/minecraft/entity/living/LivingEntity;getHealth()F"
             )
     )
     private void registerDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
@@ -75,7 +75,7 @@ public abstract class LivingEntityMixin {
             method = "damage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LivingEntity;method_13072(F)V",
+                    target = "Lnet/minecraft/entity/living/LivingEntity;m_9120351(F)V",
                     shift = At.Shift.AFTER
             )
     )
@@ -87,12 +87,12 @@ public abstract class LivingEntityMixin {
             method = "damage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V",
+                    target = "Lnet/minecraft/entity/living/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V",
                     ordinal = 0
             )
     )
     private void modifyDamageRecentlyHitReduced(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        DamageReporter.modify_damage((LivingEntity) (Object) this, source, amount, amount - this.field_6778, "Recently hit");
+        DamageReporter.modify_damage((LivingEntity) (Object) this, source, amount, amount - this.damageAmount, "Recently hit");
     }
 
     @Inject(
@@ -101,12 +101,12 @@ public abstract class LivingEntityMixin {
             slice = @Slice(
                     from = @At(
                             value = "FIELD",
-                            target = "Lnet/minecraft/entity/LivingEntity;defaultMaxHealth:I",
+                            target = "Lnet/minecraft/entity/living/LivingEntity;defaultMaxHealth:I",
                             ordinal = 0
                     ),
                     to = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V",
+                            target = "Lnet/minecraft/entity/living/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V",
                             ordinal = 0
                     )
             )
@@ -116,7 +116,7 @@ public abstract class LivingEntityMixin {
     }
 
     @Inject(
-            method = "applyEnchantmentsToDamage",
+            method = "damageAfterEffectsAndEnchantments",
             at = @At(
                     value = "CONSTANT",
                     args = "floatValue=25"
@@ -128,14 +128,14 @@ public abstract class LivingEntityMixin {
     }
 
     @Redirect(
-            method = "applyEnchantmentsToDamage",
+            method = "damageAfterEffectsAndEnchantments",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/util/DamageUtils;method_12937(FF)F"
+                    target = "Lnet/minecraft/unmapped/C_6686615;m_4368311(FF)F"
             )
     )
     private float getDamageAfterMagicAbsorb(float damage, float enchantModifiers, DamageSource source) {
-        float after = DamageUtils.method_12937(damage, enchantModifiers);
+        float after = C_6686615.m_4368311(damage, enchantModifiers);
         DamageReporter.modify_damage((LivingEntity) (Object) this, source, damage, after, String.format("enchantments (%.1f total points)", enchantModifiers));
         return after;
     }
@@ -144,12 +144,12 @@ public abstract class LivingEntityMixin {
             method = "applyDamage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LivingEntity;applyArmorDamage(Lnet/minecraft/entity/damage/DamageSource;F)F"
+                    target = "Lnet/minecraft/entity/living/LivingEntity;damageAfterArmorResistance(Lnet/minecraft/entity/damage/DamageSource;F)F"
             )
     )
     private float applyArmorCalculationsAndLog(LivingEntity entity, DamageSource source, float damage) {
-        float after = applyArmorDamage(source, damage);
-        DamageReporter.modify_damage((LivingEntity) (Object) this, source, damage, after, String.format("Armour %.1f, Toughness %.1f", (float) this.getArmorProtectionValue(), this.initializeAttribute(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue()));
+        float after = damageAfterArmorResistance(source, damage);
+        DamageReporter.modify_damage((LivingEntity) (Object) this, source, damage, after, String.format("Armour %.1f, Toughness %.1f", (float) this.getArmorProtection(), this.getAttribute(EntityAttributes.f_8039308).get()));
         return after;
     }
 
@@ -157,7 +157,7 @@ public abstract class LivingEntityMixin {
             method = "applyDamage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LivingEntity;setAbsorption(F)V"
+                    target = "Lnet/minecraft/entity/living/LivingEntity;setAbsorption(F)V"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
@@ -169,7 +169,7 @@ public abstract class LivingEntityMixin {
             method = "applyDamage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LivingEntity;setHealth(F)V"
+                    target = "Lnet/minecraft/entity/living/LivingEntity;setHealth(F)V"
             )
     )
     private void registerFinalDamage(DamageSource damageSrc, float damageAmount, CallbackInfo ci) {

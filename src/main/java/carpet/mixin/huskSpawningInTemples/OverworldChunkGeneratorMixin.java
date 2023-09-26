@@ -2,15 +2,17 @@ package carpet.mixin.huskSpawningInTemples;
 
 import carpet.CarpetSettings;
 import carpet.mixin.accessors.StructureFeatureAccessor;
-import net.minecraft.entity.EntityCategory;
-import net.minecraft.entity.HuskEntity;
-import net.minecraft.structure.StructurePiece;
-import net.minecraft.structure.TemplePieces;
-import net.minecraft.structure.TempleStructure;
+
+import net.minecraft.entity.living.mob.MobCategory;
+import net.minecraft.entity.living.mob.hostile.HuskEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.SurfaceChunkGenerator;
-import net.minecraft.world.gen.GeneratorConfig;
+import net.minecraft.world.gen.chunk.OverworldChunkGenerator;
+import net.minecraft.world.gen.structure.StructurePiece;
+import net.minecraft.world.gen.structure.StructureStart;
+import net.minecraft.world.gen.structure.TemplePieces;
+import net.minecraft.world.gen.structure.TempleStructure;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,16 +23,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Collections;
 import java.util.List;
 
-@Mixin(SurfaceChunkGenerator.class)
+@Mixin(OverworldChunkGenerator.class)
 public class OverworldChunkGeneratorMixin {
     private static final List<Biome.SpawnEntry> HUSK_SPAWN_LIST = Collections.singletonList(new Biome.SpawnEntry(HuskEntity.class, 1, 1, 1));
 
     @Shadow @Final private TempleStructure witchHut;
 
     private static boolean isPyramid(TempleStructure temple, BlockPos pos) {
-        GeneratorConfig start = ((StructureFeatureAccessor) temple).invokeGetStructureAt(pos);
-        if (!(start instanceof TempleStructure.TempleGeneratorConfig) || start.method_11855().isEmpty()) return false;
-        StructurePiece piece = start.method_11855().get(0);
+        StructureStart start = ((StructureFeatureAccessor) temple).invokeGetStructureAt(pos);
+        if (!(start instanceof TempleStructure.Start) || start.getPieces().isEmpty()) return false;
+        StructurePiece piece = start.getPieces().get(0);
         return piece instanceof TemplePieces.DesertPyramid;
     }
 
@@ -38,10 +40,10 @@ public class OverworldChunkGeneratorMixin {
             method = "getSpawnEntries",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/structure/TempleStructure;isSwampHut(Lnet/minecraft/util/math/BlockPos;)Z"
+                    target = "Lnet/minecraft/world/gen/structure/TempleStructure;isWitchHut(Lnet/minecraft/util/math/BlockPos;)Z"
             )
     )
-    private void huskSpawningInTemples(EntityCategory creatureType, BlockPos pos, CallbackInfoReturnable<List<Biome.SpawnEntry>> cir) {
+    private void huskSpawningInTemples(MobCategory creatureType, BlockPos pos, CallbackInfoReturnable<List<Biome.SpawnEntry>> cir) {
         if (CarpetSettings.huskSpawningInTemples && isPyramid(witchHut, pos)) {
             cir.setReturnValue(HUSK_SPAWN_LIST);
         }

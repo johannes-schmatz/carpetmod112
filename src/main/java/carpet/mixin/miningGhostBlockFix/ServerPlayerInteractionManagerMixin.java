@@ -3,8 +3,8 @@ package carpet.mixin.miningGhostBlockFix;
 import carpet.CarpetSettings;
 import carpet.carpetclient.CarpetClientServer;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.server.ServerPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -18,18 +18,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ServerPlayerInteractionManagerMixin {
     @Shadow public ServerPlayerEntity player;
     @Shadow public World world;
-    @Shadow private BlockPos miningPos;
+    @Shadow private BlockPos prevTarget;
 
     @Inject(
-            method = "processBlockBreakingAction",
+            method = "startMiningBlock",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;setBlockBreakingInfo(ILnet/minecraft/util/math/BlockPos;I)V"
+                    target = "Lnet/minecraft/world/World;updateBlockMiningProgress(ILnet/minecraft/util/math/BlockPos;I)V"
             )
     )
     private void miningGhostBlockFix(BlockPos pos, Direction side, CallbackInfo ci) {
         if (CarpetSettings.miningGhostBlocksFix && CarpetClientServer.activateInstantMine) {
-            player.networkHandler.sendPacket(new BlockUpdateS2CPacket(world, miningPos));
+            player.networkHandler.sendPacket(new BlockUpdateS2CPacket(world, prevTarget));
         }
     }
 }

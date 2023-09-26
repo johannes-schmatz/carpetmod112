@@ -1,10 +1,11 @@
 package carpet.mixin.accessors;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.server.world.ChunkGenerator;
-import net.minecraft.world.chunk.ChunkStorage;
-import net.minecraft.world.chunk.ServerChunkProvider;
+
+import net.minecraft.server.world.chunk.ServerChunkCache;
+import net.minecraft.world.chunk.ChunkGenerator;
+import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.chunk.storage.ChunkStorage;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -12,11 +13,11 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 import java.util.Set;
 
-@Mixin(ServerChunkProvider.class)
+@Mixin(ServerChunkCache.class)
 public interface ServerChunkProviderAccessor {
     @Accessor("chunksToUnload") Set<Long> getDroppedChunks();
     @Accessor("generator") ChunkGenerator getChunkGenerator();
-    @Accessor("chunkWriter") ChunkStorage getChunkLoader();
-    @Accessor("loadedChunksMap") Long2ObjectMap<Chunk> getLoadedChunksMap();
-    @Invoker("method_12777") Chunk invokeLoadChunk(int x, int z);
+    @Accessor("storage") ChunkStorage getChunkLoader();
+    @Accessor("chunkMap") Long2ObjectMap<WorldChunk> getLoadedChunksMap();
+    @Invoker("loadChunk") WorldChunk invokeLoadChunk(int x, int z);
 }

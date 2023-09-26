@@ -1,10 +1,11 @@
 package carpet.mixin.fillUpdates;
 
 import carpet.utils.extensions.ExtendedWorldChunk;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import org.jetbrains.annotations.Nullable;
 
-@Mixin(Chunk.class)
+@Mixin(WorldChunk.class)
 public abstract class WorldChunkMixin implements ExtendedWorldChunk {
-    @Shadow @Nullable public abstract BlockState getBlockState(BlockPos pos, BlockState state);
+    @Shadow @Nullable public abstract BlockState setBlockState(BlockPos pos, BlockState state);
 
     private boolean skipUpdates;
 
@@ -22,14 +23,14 @@ public abstract class WorldChunkMixin implements ExtendedWorldChunk {
     public BlockState setBlockStateCarpet(BlockPos pos, BlockState state, boolean skipUpdates) {
         try {
             this.skipUpdates = skipUpdates;
-            return this.getBlockState(pos, state);
+            return this.setBlockState(pos, state);
         } finally {
             this.skipUpdates = false;
         }
     }
 
     @Redirect(
-            method = "getBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;",
+            method = "setBlockState",
             at = @At(
                     value = "FIELD",
                     target = "Lnet/minecraft/world/World;isClient:Z"

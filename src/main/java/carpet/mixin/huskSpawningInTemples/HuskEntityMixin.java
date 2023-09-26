@@ -1,7 +1,8 @@
 package carpet.mixin.huskSpawningInTemples;
 
 import carpet.CarpetSettings;
-import net.minecraft.entity.HuskEntity;
+
+import net.minecraft.entity.living.mob.hostile.HuskEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -15,12 +16,12 @@ public class HuskEntityMixin {
             method = "canSpawn",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;hasDirectSunlight(Lnet/minecraft/util/math/BlockPos;)Z"
+                    target = "Lnet/minecraft/world/World;hasSkyAccess(Lnet/minecraft/util/math/BlockPos;)Z"
             )
     )
     private boolean alwaysInTemple(World world, BlockPos pos) {
-        if (world.hasDirectSunlight(pos)) return true;
+        if (world.hasSkyAccess(pos)) return true;
         if (!CarpetSettings.huskSpawningInTemples) return false;
-        return ((ServerWorld) world).getChunkProvider().method_14961(world, "Temple", pos);
+        return ((ServerWorld) world).getChunkSource().isInsideStructure(world, "Temple", pos);
     }
 }

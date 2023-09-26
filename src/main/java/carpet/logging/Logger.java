@@ -4,9 +4,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 public class Logger
@@ -206,7 +206,7 @@ public class Logger
      */
     protected ServerPlayerEntity playerFromName(String name)
     {
-        return server.getPlayerManager().getPlayer(name);
+        return server.getPlayerManager().get(name);
     }
 
     // ----- Event Handlers ----- //

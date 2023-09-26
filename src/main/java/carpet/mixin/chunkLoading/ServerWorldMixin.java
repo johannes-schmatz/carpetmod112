@@ -1,11 +1,12 @@
 package carpet.mixin.chunkLoading;
 
 import carpet.CarpetSettings;
-import net.minecraft.server.ChunkPlayerManager;
-import net.minecraft.server.PlayerWorldManager;
+
+import net.minecraft.server.ChunkHolder;
+import net.minecraft.server.ChunkMap;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ServerChunkProvider;
+import net.minecraft.server.world.chunk.ServerChunkCache;
+import net.minecraft.world.chunk.WorldChunk;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,21 +15,21 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin {
-    @Shadow public abstract ServerChunkProvider getChunkProvider();
+    @Shadow public abstract ServerChunkCache getChunkSource();
 
     @Redirect(
             method = "save",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/PlayerWorldManager;method_12808(II)Z"
+                    target = "Lnet/minecraft/server/ChunkMap;isLoaded(II)Z"
             )
     )
-    private boolean isInPlayerChunkMap(PlayerWorldManager map, int chunkX, int chunkZ) {
-        ChunkPlayerManager entry = map.method_12811(chunkX, chunkZ);
+    private boolean isInPlayerChunkMap(ChunkMap map, int chunkX, int chunkZ) {
+        ChunkHolder entry = map.getLoadedChunk(chunkX, chunkZ);
         if (entry != null && CarpetSettings.whereToChunkSavestate.canUnloadNearPlayers) {
-            Chunk chunk = entry.getChunk();
-            getChunkProvider().unload(chunk);
-            chunk.field_12912 = false;
+            WorldChunk chunk = entry.getChunk();
+            getChunkSource().scheduleUnload(chunk);
+            chunk.removed = false;
             return true;
         }
         return false;

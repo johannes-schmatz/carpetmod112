@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(BrewingStandBlockEntity.class)
 public class BrewingStandBlockEntityMixin implements BlockEntityOptimizer.LazyBlockEntity {
-    @Shadow private int brewTime;
+    @Shadow private int timer;
     private boolean sleeping;
 
     @Inject(
@@ -28,7 +28,7 @@ public class BrewingStandBlockEntityMixin implements BlockEntityOptimizer.LazyBl
             at = @At("RETURN")
     )
     private void checkSleep(CallbackInfo ci) {
-        if (brewTime == 0) sleeping = true;
+        if (timer == 0) sleeping = true;
     }
 
     @Override

@@ -10,12 +10,13 @@ import carpet.CarpetSettings;
 import carpet.utils.EntityInfo;
 import carpet.utils.extensions.ActionPackOwner;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.world.HitResult;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -23,13 +24,13 @@ import java.util.regex.Matcher;
 public class CommandEntityInfo extends CommandCarpetBase
 {
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "entityinfo";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender)
+    public String getUsage(CommandSource sender)
     {
         return "Usage: entityinfo <entity_selector>";
     }
@@ -62,15 +63,15 @@ public class CommandEntityInfo extends CommandCarpetBase
         {
             actual = messages;
         }
-        run(sender, this, "");
+        sendSuccess(sender, this, "");
         for (String lline: actual)
         {
-            run(sender, this, lline);
+            sendSuccess(sender, this, lline);
         }
     }
 
     @Override
-    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (!command_enabled("commandEntityInfo", sender)) return;
         if (args.length == 0 || "grep".equalsIgnoreCase(args[0]))
@@ -80,15 +81,15 @@ public class CommandEntityInfo extends CommandCarpetBase
             {
                 grep = args[1];
             }
-            PlayerEntity entityplayer = getAsPlayer(sender);
-            List<String> report = EntityInfo.entityInfo(entityplayer, sender.getWorld());
+            PlayerEntity entityplayer = asPlayer(sender);
+            List<String> report = EntityInfo.entityInfo(entityplayer, sender.getSourceWorld());
             print_multi_message(report, sender, grep);
         }
         else
         {
-            Entity entity = method_10711(server, sender, args[0]);
+            Entity entity = parseEntity(server, sender, args[0]);
             //LOG.error("SENDER dimension "+ sender.method_29608().provider.getDimensionType().getId());
-            List<String> report = EntityInfo.entityInfo(entity, sender.getWorld());
+            List<String> report = EntityInfo.entityInfo(entity, sender.getSourceWorld());
             String grep = null;
             if (args.length >= 3 && "grep".equalsIgnoreCase(args[1]))
             {
@@ -99,21 +100,21 @@ public class CommandEntityInfo extends CommandCarpetBase
     }
 
     @Override
-    public boolean isUsernameAtIndex(String[] args, int index)
+    public boolean hasTargetSelectorAt(String[] args, int index)
     {
         return index == 0;
     }
 
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
     {
         if (!CarpetSettings.commandEntityInfo)
         {
-            run(sender, this, "Command is disabled in carpet settings");
+            sendSuccess(sender, this, "Command is disabled in carpet settings");
         }
-        List<String> list = method_2894(args, server.getPlayerNames());
-        BlockHitResult result = ((ActionPackOwner) sender).getActionPack().mouseOver();
-        if (result != null && result.type == BlockHitResult.Type.ENTITY) {
+        List<String> list = suggestMatching(args, server.getPlayerNames());
+        HitResult result = ((ActionPackOwner) sender).getActionPack().mouseOver();
+        if (result != null && result.type == HitResult.Type.ENTITY) {
             list.add(result.entity.getUuid().toString());
         }
         return args.length == 1 ? list : Collections.emptyList();

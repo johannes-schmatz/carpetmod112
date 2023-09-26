@@ -17,30 +17,30 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.ChunkStorage;
-import net.minecraft.world.chunk.ThreadedAnvilChunkStorage;
+import net.minecraft.world.chunk.storage.AnvilChunkStorage;
+import net.minecraft.world.chunk.storage.ChunkStorage;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(AnvilChunkStorage.class)
 public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
-    @Shadow @Final private final Map<ChunkPos, NbtCompound> chunksToSave = new HashMap<>();
-    @Shadow private boolean isSaving;
+    @Shadow @Final private final Map<ChunkPos, NbtCompound> chunkSaveQueue = new HashMap<>();
+    @Shadow private boolean saving;
     @Shadow @Final private static Logger LOGGER;
-    @Shadow @Final private File saveLocation;
+    @Shadow @Final private File dir;
 
-    @Shadow protected abstract void write(ChunkPos pos, NbtCompound compound) throws IOException;
+    @Shadow protected abstract void saveChunk(ChunkPos pos, NbtCompound compound) throws IOException;
 
     private final Map<ChunkPos, NbtCompound> chunksInWrite = new HashMap<>();
     // Insert new chunk into pending queue, replacing any older one at the same position
     private synchronized void queueChunkToRemove(ChunkPos pos, NbtCompound data) {
-        chunksToSave.put(pos, data);
+        chunkSaveQueue.put(pos, data);
     }
 
     // Fetch another chunk to save to disk and atomically move it into
     // the queue of chunk(s) being written.
     private synchronized Map.Entry<ChunkPos, NbtCompound> fetchChunkToWrite() {
-        if (chunksToSave.isEmpty()) return null;
+        if (chunkSaveQueue.isEmpty()) return null;
         Iterator<Map.Entry<ChunkPos, NbtCompound>> iter =
-                chunksToSave.entrySet().iterator();
+                chunkSaveQueue.entrySet().iterator();
         Map.Entry<ChunkPos, NbtCompound> entry = iter.next();
         iter.remove();
         chunksInWrite.put(entry.getKey(), entry.getValue());
@@ -55,7 +55,7 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
 
     // Check these data structures for a chunk being reloaded
     private synchronized NbtCompound reloadChunkFromRemoveQueues(ChunkPos pos) {
-        NbtCompound data = chunksToSave.get(pos);
+        NbtCompound data = chunkSaveQueue.get(pos);
         if (data != null) return data;
         return (CarpetSettings.entityDuplicationFix)?chunksInWrite.get(pos):data;
     }
@@ -70,8 +70,8 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
 
     @Redirect(
             method = {
-                    "loadChunk",
-                    "chunkExists"
+                    "loadChunk(Lnet/minecraft/world/World;II)Lnet/minecraft/world/chunk/WorldChunk;",
+                    "doesChunkExist"
             },
             at = @At(
                     value = "INVOKE",
@@ -84,7 +84,7 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
     }
 
     @Redirect(
-            method = "registerChunkChecker",
+            method = "queueChunkSave",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/Set;contains(Ljava/lang/Object;)Z",
@@ -98,7 +98,7 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
     }
 
     @Redirect(
-            method = "registerChunkChecker",
+            method = "queueChunkSave",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
@@ -115,11 +115,11 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
      * @reason carpet
      */
     @Overwrite
-    public boolean saveNextChunk() {
+    public boolean run() {
         Map.Entry<ChunkPos, NbtCompound> entry = fetchChunkToWrite();
         if (entry == null) {
-            if (this.isSaving) {
-                LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", this.saveLocation.getName());
+            if (this.saving) {
+                LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", this.dir.getName());
             }
 
             return false;
@@ -128,7 +128,7 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
         ChunkPos pos = entry.getKey();
         NbtCompound tag = entry.getValue();
         try {
-            this.write(pos, tag);
+            this.saveChunk(pos, tag);
         } catch (Exception exception) {
             LOGGER.error("Failed to save chunk", exception);
         }

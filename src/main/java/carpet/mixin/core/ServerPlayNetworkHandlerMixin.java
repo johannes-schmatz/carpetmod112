@@ -6,9 +6,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.network.packet.c2s.play.SpectatorTeleportC2SPacket;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.packet.c2s.play.PlayerSpectateC2SPacket;
+import net.minecraft.server.network.handler.ServerPlayNetworkHandler;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,7 +23,7 @@ public class ServerPlayNetworkHandlerMixin {
     @Shadow public ServerPlayerEntity player;
 
     @Inject(
-            method = "onCustomPayload",
+            method = "handleCustomPayload",
             at = @At("TAIL")
     )
     private void handleCarpetCustomPayloads(CustomPayloadC2SPacket packet, CallbackInfo ci) {
@@ -33,20 +33,20 @@ public class ServerPlayNetworkHandlerMixin {
     }
 
     @Inject(
-            method = "onPlayerInput",
+            method = "handlePlayerInput",
             at = @At("RETURN")
     )
     private void resetActiveTimeout(PlayerInputC2SPacket packet, CallbackInfo ci) {
-        if (packet.getSideways() != 0.0F || packet.getForward() != 0.0F || packet.isJumping() || packet.isSneaking()) {
+        if (packet.getSidewaysSpeed() != 0.0F || packet.getForwardSpeed() != 0.0F || packet.getJumping() || packet.getSneaking()) {
             TickSpeed.reset_player_active_timeout();
         }
     }
 
     @Inject(
-            method = "onPlayerMove",
+            method = "handlePlayerMove",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;isSleeping()Z",
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;isSleeping()Z",
                     ordinal = 0
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
@@ -61,25 +61,25 @@ public class ServerPlayNetworkHandlerMixin {
 
     // Invisibility fix
     @Redirect(
-            method = "onSpectatorTeleport",
+            method = "handlePlayerSpectate",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/world/ServerWorld;method_3700(Lnet/minecraft/entity/Entity;)V"
+                    target = "Lnet/minecraft/server/world/ServerWorld;removeEntityNow(Lnet/minecraft/entity/Entity;)V"
             )
     )
     private void removeEntityDangerously(ServerWorld world, Entity player) {
         world.removeEntity(player);
-        world.getChunk(player.chunkX, player.chunkZ).removeEntity(player, player.chunkY);
+        world.getChunkAt(player.chunkX, player.chunkZ).removeEntity(player, player.chunkY);
     }
 
     @Inject(
-            method = "onSpectatorTeleport",
+            method = "handlePlayerSpectate",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z"
+                    target = "Lnet/minecraft/server/world/ServerWorld;addEntity(Lnet/minecraft/entity/Entity;)Z"
             )
     )
-    private void updateRemovedPlayer(SpectatorTeleportC2SPacket packet, CallbackInfo ci) {
-        player.getServerWorld().checkChunk(player, false);
+    private void updateRemovedPlayer(PlayerSpectateC2SPacket packet, CallbackInfo ci) {
+        player.getServerWorld().tickEntity(player, false);
     }
 }

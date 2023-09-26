@@ -3,9 +3,10 @@ package carpet.logging;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.util.JsonElementProvider;
 
-public class LoggerOptions implements JsonElementProvider {
+import net.minecraft.stat.StatProgress;
+
+public class LoggerOptions implements StatProgress {
     public String logger;
     public String option;
     public String handlerName;
@@ -21,7 +22,7 @@ public class LoggerOptions implements JsonElementProvider {
     }
 
     @Override
-    public void read(JsonElement json) {
+    public void add(JsonElement json) {
         JsonObject obj = (JsonObject)json;
 
         logger = obj.get("logger").getAsString();
@@ -38,7 +39,7 @@ public class LoggerOptions implements JsonElementProvider {
     }
 
     @Override
-    public JsonElement write() {
+    public JsonElement toJson() {
         JsonObject entry = new JsonObject();
 
         entry.addProperty("logger", logger);

@@ -2,8 +2,8 @@ package carpet.utils;
 
 import carpet.CarpetSettings;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entities;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.server.MinecraftServer;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -82,7 +82,7 @@ public class CarpetProfiler
         {
             end_current_section();
         }
-        current_section = dimension + "." + EntityType.getId(e);
+        current_section = dimension + "." + Entities.getKey(e);
         current_section_start = System.nanoTime();
     }
 
@@ -100,7 +100,7 @@ public class CarpetProfiler
         {
             end_current_section();
         }
-        current_section = dimension + "." + BlockEntity.getIdentifier(e.getClass());
+        current_section = dimension + "." + BlockEntity.getKey(e.getClass());
         current_section_start = System.nanoTime();
     }
 

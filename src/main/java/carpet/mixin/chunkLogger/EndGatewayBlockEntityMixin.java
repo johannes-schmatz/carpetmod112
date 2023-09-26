@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EndGatewayBlockEntity.class)
 public class EndGatewayBlockEntityMixin {
     @Inject(
-            method = "method_11687",
+            method = "findExitPos(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;IZ)Lnet/minecraft/util/math/BlockPos;",
             at = @At("HEAD")
     )
     private static void onFindExitPortalPosStart(World world, BlockPos pos, int range, boolean includeCenter, CallbackInfoReturnable<BlockPos> cir) {
@@ -20,7 +20,7 @@ public class EndGatewayBlockEntityMixin {
     }
 
     @Inject(
-            method = "method_11687",
+            method = "findExitPos(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;IZ)Lnet/minecraft/util/math/BlockPos;",
             at = @At("RETURN")
     )
     private static void onFindExitPortalPosEnd(World world, BlockPos pos, int range, boolean includeCenter, CallbackInfoReturnable<BlockPos> cir) {

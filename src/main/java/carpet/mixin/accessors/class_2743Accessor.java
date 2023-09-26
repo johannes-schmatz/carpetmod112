@@ -3,13 +3,13 @@ package carpet.mixin.accessors;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import net.minecraft.class_2743;
-import net.minecraft.world.chunk.palette.Palette;
-import net.minecraft.world.chunk.palette.PaletteData;
+import net.minecraft.util.BitStorage;
+import net.minecraft.world.chunk.Palette;
+import net.minecraft.world.chunk.PalettedContainer;
 
-@Mixin(class_2743.class)
+@Mixin(PalettedContainer.class)
 public interface class_2743Accessor {
-	@Accessor int getBitsPerBlock();
-	@Accessor Palette getPalette();
-	@Accessor PaletteData getPaletteData();
+	@Accessor("bits") int getBitsPerBlock();
+	@Accessor("palette") Palette getPalette();
+	@Accessor("storage") BitStorage getPaletteData();
 }

@@ -8,7 +8,7 @@ import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
+import net.minecraft.item.DyeColor;
 import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,7 +22,7 @@ public class HopperCounter
     static {
         COUNTERS = new HashMap<>();
         for (DyeColor color : DyeColor.values()) {
-            COUNTERS.put(color.asString(), new HopperCounter(color, color.asString()));
+            COUNTERS.put(color.getName(), new HopperCounter(color, color.getName()));
         }
         COUNTERS.put("cactus", cactus);
         COUNTERS.put("all", all);
@@ -47,7 +47,7 @@ public class HopperCounter
             startMillis = MinecraftServer.getTimeMillis();
         }
         ItemWithMeta item = new ItemWithMeta(stack);
-        counter.put(item, counter.getLong(item) + stack.getCount());
+        counter.put(item, counter.getLong(item) + stack.getSize());
         pubSubProvider.publish();
     }
 

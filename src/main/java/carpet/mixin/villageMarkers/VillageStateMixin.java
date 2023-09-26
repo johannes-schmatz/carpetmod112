@@ -5,23 +5,24 @@ import carpet.utils.extensions.ExtendedVillageCollection;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
-import net.minecraft.village.VillageState;
+import net.minecraft.world.village.SavedVillageData;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(VillageState.class)
+@Mixin(SavedVillageData.class)
 public class VillageStateMixin implements ExtendedVillageCollection {
     @Shadow private World world;
     private boolean updateMarkers;
 
     @Inject(
-            method = "method_2839",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/village/VillageState;method_2849()V",
+                    target = "Lnet/minecraft/world/village/SavedVillageData;addDoorsToVillages()V",
                     shift = At.Shift.AFTER
             )
     )
@@ -33,10 +34,10 @@ public class VillageStateMixin implements ExtendedVillageCollection {
     }
 
     @Inject(
-            method = "method_2845",
+            method = "removeVillagesWithoutDoors",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/village/VillageState;markDirty()V"
+                    target = "Lnet/minecraft/world/village/SavedVillageData;markDirty()V"
             )
     )
     private void updateOnRemove(CallbackInfo ci) {
@@ -44,10 +45,10 @@ public class VillageStateMixin implements ExtendedVillageCollection {
     }
 
     @Inject(
-            method = "method_2849",
+            method = "addDoorsToVillages",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/village/Village;method_2817(Lnet/minecraft/village/VillageDoor;)V"
+                    target = "Lnet/minecraft/world/village/Village;addDoor(Lnet/minecraft/world/village/VillageDoor;)V"
             )
     )
     private void updateOnAdd(CallbackInfo ci) {
@@ -55,7 +56,7 @@ public class VillageStateMixin implements ExtendedVillageCollection {
     }
 
     @Inject(
-            method = "fromNbt",
+            method = "readNbt",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/List;add(Ljava/lang/Object;)Z",

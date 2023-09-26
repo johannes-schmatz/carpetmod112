@@ -9,18 +9,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-import net.minecraft.class_3356;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.crafting.recipe.CraftingRecipe;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.unmapped.C_5405916;
 
-@Mixin(class_3356.class)
+@Mixin(C_5405916.class)
 public class ServerRecipeBookMixin {
     private static final ThreadLocal<ServerPlayerEntity> tlPlayer = new ThreadLocal<>();
 
     @Redirect(
             method = {
-                    "method_14995",
-                    "method_14998"
+                    "m_7289487",
+                    "m_5317270"
             },
             at = @At(
                     value = "INVOKE",
@@ -28,22 +28,22 @@ public class ServerRecipeBookMixin {
                     remap = false
             )
     )
-    private boolean filter(List<RecipeType> list, Object e, List<RecipeType> recipesIn, ServerPlayerEntity player) {
-        RecipeType recipe = (RecipeType) e;
+    private boolean filter(List<CraftingRecipe> list, Object e, List<CraftingRecipe> recipesIn, ServerPlayerEntity player) {
+        CraftingRecipe recipe = (CraftingRecipe) e;
         if (!CustomCrafting.filterCustomRecipesForOnlyCarpetClientUsers(recipe, player)) return false;
         return list.add(recipe);
     }
 
     @Redirect(
-            method = "method_15001",
+            method = "m_8402458",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/List;add(Ljava/lang/Object;)Z",
                     remap = false
             )
     )
-    private boolean filter(List<RecipeType> list, Object e) {
-        RecipeType recipe = (RecipeType) e;
+    private boolean filter(List<CraftingRecipe> list, Object e) {
+        CraftingRecipe recipe = (CraftingRecipe) e;
         ServerPlayerEntity player = tlPlayer.get();
         if (player != null && !CustomCrafting.filterCustomRecipesForOnlyCarpetClientUsers(recipe, player)) return false;
         if (recipe == null) System.out.println("found null recipe");
@@ -51,7 +51,7 @@ public class ServerRecipeBookMixin {
     }
 
     @Inject(
-            method = "method_14997",
+            method = "m_1614649",
             at = @At("HEAD")
     )
     private void onInitStart(ServerPlayerEntity player, CallbackInfo ci) {
@@ -59,7 +59,7 @@ public class ServerRecipeBookMixin {
     }
 
     @Inject(
-            method = "method_14997",
+            method = "m_1614649",
             at = @At("RETURN")
     )
     private void onInitEnd(ServerPlayerEntity player, CallbackInfo ci) {

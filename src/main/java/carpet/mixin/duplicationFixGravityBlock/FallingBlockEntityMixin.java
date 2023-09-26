@@ -19,7 +19,7 @@ public abstract class FallingBlockEntityMixin extends Entity {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/FallingBlockEntity;move(Lnet/minecraft/entity/MovementType;DDD)V",
+                    target = "Lnet/minecraft/entity/FallingBlockEntity;move(Lnet/minecraft/entity/MoverType;DDD)V",
                     shift = At.Shift.AFTER
             ),
             cancellable = true

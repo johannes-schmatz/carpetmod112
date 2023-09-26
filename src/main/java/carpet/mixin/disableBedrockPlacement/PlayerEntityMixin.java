@@ -3,7 +3,7 @@ package carpet.mixin.disableBedrockPlacement;
 import carpet.CarpetSettings;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerAbilities;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -19,13 +19,13 @@ public class PlayerEntityMixin {
     @Shadow public PlayerAbilities abilities;
 
     @Inject(
-            method = "canModify",
+            method = "canUseItem",
             at = @At("HEAD"),
             cancellable = true
     )
     private void disableBedrockPlacement(BlockPos pos, Direction facing, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (!CarpetSettings.disableBedrockPlacement) return;
-        if (stack.getItem() == Item.fromBlock(Blocks.BEDROCK) && !this.abilities.creativeMode) {
+        if (stack.getItem() == Item.byBlock(Blocks.BEDROCK) && !this.abilities.creativeMode) {
             cir.cancel();
         }
     }

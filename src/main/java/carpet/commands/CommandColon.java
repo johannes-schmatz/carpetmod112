@@ -6,28 +6,33 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.command.*;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandResults;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ScheduledTick;
-import net.minecraft.util.math.BlockBox;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.world.ScheduledTick;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.structure.StructureBox;
 
 import carpet.worldedit.WorldEditBridge;
 import org.jetbrains.annotations.Nullable;
 
-public class CommandColon extends AbstractCommand
+public class CommandColon extends Command
 {
 	/**
 	 * Gets the name of the command
 	 */
-	public String getCommandName()
+	public String getName()
 	{
 		return "colon";
 	}
@@ -35,7 +40,7 @@ public class CommandColon extends AbstractCommand
 	/**
 	 * Return the required permission level for this command.
 	 */
-	public int getPermissionLevel()
+	public int getRequiredPermissionLevel()
 	{
 		return 2;
 	}
@@ -43,7 +48,7 @@ public class CommandColon extends AbstractCommand
 	/**
 	 * Gets the usage string for the command.
 	 */
-	public String getUsageTranslationKey(CommandSource sender)
+	public String getUsage(CommandSource sender)
 	{
 		return "commands.clone.usage";
 	}
@@ -51,7 +56,7 @@ public class CommandColon extends AbstractCommand
 	/**
 	 * Callback for when the command is executed
 	 */
-	public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
 	{
 		if (args.length < 9)
 		{
@@ -59,12 +64,12 @@ public class CommandColon extends AbstractCommand
 		}
 		else
 		{
-			sender.setStat(CommandStats.Type.AFFECTED_BLOCKS, 0);
-			BlockPos blockpos = getBlockPos(sender, args, 0, false);
-			BlockPos blockpos1 = getBlockPos(sender, args, 3, false);
-			BlockPos blockpos2 = getBlockPos(sender, args, 6, false);
-			BlockBox structureboundingbox = new BlockBox(blockpos, blockpos1);
-			BlockBox structureboundingbox1 = new BlockBox(blockpos2, blockpos2.add(structureboundingbox.getDimensions()));
+			sender.addResult(CommandResults.Type.AFFECTED_BLOCKS, 0);
+			BlockPos blockpos = parseBlockPos(sender, args, 0, false);
+			BlockPos blockpos1 = parseBlockPos(sender, args, 3, false);
+			BlockPos blockpos2 = parseBlockPos(sender, args, 6, false);
+			StructureBox structureboundingbox = new StructureBox(blockpos, blockpos1);
+			StructureBox structureboundingbox1 = new StructureBox(blockpos2, blockpos2.add(structureboundingbox.getDiagonal()));
 
 			boolean flag = false;
 			Block block = null;
@@ -89,7 +94,7 @@ public class CommandColon extends AbstractCommand
 
 				if (structureboundingbox.minY >= 0 && structureboundingbox.maxY < 256 && structureboundingbox1.minY >= 0 && structureboundingbox1.maxY < 256)
 				{
-					World world = sender.getWorld();
+					World world = sender.getSourceWorld();
 
 					boolean flag1 = false;
 
@@ -106,11 +111,11 @@ public class CommandColon extends AbstractCommand
 								throw new IncorrectUsageException("commands.clone.usage");
 							}
 
-							block = getBlock(sender, args[11]);
+							block = parseBlock(sender, args[11]);
 
 							if (args.length >= 13)
 							{
-								predicate = method_13904(block, args[12]);
+								predicate = parseBlockStatePredicate(block, args[12]);
 							}
 						}
 					}
@@ -137,11 +142,11 @@ public class CommandColon extends AbstractCommand
 
 									if (tileentity != null)
 									{
-										NbtCompound nbttagcompound = tileentity.toNbt(new NbtCompound());
+										NbtCompound nbttagcompound = tileentity.writeNbt(new NbtCompound());
 										list1.add(new BlockInfo(blockpos5, iblockstate, nbttagcompound));
 										deque.addLast(blockpos4);
 									}
-									else if (!iblockstate.isFullBlock() && !iblockstate.method_11730())
+									else if (!iblockstate.isFullBlock() && !iblockstate.isFullCube())
 									{
 										list2.add(new BlockInfo(blockpos5, iblockstate, null));
 										deque.addFirst(blockpos4);
@@ -162,7 +167,7 @@ public class CommandColon extends AbstractCommand
 					{
 						for (BlockPos blockpos6 : deque)
 						{
-							WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos6, Blocks.AIR.getDefaultState(), null);
+							WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos6, Blocks.AIR.defaultState(), null);
 							BlockEntity tileentity1 = world.getBlockEntity(blockpos6);
 
 							if (tileentity1 instanceof Inventory)
@@ -170,12 +175,12 @@ public class CommandColon extends AbstractCommand
 								((Inventory)tileentity1).clear();
 							}
 
-							world.setBlockState(blockpos6, Blocks.BARRIER.getDefaultState(), 2 | (update?0:1024)); //carpet
+							world.setBlockState(blockpos6, Blocks.BARRIER.defaultState(), 2 | (update?0:1024)); //carpet
 						}
 
 						for (BlockPos blockpos7 : deque)
 						{
-							world.setBlockState(blockpos7, Blocks.AIR.getDefaultState(), (update?3:131)); //carpet
+							world.setBlockState(blockpos7, Blocks.AIR.defaultState(), (update?3:131)); //carpet
 						}
 					}
 
@@ -195,7 +200,7 @@ public class CommandColon extends AbstractCommand
 							((Inventory)tileentity2).clear();
 						}
 
-						world.setBlockState(commandclone$staticclonedata.pos, Blocks.BARRIER.getDefaultState(), 2 | (update?0:1024)); //carpet
+						world.setBlockState(commandclone$staticclonedata.pos, Blocks.BARRIER.defaultState(), 2 | (update?0:1024)); //carpet
 					}
 
 					int i = 0;
@@ -216,7 +221,7 @@ public class CommandColon extends AbstractCommand
 							commandclone$staticclonedata2.nbt.putInt("x", commandclone$staticclonedata2.pos.getX());
 							commandclone$staticclonedata2.nbt.putInt("y", commandclone$staticclonedata2.pos.getY());
 							commandclone$staticclonedata2.nbt.putInt("z", commandclone$staticclonedata2.pos.getZ());
-							tileentity3.fromNbt(commandclone$staticclonedata2.nbt);
+							tileentity3.readNbt(commandclone$staticclonedata2.nbt);
 							tileentity3.markDirty();
 						}
 
@@ -229,7 +234,7 @@ public class CommandColon extends AbstractCommand
 						/*carpet mod end EXTRA INDENTATION START*/
 						for (BlockInfo commandclone$staticclonedata3 : list4)
 						{
-							world.method_8531(commandclone$staticclonedata3.pos, commandclone$staticclonedata3.blockState.getBlock(), false);
+							world.onBlockChanged(commandclone$staticclonedata3.pos, commandclone$staticclonedata3.blockState.getBlock(), false);
 						}
 
 						List<ScheduledTick> list5 = world.getScheduledTicks(structureboundingbox, false);
@@ -242,7 +247,7 @@ public class CommandColon extends AbstractCommand
 								{
 									BlockPos blockpos8 = nextticklistentry.pos.add(blockpos3);
 									world.scheduleTick(blockpos8, nextticklistentry.getBlock(),
-											(int)(nextticklistentry.time - world.getLevelProperties().getTime()), nextticklistentry.priority);
+											(int)(nextticklistentry.time - world.getData().getTime()), nextticklistentry.priority);
 								}
 							}
 						}
@@ -254,8 +259,8 @@ public class CommandColon extends AbstractCommand
 					}
 					else
 					{
-						sender.setStat(CommandStats.Type.AFFECTED_BLOCKS, i);
-						run(sender, this, "commands.clone.success", i);
+						sender.addResult(CommandResults.Type.AFFECTED_BLOCKS, i);
+						sendSuccess(sender, this, "commands.clone.success", i);
 					}
 				}
 				else
@@ -269,31 +274,31 @@ public class CommandColon extends AbstractCommand
 	/**
 	 * Get a list of options for when the user presses the TAB key
 	 */
-	public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
+	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
 	{
 		if (args.length > 0 && args.length <= 3)
 		{
-			return method_10707(args, 0, targetPos);
+			return suggestCoordinate(args, 0, targetPos);
 		}
 		else if (args.length > 3 && args.length <= 6)
 		{
-			return method_10707(args, 3, targetPos);
+			return suggestCoordinate(args, 3, targetPos);
 		}
 		else if (args.length > 6 && args.length <= 9)
 		{
-			return method_10707(args, 6, targetPos);
+			return suggestCoordinate(args, 6, targetPos);
 		}
 		else if (args.length == 10)
 		{
-			return method_2894(args, "replace", "masked", "filtered");
+			return suggestMatching(args, "replace", "masked", "filtered");
 		}
 		else if (args.length == 11)
 		{
-			return method_2894(args, "normal", "force", "move", "noupdate", "force_noupdate", "move_noupdate");
+			return suggestMatching(args, "normal", "force", "move", "noupdate", "force_noupdate", "move_noupdate");
 		}
 		else
 		{
-			return args.length == 12 && "filtered".equals(args[9]) ? method_10708(args, Block.REGISTRY.getKeySet()) : Collections.emptyList();
+			return args.length == 12 && "filtered".equals(args[9]) ? suggestMatching(args, Block.REGISTRY.keySet()) : Collections.emptyList();
 		}
 	}
 

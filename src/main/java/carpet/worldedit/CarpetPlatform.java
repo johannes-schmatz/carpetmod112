@@ -23,14 +23,15 @@ import com.sk89q.worldedit.world.World;
 
 import carpet.CarpetServer;
 import net.minecraft.block.Block;
-import net.minecraft.entity.EntityType;
+import net.minecraft.entity.Entities;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.command.handler.CommandHandler;
+import net.minecraft.server.command.handler.CommandManager;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import net.minecraft.resource.Identifier;
 
 class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
 
@@ -54,9 +55,9 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
         int index = name.indexOf(':');
 
         if (index != -1 && index != 0 && index != name.length() - 1) {
-            Block block = Block.get(name);
+            Block block = Block.byKey(name);
             if (block != null) {
-                return Block.getIdByBlock(block);
+                return Block.getId(block);
             }
         }
 
@@ -65,19 +66,19 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
             if (item == null) continue;
             if (item.getTranslationKey() == null) continue;
             if (item.getTranslationKey().startsWith("item.")) {
-                if (item.getTranslationKey().equalsIgnoreCase("item." + name)) return Item.getRawId(item);
+                if (item.getTranslationKey().equalsIgnoreCase("item." + name)) return Item.getId(item);
             }
             if (item.getTranslationKey().startsWith("tile.")) {
-                if (item.getTranslationKey().equalsIgnoreCase("tile." + name)) return Item.getRawId(item);
+                if (item.getTranslationKey().equalsIgnoreCase("tile." + name)) return Item.getId(item);
             }
-            if (item.getTranslationKey().equalsIgnoreCase(name)) return Item.getRawId(item);
+            if (item.getTranslationKey().equalsIgnoreCase(name)) return Item.getId(item);
         }
         return 0;
     }
 
     @Override
     public boolean isValidMobType(String type) {
-        return EntityType.isValid(new Identifier(type));
+        return Entities.exists(new Identifier(type));
     }
 
     @Override
@@ -105,7 +106,7 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
         if (player instanceof CarpetPlayer) {
             return player;
         } else {
-            ServerPlayerEntity entity = server.getPlayerManager().getPlayer(player.getName());
+            ServerPlayerEntity entity = server.getPlayerManager().get(player.getName());
             return entity != null ? new CarpetPlayer(entity) : null;
         }
     }
@@ -117,7 +118,7 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
             return world;
         } else {
             for (ServerWorld ws : server.worlds) {
-                if (ws.getLevelProperties().getLevelName().equals(world.getName())) {
+                if (ws.getData().getName().equals(world.getName())) {
                     return new CarpetWorld(ws);
                 }
             }
@@ -129,11 +130,11 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
     @Override
     public void registerCommands(Dispatcher dispatcher) {
         if (server == null) return;
-        CommandManager mcMan = (CommandManager) server.getCommandManager();
+        CommandManager mcMan = (CommandManager) server.getCommandHandler();
 
         for (final CommandMapping command : dispatcher.getCommands()) {
             CommandWrapper wrapper = new CommandWrapper(command);
-            mcMan.registerCommand(wrapper);
+            mcMan.register(wrapper);
         }
     }
 
@@ -179,7 +180,7 @@ class CarpetPlatform extends AbstractPlatform implements MultiUserPlatform {
     public Collection<Actor> getConnectedUsers() {
         List<Actor> users = new ArrayList<Actor>();
         PlayerManager scm = server.getPlayerManager();
-        for (ServerPlayerEntity entity : scm.getPlayers()) {
+        for (ServerPlayerEntity entity : scm.getAll()) {
             if (entity != null) {
                 users.add(new CarpetPlayer(entity));
             }

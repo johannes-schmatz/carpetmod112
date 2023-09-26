@@ -11,7 +11,7 @@ import net.minecraft.server.MinecraftServer;
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
 	@Inject(
-			method = "tick",
+			method = "tickWorlds",
 			at = @At(
 					value = "INVOKE",
 					target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V",

@@ -1,11 +1,11 @@
 package carpet.mixin.worldEdit;
 
 import carpet.worldedit.WorldEditBridge;
-import net.minecraft.command.CommandSource;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.SummonCommand;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(SummonCommand.class)
 public class SummonCommandMixin {
     @Redirect(
-            method = "method_3279",
+            method = "run",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/Entity;refreshPositionAndAngles(DDDFF)V"

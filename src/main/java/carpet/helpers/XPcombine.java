@@ -3,21 +3,21 @@ package carpet.helpers;
 
 import carpet.mixin.accessors.ExperienceOrbEntityAccessor;
 import carpet.utils.extensions.ExtendedExperienceOrbEntity;
-import net.minecraft.entity.ExperienceOrbEntity;
+import net.minecraft.entity.XpOrbEntity;
 import net.minecraft.world.World;
 
 public class XPcombine {
 
-    public static void searchForOtherXPNearbyCarpet(ExperienceOrbEntity first)
+    public static void searchForOtherXPNearbyCarpet(XpOrbEntity first)
     {
-        for (ExperienceOrbEntity entityxp : first.world.getEntitiesInBox(ExperienceOrbEntity.class,
-                first.getBoundingBox().stretch(0.5D, 0.0D, 0.5D)))
+        for (XpOrbEntity entityxp : first.world.getEntities(XpOrbEntity.class,
+                first.getShape().grow(0.5D, 0.0D, 0.5D)))
         {
             combineItems(first, entityxp);
         }
     }
 
-    private static boolean combineItems(ExperienceOrbEntity first, ExperienceOrbEntity other)
+    private static boolean combineItems(XpOrbEntity first, XpOrbEntity other)
     {
         if (other == first)
         {
@@ -30,14 +30,14 @@ public class XPcombine {
                 if (first.orbAge != -32768 && other.orbAge != -32768
                         && ((ExtendedExperienceOrbEntity) first).getDelayBeforeCombine() == 0 && ((ExtendedExperienceOrbEntity) other).getDelayBeforeCombine() == 0)
                 {
-                    int size = getTextureByXP(other.getExperienceAmount() );
-                    ((ExperienceOrbEntityAccessor) other).setAmount(other.getExperienceAmount() + first.getExperienceAmount());
+                    int size = getTextureByXP(other.getXp() );
+                    ((ExperienceOrbEntityAccessor) other).setAmount(other.getXp() + first.getXp());
                     other.pickupDelay = Math.max(other.pickupDelay, first.pickupDelay);
                     other.orbAge = Math.min(other.orbAge, first.orbAge);
-                    if (getTextureByXP(other.getExperienceAmount() ) != size)
+                    if (getTextureByXP(other.getXp() ) != size)
                     {
                         other.remove();
-                        first.world.spawnEntity(newXPOrb(other.world, other.getExperienceAmount(), other));
+                        first.world.addEntity(newXPOrb(other.world, other.getXp(), other));
                     }
                     else
                     {
@@ -62,8 +62,8 @@ public class XPcombine {
         }
     }
 
-    private static ExperienceOrbEntity newXPOrb(World world, int expValue, ExperienceOrbEntity old) {
-        ExperienceOrbEntity orb = new ExperienceOrbEntity(world, old.x, old.y, old.z, expValue);
+    private static XpOrbEntity newXPOrb(World world, int expValue, XpOrbEntity old) {
+        XpOrbEntity orb = new XpOrbEntity(world, old.x, old.y, old.z, expValue);
         orb.yaw = old.yaw;
         orb.velocityX = old.velocityX;
         orb.velocityY = old.velocityY;

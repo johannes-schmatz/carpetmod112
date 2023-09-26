@@ -22,22 +22,22 @@ public class ServerWorldMixin {
 			at = @At("HEAD")
 	)
 	private void onTickStart(CallbackInfo ci) {
-		if (CarpetSettings.limitITTupdates > 0 && server.isOnThread()) {
+		if (CarpetSettings.limitITTupdates > 0 && server.isOnSameThread()) {
 			limitITTCounter = 0;
 		}
 	}
 
 	@Inject(
-			method = "createAndScheduleBlockTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V",
+			method = "scheduleTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/block/BlockState;getBlock()Lnet/minecraft/block/Block;",
+					target = "Lnet/minecraft/block/state/BlockState;getBlock()Lnet/minecraft/block/Block;",
 					ordinal = 1
 			),
 			cancellable = true
 	)
 	private void onITT(BlockPos pos, Block block, int tickRate, int priority, CallbackInfo ci) {
-		if (CarpetSettings.limitITTupdates > 0 && server.isOnThread()) {
+		if (CarpetSettings.limitITTupdates > 0 && server.isOnSameThread()) {
 			limitITTCounter++;
 			if (limitITTCounter > CarpetSettings.limitITTupdates) {
 				ci.cancel();

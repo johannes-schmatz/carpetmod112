@@ -11,19 +11,16 @@ import carpet.pubsub.PubSubMessenger;
 import carpet.utils.*;
 import carpet.utils.extensions.WaypointContainer;
 import carpet.worldedit.WorldEditBridge;
-import narcolepticfrog.rsmm.events.TickStartEventDispatcher;
-import narcolepticfrog.rsmm.server.RSMMServer;
 
-import net.minecraft.entity.EntityCategory;
+import net.minecraft.entity.living.mob.MobCategory;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import redstone.multimeter.server.MultimeterServer;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -37,10 +34,6 @@ public class CarpetServer {
     public final MinecraftServer server;
 
     public PluginChannelManager pluginChannels;
-    public RSMMServer legacyRsmmServer;
-    public MultimeterServer rsmmServer;
-    public ToggleableChannelHandler rsmmChannel;
-    public ToggleableChannelHandler legacyRsmmChannel;
     public ToggleableChannelHandler wecuiChannel;
 
     private CarpetServer(MinecraftServer server) {
@@ -57,11 +50,6 @@ public class CarpetServer {
         pluginChannels.register(new PubSubMessenger(CarpetMod.PUBSUB));
         pluginChannels.register(new CarpetClientServer(server));
 
-        rsmmServer = new MultimeterServer(server);
-        legacyRsmmServer = new RSMMServer(server);
-
-        pluginChannels.register(rsmmServer.getPacketHandler()); // maybe make this a toggleable channel handler
-        legacyRsmmChannel = new ToggleableChannelHandler(pluginChannels, legacyRsmmServer.createChannelHandler(), false);
         wecuiChannel = new ToggleableChannelHandler(pluginChannels, WorldEditBridge.createChannelHandler(), false);
     }
 
@@ -99,17 +87,17 @@ public class CarpetServer {
     public void onLoadAllWorlds() {
         TickingArea.loadConfig(server);
         for (ServerWorld world : server.worlds) {
-            int dim = world.dimension.getDimensionType().getId();
+            int dim = world.dimension.getType().getId();
             try {
                 ((WaypointContainer) world).setWaypoints(Waypoint.loadWaypoints(world));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
 
-            String prefix = "minecraft." + world.dimension.getDimensionType().getName();
+            String prefix = "minecraft." + world.dimension.getType().getKey();
             new PubSubInfoProvider<>(CarpetMod.PUBSUB,prefix + ".chunk_loading.dropped_chunks.hash_size",20,
                     () -> ChunkLoading.getCurrentHashSize(world));
-            for (EntityCategory creatureType : EntityCategory.values()) {
+            for (MobCategory creatureType : MobCategory.values()) {
                 String mobCapPrefix = prefix + ".mob_cap." + creatureType.name().toLowerCase(Locale.ROOT);
                 new PubSubInfoProvider<>(CarpetMod.PUBSUB, mobCapPrefix + ".filled", 20, () -> {
                     Pair<Integer, Integer> mobCap = SpawnReporter.mobcaps.get(dim).get(creatureType);
@@ -138,10 +126,6 @@ public class CarpetServer {
 
     public void tick() {
         TickSpeed.tick(server);
-        if (CarpetSettings.redstoneMultimeterLegacy)
-        {
-            TickStartEventDispatcher.dispatchEvent(server.getTicks());
-        }
         HUDController.update_hud(server);
         WorldEditBridge.onStartTick();
         CarpetMod.PUBSUB.update(server.getTicks());
@@ -158,7 +142,7 @@ public class CarpetServer {
     }
 
     public Random setRandomSeed(int p_72843_1_, int p_72843_2_, int p_72843_3_) {
-        long i = (long) p_72843_1_ * 341873128712L + (long) p_72843_2_ * 132897987541L + server.worlds[0].getLevelProperties().getSeed() + (long) p_72843_3_;
+        long i = (long) p_72843_1_ * 341873128712L + (long) p_72843_2_ * 132897987541L + server.worlds[0].getData().getSeed() + (long) p_72843_3_;
         CarpetMod.rand.setSeed(i);
         return CarpetMod.rand;
     }
@@ -166,7 +150,7 @@ public class CarpetServer {
     public void loadBots() {
         try
         {
-            File settings_file = server.getSaveStorage().method_11957(server.getLevelName(), "bot.conf");
+            File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "bot.conf");
             BufferedReader b = new BufferedReader(new FileReader(settings_file));
             String line = "";
             boolean temp = CarpetSettings.removeFakePlayerSkins;
@@ -190,7 +174,7 @@ public class CarpetServer {
 
     public void writeConf(ArrayList<String> names) {
         try {
-            File settings_file = server.getSaveStorage().method_11957(server.getLevelName(), "bot.conf");
+            File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "bot.conf");
             if (names != null) {
                 FileWriter fw = new FileWriter(settings_file);
                 for (String name : names) {

@@ -17,7 +17,7 @@ import java.util.Set;
 
 @Mixin(World.class)
 public class WorldMixin {
-    @Shadow @Final private List<BlockEntity> unloadedBlockEntities;
+    @Shadow @Final private List<BlockEntity> removedBlockEntities;
     @Shadow @Final public List<BlockEntity> tickingBlockEntities;
     @Shadow @Final public List<BlockEntity> blockEntities;
 
@@ -25,17 +25,17 @@ public class WorldMixin {
             method = "tickEntities",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/world/World;unloadedBlockEntities:Ljava/util/List;",
+                    target = "Lnet/minecraft/world/World;removedBlockEntities:Ljava/util/List;",
                     ordinal = 0
             )
     )
     private void optimizedTileEntityRemoval(CallbackInfo ci) {
-        if (!CarpetSettings.optimizedTileEntityRemoval || this.unloadedBlockEntities.isEmpty()) return;
+        if (!CarpetSettings.optimizedTileEntityRemoval || this.removedBlockEntities.isEmpty()) return;
 
         Set<BlockEntity> remove = Collections.newSetFromMap(new IdentityHashMap<>());
-        remove.addAll(this.unloadedBlockEntities);
+        remove.addAll(this.removedBlockEntities);
         this.tickingBlockEntities.removeAll(remove);
         this.blockEntities.removeAll(remove);
-        this.unloadedBlockEntities.clear();
+        this.removedBlockEntities.clear();
     }
 }

@@ -3,11 +3,11 @@ package carpet.mixin.ridingPlayerUpdateFix;
 import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LlamaEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
+import net.minecraft.entity.vehicle.MinecartEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.unmapped.C_7410869;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,14 +28,14 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/class_3238;method_14413(Lnet/minecraft/entity/player/ServerPlayerEntity;)V"
+                    target = "Lnet/minecraft/advancement/criterion/TickTrigger;run(Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;)V"
             )
     )
     private void ridingPlayerUpdateFix(CallbackInfo ci) {
         if (CarpetSettings.ridingPlayerUpdateFix) {
-            Entity riding = getRootVehicle();
-            if (riding instanceof AbstractMinecartEntity || riding instanceof LlamaEntity){
-                this.server.getPlayerManager().method_2003((ServerPlayerEntity) (Object) this);
+            Entity riding = getVehicle();
+            if (riding instanceof MinecartEntity || riding instanceof C_7410869){
+                this.server.getPlayerManager().move((ServerPlayerEntity) (Object) this);
             }
         }
     }

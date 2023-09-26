@@ -2,7 +2,8 @@ package carpet.mixin.betterStatistics;
 
 import carpet.helpers.StatHelper;
 import net.minecraft.block.*;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.state.BlockState;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.stat.Stat;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -12,11 +13,11 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin({
     Block.class,
-    BlockWithEntity.class,
+    BlockWithBlockEntity.class,
     CobwebBlock.class,
     DeadBushBlock.class,
     IceBlock.class,
-    Leaves1Block.class,
+    LeavesBlock.class,
     Leaves2Block.class,
     SnowLayerBlock.class,
     TallPlantBlock.class,
@@ -24,10 +25,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 })
 public class BlockHarvestMixins {
     @Redirect(
-            method = "method_8651",
+            method = "afterMinedByPlayer",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/stat/Stats;mined(Lnet/minecraft/block/Block;)Lnet/minecraft/stat/Stat;"
+                    target = "Lnet/minecraft/stat/Stats;blockMined(Lnet/minecraft/block/Block;)Lnet/minecraft/stat/Stat;"
             )
     )
     private Stat addBlockMeta(Block blockIn, World worldIn, PlayerEntity player, BlockPos pos, BlockState state) {

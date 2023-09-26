@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin extends Entity {
     @Shadow public abstract ItemStack getItemStack();
-    @Shadow private int pickupDelay;
+    @Shadow private int pickupCooldown;
     @Shadow private int age;
 
     public ItemEntityMixin(World worldIn) {
@@ -30,20 +30,20 @@ public abstract class ItemEntityMixin extends Entity {
             method = "onPlayerCollision",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerInventory;insertStack(Lnet/minecraft/item/ItemStack;)Z"
+                    target = "Lnet/minecraft/entity/player/PlayerInventory;m_4381741(Lnet/minecraft/item/ItemStack;)Z"
             )
     )
     private boolean insertStack(PlayerInventory inventory, ItemStack stack) {
         try {
             CarpetMod.playerInventoryStacking.set(Boolean.TRUE);
-            return inventory.insertStack(stack);
+            return inventory.m_4381741(stack);
         } finally {
             CarpetMod.playerInventoryStacking.set(Boolean.FALSE);
         }
     }
 
     @Inject(
-            method = "tryMerge(Lnet/minecraft/entity/ItemEntity;)Z",
+            method = "canStack",
             at = @At(
                     value = "RETURN",
                     ordinal = 0
@@ -51,7 +51,7 @@ public abstract class ItemEntityMixin extends Entity {
             slice = @Slice(
                     from = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/item/ItemStack;getMaxCount()I"
+                            target = "Lnet/minecraft/item/ItemStack;getMaxSize()I"
                     )
             ),
             cancellable = true
@@ -61,8 +61,8 @@ public abstract class ItemEntityMixin extends Entity {
         ItemStack otherStack = other.getItemStack();
         // Add check for stacking shoulkers without NBT on the ground CARPET-XCOM
         if (((ExtendedItemStack) (Object) otherStack).isGroundStackable() && ((ExtendedItemStack) (Object) ownStack).isGroundStackable()) {
-            otherStack.increment(ownStack.getCount());
-            ((ItemEntityAccessor) other).setPickupDelay(Math.max(((ItemEntityAccessor) other).getPickupDelay(), this.pickupDelay));
+            otherStack.increase(ownStack.getSize());
+            ((ItemEntityAccessor) other).setPickupDelay(Math.max(((ItemEntityAccessor) other).getPickupDelay(), this.pickupCooldown));
             ((ItemEntityAccessor) other).setAge(Math.min(((ItemEntityAccessor) other).getAge(), this.age));
             other.setItemStack(otherStack);
             this.remove();
@@ -70,7 +70,14 @@ public abstract class ItemEntityMixin extends Entity {
         }
     }
 
-    @Inject(method = "tryMerge(Lnet/minecraft/entity/ItemEntity;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;increment(I)V"), cancellable = true)
+    @Inject(
+            method = "canStack",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/item/ItemStack;increase(I)V"
+            ),
+            cancellable = true
+    )
     private void checkStackable(ItemEntity other, CallbackInfoReturnable<Boolean> cir) {
         ItemStack ownStack = this.getItemStack();
         ItemStack otherStack = other.getItemStack();

@@ -3,7 +3,7 @@ package carpet.mixin.boundingBoxFix;
 import carpet.CarpetSettings;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.gen.GeneratorConfig;
+import net.minecraft.world.gen.structure.StructureStart;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(GeneratorConfig.class)
+@Mixin(StructureStart.class)
 public abstract class StructureStartMixin {
-    @Shadow protected abstract void setBoundingBoxFromChildren();
+    @Shadow protected abstract void findBounds();
 
     @Inject(
             method = "toNbt",
@@ -26,7 +26,7 @@ public abstract class StructureStartMixin {
         //FIXME: why is this not @At("HEAD")?
         // this should be @At("HEAD"), then it saves the correct BB
         if(CarpetSettings.boundingBoxFix) {
-            setBoundingBoxFromChildren();
+            findBounds();
         }
     }
 }

@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Explosion.class)
 public class ExplosionMixin {
     @Inject(
-            method = "collectBlocksAndDamageEntities",
+            method = "damageEntities",
             at = @At("HEAD"),
             cancellable = true
     )
@@ -26,7 +26,7 @@ public class ExplosionMixin {
     }
 
     @Inject(
-            method = "affectWorld",
+            method = "damageBlocks",
             at = @At("HEAD"),
             cancellable = true
     )

@@ -1,7 +1,8 @@
 package carpet.mixin.quasiConnectivity;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.PistonBlock;
+
+import net.minecraft.block.PistonBaseBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -10,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(PistonBlock.class)
+@Mixin(PistonBaseBlock.class)
 public class PistonBlockMixin {
     @Inject(
             method = "shouldExtend",

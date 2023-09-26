@@ -1,6 +1,6 @@
 package carpet.utils.extensions;
 
-import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.living.effect.StatusEffectInstance;
 
 public interface ExtendedStatusEffectInstance {
     StatusEffectInstance combine(StatusEffectInstance other);

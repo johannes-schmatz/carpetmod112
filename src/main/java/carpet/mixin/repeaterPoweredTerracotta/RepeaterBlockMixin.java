@@ -2,10 +2,10 @@ package carpet.mixin.repeaterPoweredTerracotta;
 
 import carpet.CarpetSettings;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.RepeaterBlock;
-import net.minecraft.state.property.IntProperty;
+import net.minecraft.block.state.property.IntegerProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(RepeaterBlock.class)
 public class RepeaterBlockMixin extends AbstractRedstoneGateBlockMixin {
-    @Shadow @Final public static IntProperty DELAY;
+    @Shadow @Final public static IntegerProperty DELAY;
 
     @Override
     protected int getDelay(BlockState state, World world, BlockPos pos) {
@@ -23,8 +23,8 @@ public class RepeaterBlockMixin extends AbstractRedstoneGateBlockMixin {
         if (CarpetSettings.repeaterPoweredTerracotta) {
             BlockState stateBelow = world.getBlockState(pos.down());
             Block blockBelow = stateBelow.getBlock();
-            if (blockBelow == Blocks.STAINED_TERRACOTTA) {
-                delay = blockBelow.getMeta(stateBelow);
+            if (blockBelow == Blocks.STAINED_HARDENED_CLAY) {
+                delay = blockBelow.getDropItemMetadata(stateBelow);
                 if (delay == 0) delay = 100;
             }
         }

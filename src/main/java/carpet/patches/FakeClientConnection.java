@@ -1,10 +1,10 @@
 package carpet.patches;
 
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkSide;
+import net.minecraft.network.Connection;
+import net.minecraft.network.PacketFlow;
 
-public class FakeClientConnection extends ClientConnection {
-    public FakeClientConnection(NetworkSide p) {
+public class FakeClientConnection extends Connection {
+    public FakeClientConnection(PacketFlow p) {
         super(p);
     }
 

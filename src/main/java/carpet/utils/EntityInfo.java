@@ -4,23 +4,23 @@ import carpet.mixin.accessors.*;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.ExperienceOrbEntity;
+import net.minecraft.entity.XpOrbEntity;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.boss.WitherEntity;
+import net.minecraft.entity.decoration.PaintingEntity;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.entity.decoration.ItemFrameEntity;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.PathAwareEntity;
-import net.minecraft.entity.mob.SlimeEntity;
-import net.minecraft.entity.mob.ZombieVillagerEntity;
-import net.minecraft.entity.passive.HorseBaseEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.attribute.EntityAttributes;
+import net.minecraft.entity.living.effect.StatusEffectInstance;
+import net.minecraft.entity.living.mob.PathAwareEntity;
+import net.minecraft.entity.living.mob.hostile.HostileEntity;
+import net.minecraft.entity.living.mob.MobEntity;
+import net.minecraft.entity.living.mob.SlimeEntity;
+import net.minecraft.entity.living.mob.hostile.ZombieVillagerEntity;
+import net.minecraft.entity.living.mob.hostile.boss.WitherEntity;
+import net.minecraft.entity.living.mob.passive.animal.HorseBaseEntity;
+import net.minecraft.entity.living.mob.passive.PassiveEntity;
+import net.minecraft.entity.living.mob.passive.VillagerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
@@ -59,7 +59,7 @@ public class EntityInfo
 		{
 			return null;
 		} // func_190916_E()
-		String stackname = item.getCount()>1?String.format("%dx%s",item.getCount(), item.getCustomName()):item.getCustomName();
+		String stackname = item.getSize()>1?String.format("%dx%s",item.getSize(), item.getHoverName()):item.getHoverName();
 		if (item.isDamaged())
 		{
 			stackname += String.format(" %d/%d", item.getMaxDamage()-item.getDamage(), item.getMaxDamage());
@@ -67,11 +67,11 @@ public class EntityInfo
 		if (item.hasEnchantments())
 		{
 			stackname += " ( ";
-			Map<Enchantment, Integer> enchants = EnchantmentHelper.get(item);
+			Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(item);
 			for (Enchantment e: enchants.keySet())
 			{
 				int level = enchants.get(e);
-				String enstring = e.getTranslatedName(level);
+				String enstring = e.getName(level);
 				stackname += enstring;
 				stackname += " ";
 			}
@@ -86,7 +86,7 @@ public class EntityInfo
 		{
 			return "None";
 		}
-		return String.format("%s at [%.1f, %.1f, %.1f]",e.getName().asUnformattedString(), e.x, e.y, e.z);
+		return String.format("%s at [%.1f, %.1f, %.1f]",e.getDisplayName().buildString(), e.x, e.y, e.z);
 	}
 
     private static double get_speed(double internal)
@@ -116,63 +116,63 @@ public class EntityInfo
     public static List<String> entityInfo(Entity e, World ws)
     {
         List<String> lst = new ArrayList<String>();
-		World world = e.getWorld();
+		World world = e.getSourceWorld();
         lst.add(entity_short_string(e));
-        if (e.hasMount()) { lst.add(String.format(" - Rides: %s", e.getVehicle().getName().asUnformattedString())); }
+        if (e.hasVehicle()) { lst.add(String.format(" - Rides: %s", e.getVehicle().getDisplayName().buildString())); }
         if (e.hasPassengers())
         {
-            List<Entity> passengers = e.getPassengerList();
+            List<Entity> passengers = e.getPassengers();
             if (passengers.size() == 1)
             {
-                lst.add(String.format(" - Is being ridden by: %s", passengers.get(0).getName().asUnformattedString()));
+                lst.add(String.format(" - Is being ridden by: %s", passengers.get(0).getDisplayName().buildString()));
             }
             else
             {
                 lst.add(" - Is being ridden by:");
                 for (Entity ei: passengers)
                 {
-                    lst.add(String.format("   * %s", ei.getName().asUnformattedString()));
+                    lst.add(String.format("   * %s", ei.getDisplayName().buildString()));
                 }
             }
         }
         lst.add(String.format(" - Height: %.2f, Width: %.2f, Eye height: %.2f", e.height, e.width, e.getEyeHeight()));
-        lst.add(String.format(" - Age: %s", makeTime(e.ticksAlive)));
-		if (ws.dimension.getDimensionType().getId() != e.dimension)
+        lst.add(String.format(" - Age: %s", makeTime(e.time)));
+		if (ws.dimension.getType().getId() != e.dimensionId)
 		{
-			lst.add(String.format(" - Dimension: %s", (e.dimension>0)?"The End":((e.dimension<0)?"Nether":"Overworld")));
+			lst.add(String.format(" - Dimension: %s", (e.dimensionId>0)?"The End":((e.dimensionId<0)?"Nether":"Overworld")));
 		}
 		int fire = ((EntityAccessor) e).getFireTicks();
         if (fire > 0) { lst.add(String.format(" - Fire for %d ticks",fire)); }
-		if (e.isFireImmune() ) { lst.add(" - Immune to fire"); }
+		if (e.isImmuneToFire() ) { lst.add(" - Immune to fire"); }
 		if (e.netherPortalCooldown > 0) { lst.add(String.format(" - Portal cooldown for %d ticks",e.netherPortalCooldown)); }
-		if (e.isInvulnerable()) { lst.add(" - Invulnerable"); } //  func_190530_aW()
-		if (e.isImmuneToExplosion()) { lst.add(" - Immune to explosions"); }
+		if (e.m_1930223()) { lst.add(" - Invulnerable"); } //  func_190530_aW()
+		if (e.isImmuneToExplosions()) { lst.add(" - Immune to explosions"); }
 
 		if (e instanceof ItemEntity)
         {
 			ItemEntity ei = (ItemEntity)e;
 			ItemStack stack = ei.getItemStack();// getEntityItem();
-			String stackname = stack.getCount()>1?String.format("%dx%s",stack.getCount(), stack.getCustomName()):
-					stack.getCustomName();
+			String stackname = stack.getSize()>1?String.format("%dx%s",stack.getSize(), stack.getHoverName()):
+					stack.getHoverName();
 			lst.add(String.format(" - Content: %s", stackname));
 			lst.add(String.format(" - Despawn Timer: %s", makeTime(((ItemEntityAccessor) ei).getAge())));
         }
-		if (e instanceof ExperienceOrbEntity)
+		if (e instanceof XpOrbEntity)
         {
-			ExperienceOrbEntity exp = (ExperienceOrbEntity)e;
+			XpOrbEntity exp = (XpOrbEntity)e;
             lst.add(String.format(" - Despawn Timer: %s", makeTime(exp.orbAge)));
-			lst.add(String.format(" - Xp Value: %s", exp.getExperienceAmount()));
+			lst.add(String.format(" - Xp Value: %s", exp.getXp()));
         }
 		if (e instanceof ItemFrameEntity)
         {
 			ItemFrameEntity eif = (ItemFrameEntity)e;
-            lst.add(String.format(" - Content: %s", eif.getHeldItemStack().getCustomName()));
+            lst.add(String.format(" - Content: %s", eif.getItemStackInItemFrame().getHoverName()));
 			lst.add(String.format(" - Rotation: %d", eif.rotation()));
         }
 		if (e instanceof PaintingEntity)
         {
 			PaintingEntity ep = (PaintingEntity)e;
-            lst.add(String.format(" - Art: %s", ep.type.name ));
+            lst.add(String.format(" - Art: %s", ep.motive.name ));
         }
 
 
@@ -181,29 +181,29 @@ public class EntityInfo
         if (e instanceof LivingEntity)
         {
             LivingEntity elb = (LivingEntity)e;
-			lst.add(String.format(" - Despawn timer: %s", makeTime(elb.method_6117())));
+			lst.add(String.format(" - Despawn timer: %s", makeTime(elb.getDespawnTimer())));
 
             lst.add(String.format(" - Health: %.2f/%.2f", elb.getHealth(), elb.getMaxHealth()));
-			if (elb.initializeAttribute(EntityAttributes.GENERIC_ARMOR).getValue() > 0.0)
+			if (elb.getAttribute(EntityAttributes.f_9312142).get() > 0.0)
 			{
-				lst.add(String.format(" - Armour: %.1f",elb.initializeAttribute(EntityAttributes.GENERIC_ARMOR).getValue()));
+				lst.add(String.format(" - Armour: %.1f",elb.getAttribute(EntityAttributes.f_9312142).get()));
 			}
-			if (elb.initializeAttribute(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue() > 0.0)
+			if (elb.getAttribute(EntityAttributes.f_8039308).get() > 0.0)
 			{
-				lst.add(String.format(" - Toughness: %.1f",elb.initializeAttribute(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue()));
+				lst.add(String.format(" - Toughness: %.1f",elb.getAttribute(EntityAttributes.f_8039308).get()));
 			}
 			//lst.add(String.format(" - Base speed: %.1fb/s",get_speed(elb.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue())));
 
 
 
-			Collection<StatusEffectInstance> potions = elb.getStatusEffectInstances();
+			Collection<StatusEffectInstance> potions = elb.getStatusEffects();
 			if (!potions.isEmpty())
 			{
 				lst.add(" - Potion effects:");
 				for (StatusEffectInstance pe : potions)
 				{
 					lst.add(String.format("   * %s%s %s",
-							pe.getTranslationKey().substring(7),
+							pe.getName().substring(7),
 							(pe.getAmplifier()>1)?String.format("x%d",pe.getAmplifier()):"",
 							makeTime(pe.getDuration())));
 				}
@@ -219,7 +219,7 @@ public class EntityInfo
 				lst.add(String.format(" - Off hand: %s", display_item(offhand)));
 			}
 			String armour = "";
-			for (ItemStack armourpiece: elb.getArmorItems())
+			for (ItemStack armourpiece: elb.m_0529754())
 			{
 				if (!(armourpiece.isEmpty()))
 				{
@@ -233,17 +233,17 @@ public class EntityInfo
 			if (e instanceof MobEntity)
             {
 				MobEntity el = (MobEntity)elb;
-				lst.add(String.format(" - Follow range: %.1f",el.initializeAttribute(EntityAttributes.GENERIC_FOLLOW_RANGE).getValue()));
+				lst.add(String.format(" - Follow range: %.1f",el.getAttribute(EntityAttributes.FOLLOW_RANGE).get()));
 
-				lst.add(String.format(" - Movement speed factor: %.2f", el.getMotionHelper().getSpeed()));
+				lst.add(String.format(" - Movement speed factor: %.2f", el.getMovementControl().getSpeed()));
 
 
-				LivingEntity target_elb = el.getTarget();
+				LivingEntity target_elb = el.getTargetEntity();
 				if (target_elb != null)
 				{
 					lst.add(String.format(" - Attack target: %s", entity_short_string(target_elb)));
 				}
-				if (el.canPickUpLoot())
+				if (el.canPickupLoot())
 				{
 					lst.add(" - Can pick up loot");
 				}
@@ -255,41 +255,41 @@ public class EntityInfo
 				if (e instanceof WitherEntity)
 				{
 					WitherEntity ew = (WitherEntity)e;
-					Entity etarget = world.getEntityById(ew.getTrackedEntityId(0));
+					Entity etarget = world.getEntity(ew.getTrackedEntityId(0));
 					lst.add(String.format(" - Head 1 target: %s", entity_short_string(etarget) ));
-					etarget = world.getEntityById(ew.getTrackedEntityId(1));
+					etarget = world.getEntity(ew.getTrackedEntityId(1));
 					lst.add(String.format(" - Head 2 target: %s", entity_short_string(etarget) ));
-					etarget = world.getEntityById(ew.getTrackedEntityId(2));
+					etarget = world.getEntity(ew.getTrackedEntityId(2));
 					lst.add(String.format(" - Head 3 target: %s", entity_short_string(etarget) ));
 				}
 				if (e instanceof PathAwareEntity)
 				{
 					PathAwareEntity ec = (PathAwareEntity) e;
-					if (ec.hasPositionTarget())
+					if (ec.inVillage())
 					{
-						BlockPos pos = ec.getPositionTarget();
-						lst.add(String.format(" - Home position: %d blocks around [%d, %d, %d]", (int)ec.getPositionTargetRange(), pos.getX(),pos.getY(),pos.getZ()));
+						BlockPos pos = ec.getPos();
+						lst.add(String.format(" - Home position: %d blocks around [%d, %d, %d]", (int)ec.getVillageRadius(), pos.getX(),pos.getY(),pos.getZ()));
 					}
 					if (e instanceof PassiveEntity)
 					{
 						PassiveEntity eage = (PassiveEntity) e;
-						if (eage.age() < 0)
+						if (eage.getBreedingAge() < 0)
 						{
-							lst.add(String.format(" - Time till adulthood: %s", makeTime(-eage.age())));
+							lst.add(String.format(" - Time till adulthood: %s", makeTime(-eage.getBreedingAge())));
 						}
-						if (eage.age() > 0)
+						if (eage.getBreedingAge() > 0)
 						{
-							lst.add(String.format(" - Mating cooldown: %s", makeTime(eage.age())));
+							lst.add(String.format(" - Mating cooldown: %s", makeTime(eage.getBreedingAge())));
 						}
 						if (e instanceof VillagerEntity)
 						{
 							VillagerEntity ev = (VillagerEntity) e;
 
-							SimpleInventory vinv = ev.method_11220();
+							SimpleInventory vinv = ev.m_1510844();
 							String inventory_content = "";
-							for (int i = 0; i < vinv.getInvSize(); ++i)
+							for (int i = 0; i < vinv.getSize(); ++i)
 							{
-								ItemStack vstack = vinv.getInvStack(i);
+								ItemStack vstack = vinv.getStack(i);
 								if (!vstack.isEmpty())
 								{
 									inventory_content += String.format("\n   * %d: %s", i, display_item(vstack));
@@ -308,18 +308,18 @@ public class EntityInfo
 						{
 							HorseBaseEntity ah = (HorseBaseEntity) e;
 							lst.add(String.format(" - Horse Speed: %.2f b/s (%.1f%%%%)",
-								get_speed(elb.initializeAttribute(EntityAttributes.GENERIC_MOVEMENT_SPEED).getValue()),
-								get_horse_speed_percent(elb.initializeAttribute(EntityAttributes.GENERIC_MOVEMENT_SPEED).getValue())
+								get_speed(elb.getAttribute(EntityAttributes.MOVEMENT_SPEED).get()),
+								get_horse_speed_percent(elb.getAttribute(EntityAttributes.MOVEMENT_SPEED).get())
 								));
 							lst.add(String.format(" - Horse Jump: %.2f b/s (%.1f%%%%)",
-								get_horse_jump(ah.method_13999()),
-								get_horse_jump_percent(ah.method_13999())
+								get_horse_jump(ah.getJumpStrength()),
+								get_horse_jump_percent(ah.getJumpStrength())
 								));
 						}
 					}
 					if (e instanceof HostileEntity)
 					{
-						lst.add(String.format(" - Base attack: %.1f",elb.initializeAttribute(EntityAttributes.GENERIC_ATTACK_DAMAGE).getValue()));
+						lst.add(String.format(" - Base attack: %.1f",elb.getAttribute(EntityAttributes.ATTACK_DAMAGE).get()));
 						if (e instanceof ZombieVillagerEntity)
 						{
 							ZombieVillagerEntity ezv = (ZombieVillagerEntity) e;
@@ -343,10 +343,10 @@ public class EntityInfo
 
     static void issue_entity_info(PlayerEntity player)
 	{
-		MinecraftServer server = player.getMinecraftServer();
+		MinecraftServer server = player.getServer();
 		if (server != null) {
 			try {
-				server.getCommandManager().execute(player, "entityinfo @e[r=5,c=5,type=!player]");
+				server.getCommandHandler().run(player, "entityinfo @e[r=5,c=5,type=!player]");
 			} catch (Throwable ignored) {};
 		}
 	}

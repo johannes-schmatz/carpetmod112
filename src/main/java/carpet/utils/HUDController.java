@@ -5,11 +5,11 @@ import carpet.helpers.TickSpeed;
 import carpet.logging.LoggerRegistry;
 import carpet.logging.logHelpers.PacketCounter;
 import carpet.mixin.accessors.PlayerListHeaderS2CPacketAccessor;
-import net.minecraft.entity.EntityCategory;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket;
+import net.minecraft.entity.living.mob.MobCategory;
+import net.minecraft.entity.living.player.PlayerEntity;
+import net.minecraft.network.packet.s2c.play.TabListS2CPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
@@ -39,7 +39,7 @@ public class HUDController
     }
     public static void clear_player(PlayerEntity player)
     {
-        PlayerListHeaderS2CPacket packet = new PlayerListHeaderS2CPacket();
+        TabListS2CPacket packet = new TabListS2CPacket();
         PlayerListHeaderS2CPacketAccessor acc = (PlayerListHeaderS2CPacketAccessor) packet;
         acc.setHeader(new LiteralText(""));
         acc.setFooter(new LiteralText(""));
@@ -73,7 +73,7 @@ public class HUDController
 
         for (PlayerEntity player: player_huds.keySet())
         {
-            PlayerListHeaderS2CPacket packet = new PlayerListHeaderS2CPacket();
+            TabListS2CPacket packet = new TabListS2CPacket();
             PlayerListHeaderS2CPacketAccessor acc = (PlayerListHeaderS2CPacketAccessor) packet;
             acc.setHeader(new LiteralText(""));
             acc.setFooter(Messenger.m(null, player_huds.get(player).toArray(new Object[0])));
@@ -98,7 +98,7 @@ public class HUDController
 
     private static void log_tps(MinecraftServer server)
     {
-        double MSPT = MathHelper.average(server.lastTickLengths) * 1.0E-6D;
+        double MSPT = MathHelper.average(server.averageTickTimes) * 1.0E-6D;
         double TPS = 1000.0D / Math.max((TickSpeed.time_warp_start_time != 0)?0.0:TickSpeed.mspt, MSPT);
         String color = Messenger.heatmap_color(MSPT,TickSpeed.mspt);
         Text[] message = new Text[]{Messenger.m(null,
@@ -112,7 +112,7 @@ public class HUDController
         List<Object> commandParams = new ArrayList<>();
         for (int dim = -1; dim <= 1; dim++)
         {
-            for (EntityCategory type : EntityCategory.values())
+            for (MobCategory type : MobCategory.values())
             {
                 Pair<Integer, Integer> counts = SpawnReporter.mobcaps.get(dim).getOrDefault(type, new Pair<>(0, 0));
                 int actual = counts.getLeft(), limit = counts.getRight();
@@ -120,7 +120,7 @@ public class HUDController
             }
         }
         LoggerRegistry.getLogger("mobcaps").log((option, player) -> {
-            int dim = player.dimension;
+            int dim = player.dimensionId;
             switch (option)
             {
                 case "overworld":
@@ -140,7 +140,7 @@ public class HUDController
     private static Text [] send_mobcap_display(int dim)
     {
         List<Text> components = new ArrayList<>();
-        for (EntityCategory type: EntityCategory.values())
+        for (MobCategory type: MobCategory.values())
         {
             Pair<Integer,Integer> counts = SpawnReporter.mobcaps.get(dim).getOrDefault(type, new Pair<>(0,0));
             int actual = counts.getLeft(); int limit = counts.getRight();

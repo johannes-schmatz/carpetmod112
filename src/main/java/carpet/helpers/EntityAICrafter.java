@@ -46,18 +46,18 @@ import carpet.mixin.accessors.IngredientAccessor;
 import com.google.common.collect.Lists;
 import carpet.utils.Messenger;
 import net.minecraft.block.Blocks;
+import net.minecraft.crafting.CraftingManager;
+import net.minecraft.crafting.recipe.CraftingRecipe;
+import net.minecraft.crafting.recipe.Ingredient;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.living.mob.passive.VillagerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeDispatcher;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.Identifier;
+import net.minecraft.resource.Identifier;
+import net.minecraft.util.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -70,7 +70,7 @@ public class EntityAICrafter extends Goal {
 	private final int[] tasks = new int[3];
 	private final int tier2Unlock = 1200 * 8;
 	private final int tier3Unlock = 1200 * 64;
-	private final RecipeType[] taskList = new RecipeType[3];
+	private final CraftingRecipe[] taskList = new CraftingRecipe[3];
 
 	private final int foodSlot = 7;
 	private final int[] food = new int[3];
@@ -678,23 +678,23 @@ public class EntityAICrafter extends Goal {
 	 * Fixes the food that is stuck in the wrong slots of the villager.
 	 */
 	private void fixFoodInventory() {
-		SimpleInventory villagerInventory = villager.method_11220();
-		ItemStack foodStack = villagerInventory.getInvStack(foodSlot);
+		SimpleInventory villagerInventory = villager.m_1510844();
+		ItemStack foodStack = villagerInventory.getStack(foodSlot);
 		boolean dropWrongFoods = false;
 
 		if (isFood(foodStack.getItem())) {
 			dropWrongFoods = true;
 		}
 
-		for (int i = 0; i < villagerInventory.getInvSize() - 1; ++i) {
-			ItemStack inventoryItem = villagerInventory.getInvStack(i);
+		for (int i = 0; i < villagerInventory.getSize() - 1; ++i) {
+			ItemStack inventoryItem = villagerInventory.getStack(i);
 			if (isFood(inventoryItem.getItem())) {
 				if (dropWrongFoods) {
 					dropItem(inventoryItem);
 					villagerInventory.markDirty();
 				} else {
-					villagerInventory.setInvStack(foodSlot, inventoryItem.copy());
-					inventoryItem.setCount(0);
+					villagerInventory.setStack(foodSlot, inventoryItem.copy());
+					inventoryItem.setSize(0);
 					villagerInventory.markDirty();
 					dropWrongFoods = true;
 				}
@@ -749,7 +749,7 @@ public class EntityAICrafter extends Goal {
 			taskList[1] = getRecipe(tier2[tasks[1]]);
 			taskList[2] = getRecipe(tier3[tasks[2]]);
 		} catch (Exception e) {
-			Messenger.print_server_message(villager.getMinecraftServer(),
+			Messenger.print_server_message(villager.getServer(),
 					"A villager with nasty craftings was found and stats was rerolled.");
 			randomiseStats();
 		}
@@ -843,9 +843,9 @@ public class EntityAICrafter extends Goal {
 	 * Finds a crafting table in an area around the villager.
 	 */
 	private void findCraftingTableNear() {
-		World worldIn = villager.getWorld();
+		World worldIn = villager.getSourceWorld();
 		BlockPos villagerpos = new BlockPos(villager);
-		for (BlockPos pos : BlockPos.iterate(villagerpos.add(-3, -1, -3), villagerpos.add(3, 4, 3))) {
+		for (BlockPos pos : BlockPos.iterateRegion(villagerpos.add(-3, -1, -3), villagerpos.add(3, 4, 3))) {
 			if (worldIn.getBlockState(pos).getBlock() == Blocks.CRAFTING_TABLE) {
 				craftingTablePosition = pos;
 				craftingCanHappen = true;
@@ -901,7 +901,7 @@ public class EntityAICrafter extends Goal {
 	 * food preference of the villager.
 	 */
 	private void setupFoodSpeed() {
-		SimpleInventory villagerInventory = villager.method_11220();
+		SimpleInventory villagerInventory = villager.m_1510844();
 		ItemStack foodStack = getFoodStack(villagerInventory);
 		setFoodSpeed(foodStack);
 	}
@@ -934,7 +934,7 @@ public class EntityAICrafter extends Goal {
 	 * 
 	 * @return the recipe object that is being crafted currently.
 	 */
-	private RecipeType currentTaskRecipe() {
+	private CraftingRecipe currentTaskRecipe() {
 		if (currentTask < 0 || currentTask >= taskList.length) {
 			currentTask = 0;
 		}
@@ -956,9 +956,9 @@ public class EntityAICrafter extends Goal {
 			return false;
 		}
 
-		SimpleInventory villagerInventory = villager.method_11220();
+		SimpleInventory villagerInventory = villager.m_1510844();
 		ItemStack food = getFoodStack(villagerInventory);
-		if (foodCooldown <= 0 && food.getCount() < foodSize) {
+		if (foodCooldown <= 0 && food.getSize() < foodSize) {
 			return false;
 		}
 
@@ -971,9 +971,9 @@ public class EntityAICrafter extends Goal {
 
 			if (crafting != null) {
 				for (Map.Entry<ItemStack, Integer> entry : crafting.entrySet()) {
-					entry.getKey().setCount(entry.getKey().getCount() - entry.getValue());
+					entry.getKey().setSize(entry.getKey().getSize() - entry.getValue());
 				}
-				dropItem(currentTaskRecipe().getResult(null));
+				dropItem(currentTaskRecipe().apply(null));
 				crafted = true;
 			} else {
 				break;
@@ -997,13 +997,13 @@ public class EntityAICrafter extends Goal {
 			foodCooldown--;
 			return true;
 		}
-		SimpleInventory villagerInventory = villager.method_11220();
+		SimpleInventory villagerInventory = villager.m_1510844();
 		ItemStack food = getFoodStack(villagerInventory);
-		if (food.getCount() < foodSize) {
+		if (food.getSize() < foodSize) {
 			return false;
 		}
 
-		food.setCount(food.getCount() - foodSize);
+		food.setSize(food.getSize() - foodSize);
 		foodCooldown = 160;
 		return true;
 	}
@@ -1016,7 +1016,7 @@ public class EntityAICrafter extends Goal {
 	 * @return Item stack of food based on the last slot.
 	 */
 	private ItemStack getFoodStack(SimpleInventory villagerInventory) {
-		return villagerInventory.getInvStack(foodSlot);
+		return villagerInventory.getStack(foodSlot);
 	}
 
 	/**
@@ -1024,11 +1024,11 @@ public class EntityAICrafter extends Goal {
 	 * last slot. This is done to switch jobs.
 	 */
 	private void dropJob() {
-		SimpleInventory villagerInventory = villager.method_11220();
-		for (int i = 0; i < villagerInventory.getInvSize() - 2; ++i) {
-			ItemStack itemstack = villagerInventory.getInvStack(i);
+		SimpleInventory villagerInventory = villager.m_1510844();
+		for (int i = 0; i < villagerInventory.getSize() - 2; ++i) {
+			ItemStack itemstack = villagerInventory.getStack(i);
 			dropItem(itemstack.copy());
-			itemstack.setCount(0);
+			itemstack.setSize(0);
 		}
 	}
 
@@ -1050,13 +1050,13 @@ public class EntityAICrafter extends Goal {
 		Map<ItemStack, Integer> crafting = new HashMap<>();
 		Map<ItemStack, Integer> map = new HashMap<>(list);
 
-		for (int i = 0; i < villagerInventory.getInvSize() - 1; ++i) {
+		for (int i = 0; i < villagerInventory.getSize() - 1; ++i) {
 			for (Map.Entry<ItemStack, Integer> entry : map.entrySet()) {
-				ItemStack itemstack = villagerInventory.getInvStack(i);
+				ItemStack itemstack = villagerInventory.getStack(i);
 
 				if (entry.getValue() > 0 && entry.getKey().getItem() == itemstack.getItem()) {
 					int itemCount = map.get(entry.getKey());
-					int invCount = itemstack.getCount();
+					int invCount = itemstack.getSize();
 					int reduce = Math.min(itemCount, invCount);
 					int remains = itemCount - reduce;
 
@@ -1084,9 +1084,9 @@ public class EntityAICrafter extends Goal {
 	 *            The recipe that is being used to create a list of items for.
 	 * @return the list of items for the recipe and the amount per item.
 	 */
-	private Map<ItemStack, Integer> genCraftingMap(RecipeType recipe) {
+	private Map<ItemStack, Integer> genCraftingMap(CraftingRecipe recipe) {
 		Map<ItemStack, Integer> map = new HashMap<>();
-		DefaultedList<Ingredient> list = recipe.method_14252();
+		DefaultedList<Ingredient> list = recipe.getIngredients();
 
 		for (Ingredient ig : list) {
 			ItemStack[] stack = ((IngredientAccessor) ig).getStacks();
@@ -1133,7 +1133,7 @@ public class EntityAICrafter extends Goal {
 	 */
 	private int getActiveRecipeCount(Item item) {
 		int itemCount = 0;
-		DefaultedList<Ingredient> list = currentTaskRecipe().method_14252();
+		DefaultedList<Ingredient> list = currentTaskRecipe().getIngredients();
 		for (Ingredient ig : list) {
 			for (ItemStack is : ((IngredientAccessor) ig).getStacks()) {
 				if (is.getItem() == item) {
@@ -1164,8 +1164,8 @@ public class EntityAICrafter extends Goal {
 			double d1 = craftingTablePosition.getY() + 1.5D - (villager.y + (double) villager.getEyeHeight());
 			double d2 = craftingTablePosition.getZ() + 0.5D - villager.z;
 			double d3 = MathHelper.sqrt(d0 * d0 + d2 * d2);
-			f1 = (float) (MathHelper.atan2(d2, d0) * (180D / Math.PI)) - 90.0F;
-			f2 = (float) (-(MathHelper.atan2(d1, d3) * (180D / Math.PI)));
+			f1 = (float) (MathHelper.fastAtan2(d2, d0) * (180D / Math.PI)) - 90.0F;
+			f2 = (float) (-(MathHelper.fastAtan2(d1, d3) * (180D / Math.PI)));
 		}
 
 		double d0 = villager.y - 0.30000001192092896D + (double) villager.getEyeHeight();
@@ -1175,8 +1175,8 @@ public class EntityAICrafter extends Goal {
 		entityitem.velocityX = -MathHelper.sin(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
 		entityitem.velocityY = MathHelper.cos(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
 		entityitem.velocityZ = -MathHelper.sin(f2 * 0.017453292F) * 0.3F + 0.1F;
-		entityitem.setToDefaultPickupDelay();
-		villager.world.spawnEntity(entityitem);
+		entityitem.resetPickupCooldown();
+		villager.world.addEntity(entityitem);
 	}
 
 	/**
@@ -1205,8 +1205,8 @@ public class EntityAICrafter extends Goal {
 			itemEntity.remove();
 			return true;
 		} else if (itemstack.getItem().getTranslationKey().equals(Blocks.STRUCTURE_BLOCK.getTranslationKey())) {
-			for (int i = 0; i < villagerInventory.getInvSize(); ++i) {
-				villagerInventory.getInvStack(i).setCount(0);
+			for (int i = 0; i < villagerInventory.getSize(); ++i) {
+				villagerInventory.getStack(i).setSize(0);
 			}
 			itemEntity.remove();
 			return true;
@@ -1228,7 +1228,7 @@ public class EntityAICrafter extends Goal {
 		}
 
 		boolean itemPickedUp = false;
-		if (editedStack != null && editedStack.getCount() != itemstack.getCount()) {
+		if (editedStack != null && editedStack.getSize() != itemstack.getSize()) {
 			craftingCanHappen = true;
 			itemPickedUp = true;
 		}
@@ -1313,23 +1313,23 @@ public class EntityAICrafter extends Goal {
 	 */
 	private ItemStack addFood(ItemStack stack, SimpleInventory villagerInventory) {
 		ItemStack groundItem = stack.copy();
-		ItemStack inventoryItem = villagerInventory.getInvStack(foodSlot);
+		ItemStack inventoryItem = villagerInventory.getStack(foodSlot);
 
 		if (inventoryItem.isEmpty()) {
-			villagerInventory.setInvStack(foodSlot, groundItem);
+			villagerInventory.setStack(foodSlot, groundItem);
 			setFoodSpeed(groundItem);
 			calcCooldown();
 			resetIdleTimer();
 			villagerInventory.markDirty();
 			return ItemStack.EMPTY;
 		} else {
-			if (ItemStack.equalsIgnoreDamage(inventoryItem, groundItem)) {
-				int j = Math.min(villagerInventory.getInvMaxStackAmount(), inventoryItem.getMaxCount());
-				int k = Math.min(groundItem.getCount(), j - inventoryItem.getCount());
+			if (ItemStack.matchesNbt(inventoryItem, groundItem)) {
+				int j = Math.min(villagerInventory.getMaxStackSize(), inventoryItem.getMaxSize());
+				int k = Math.min(groundItem.getSize(), j - inventoryItem.getSize());
 
 				if (k > 0) {
-					inventoryItem.increment(k);
-					groundItem.decrement(k);
+					inventoryItem.increase(k);
+					groundItem.decrease(k);
 
 					if (groundItem.isEmpty()) {
 						villagerInventory.markDirty();
@@ -1338,7 +1338,7 @@ public class EntityAICrafter extends Goal {
 				}
 			} else if (idleTimer <= 0) {
 				dropItem(inventoryItem);
-				villagerInventory.setInvStack(foodSlot, groundItem);
+				villagerInventory.setStack(foodSlot, groundItem);
 				setFoodSpeed(groundItem);
 				calcCooldown();
 				resetIdleTimer();
@@ -1347,7 +1347,7 @@ public class EntityAICrafter extends Goal {
 			}
 		}
 
-		if (groundItem.getCount() != stack.getCount()) {
+		if (groundItem.getSize() != stack.getSize()) {
 			villagerInventory.markDirty();
 		}
 
@@ -1408,21 +1408,21 @@ public class EntityAICrafter extends Goal {
 		int emptySlot = -1;
 		boolean planks = plankCheck(groundItem);
 
-		for (int i = 0; i < villagerInventory.getInvSize() - 1; ++i) {
-			inventoryItem = villagerInventory.getInvStack(i);
+		for (int i = 0; i < villagerInventory.getSize() - 1; ++i) {
+			inventoryItem = villagerInventory.getStack(i);
 
 			if (inventoryItem.isEmpty() && emptySlot == -1) {
 				emptySlot = i;
 				continue;
 			}
 
-			if (ItemStack.equalsIgnoreDamage(inventoryItem, groundItem)) {
-				int j = Math.min(villagerInventory.getInvMaxStackAmount(), inventoryItem.getMaxCount());
-				int k = Math.min(groundItem.getCount(), j - inventoryItem.getCount());
+			if (ItemStack.matchesNbt(inventoryItem, groundItem)) {
+				int j = Math.min(villagerInventory.getMaxStackSize(), inventoryItem.getMaxSize());
+				int k = Math.min(groundItem.getSize(), j - inventoryItem.getSize());
 
 				if (k > 0) {
-					inventoryItem.increment(k);
-					groundItem.decrement(k);
+					inventoryItem.increase(k);
+					groundItem.decrease(k);
 
 					if (groundItem.isEmpty()) {
 						resetIdleTimer();
@@ -1432,13 +1432,13 @@ public class EntityAICrafter extends Goal {
 				}
 				break;
 			} else if (planks && !inventoryItem.isEmpty() && plankCheck(inventoryItem)) { // plankmerge
-				int j = Math.min(villagerInventory.getInvMaxStackAmount(), inventoryItem.getMaxCount());
-				int k = Math.min(groundItem.getCount(), j - inventoryItem.getCount());
+				int j = Math.min(villagerInventory.getMaxStackSize(), inventoryItem.getMaxSize());
+				int k = Math.min(groundItem.getSize(), j - inventoryItem.getSize());
 
 				if (k > 0) {
 					inventoryItem.setDamage(groundItem.getDamage());
-					inventoryItem.increment(k);
-					groundItem.decrement(k);
+					inventoryItem.increase(k);
+					groundItem.decrease(k);
 
 					if (groundItem.isEmpty()) {
 						resetIdleTimer();
@@ -1452,12 +1452,12 @@ public class EntityAICrafter extends Goal {
 
 		if (emptySlot != -1) {
 			resetIdleTimer();
-			villagerInventory.setInvStack(emptySlot, groundItem);
+			villagerInventory.setStack(emptySlot, groundItem);
 			villagerInventory.markDirty();
 			return ItemStack.EMPTY;
 		}
 
-		if (groundItem.getCount() != stack.getCount()) {
+		if (groundItem.getSize() != stack.getSize()) {
 			resetIdleTimer();
 			villagerInventory.markDirty();
 		}
@@ -1491,7 +1491,7 @@ public class EntityAICrafter extends Goal {
 		if (itemEdited.isEmpty()) {
 			itemEntity.remove();
 		} else {
-			itemEntityStack.setCount(itemEdited.getCount());
+			itemEntityStack.setSize(itemEdited.getSize());
 		}
 	}
 
@@ -1505,8 +1505,8 @@ public class EntityAICrafter extends Goal {
 	 *            The recipe that is being checked if the item type is in.
 	 * @return Returns true if the item type is in the recipe.
 	 */
-	private boolean craftingItemForPickup(Item item, RecipeType irecipe) {
-		DefaultedList<Ingredient> list = irecipe.method_14252();
+	private boolean craftingItemForPickup(Item item, CraftingRecipe irecipe) {
+		DefaultedList<Ingredient> list = irecipe.getIngredients();
 		for (Ingredient ig : list) {
 			for (ItemStack is : ((IngredientAccessor) ig).getStacks()) {
 				if (is.getItem() == item) {
@@ -1539,8 +1539,8 @@ public class EntityAICrafter extends Goal {
 	 * 
 	 * @return List of all IRecpie that can be crafted.
 	 */
-	private static List<RecipeType> recipeList() {
-		return Lists.newArrayList(RecipeDispatcher.REGISTRY);
+	private static List<CraftingRecipe> recipeList() {
+		return Lists.newArrayList(CraftingManager.REGISTRY);
 	}
 
 	/**
@@ -1550,8 +1550,8 @@ public class EntityAICrafter extends Goal {
 	 *            The string used to get the specific recipe.
 	 * @return The specific IRecpie being request.
 	 */
-	private static RecipeType getRecipe(String recipe) {
-		return RecipeDispatcher.get(new Identifier(recipe));
+	private static CraftingRecipe getRecipe(String recipe) {
+		return CraftingManager.getRecipe(new Identifier(recipe));
 	}
 
 
@@ -1559,9 +1559,9 @@ public class EntityAICrafter extends Goal {
 	 * Drops the inventory of the killed villager except for blacklisted items that can have the chance to be used as id-converters.
 	 */
 	public void dropInventory(){
-		SimpleInventory villagerInventory = villager.method_11220();
-		for (int j = 0; j < villagerInventory.getInvSize(); ++j) {
-			ItemStack is = villagerInventory.getInvStack(j);
+		SimpleInventory villagerInventory = villager.m_1510844();
+		for (int j = 0; j < villagerInventory.getSize(); ++j) {
+			ItemStack is = villagerInventory.getStack(j);
 			boolean planks = plankCheck(is);
 			boolean die = is.getItem() == Items.DYE;
 			if(!planks && !die) {
@@ -1575,28 +1575,28 @@ public class EntityAICrafter extends Goal {
 	 * villager.
 	 */
 	private void readoutDebugInfoOnMe() {
-		SimpleInventory villagerInventory = villager.method_11220();
+		SimpleInventory villagerInventory = villager.m_1510844();
 		StringBuilder sb = new StringBuilder();
 		try {
 			calcCooldown();
 			sb.append("Crafter info:\n");
 			sb.append("Craftings:\n");
 			for (int i = 0; i < taskList.length; ++i) {
-				RecipeType ir = taskList[i];
-				sb.append("tier ").append(i + 1).append(": ").append(ir.getOutput().getTranslationKey()).append("\n");
+				CraftingRecipe ir = taskList[i];
+				sb.append("tier ").append(i + 1).append(": ").append(ir.getResult().getTranslationKey()).append("\n");
 			}
-			sb.append("Current Task: ").append(currentTaskRecipe().getOutput().getTranslationKey()).append("\n");
+			sb.append("Current Task: ").append(currentTaskRecipe().getResult().getTranslationKey()).append("\n");
 			sb.append("Crafting Cooldown(ticks)/Batch Size: ").append(cooldown).append("/").append(batchSize).append("\n");
 			sb.append("Food consumption per craft: ").append(food[2]).append("\n");
-			sb.append("Food preference: ").append(foods[food[0]].getDisplayName(new ItemStack(foods[food[0]]))).append("\nFood dislike: ").append(foods[food[1]].getDisplayName(new ItemStack(foods[food[1]]))).append("\n");
+			sb.append("Food preference: ").append(foods[food[0]].getName(new ItemStack(foods[food[0]]))).append("\nFood dislike: ").append(foods[food[1]].getName(new ItemStack(foods[food[1]]))).append("\n");
 			sb.append("Crafting experience: ").append(((VillagerEntityAccessor) villager).getRiches()).append("\n");
 	
 			sb.append("Inventory: \n");
-			for (int j = 0; j < villagerInventory.getInvSize(); ++j) {
-				sb.append("Slot: ").append(j + 1).append(": ").append(villagerInventory.getInvStack(j).getTranslationKey()).append(" : ").append(villagerInventory.getInvStack(j).getCount()).append("\n");
+			for (int j = 0; j < villagerInventory.getSize(); ++j) {
+				sb.append("Slot: ").append(j + 1).append(": ").append(villagerInventory.getStack(j).getTranslationKey()).append(" : ").append(villagerInventory.getStack(j).getSize()).append("\n");
 			}
 		} catch(Exception ignored) {}
 		
-		Messenger.print_server_message(villager.getMinecraftServer(), sb.toString());
+		Messenger.print_server_message(villager.getServer(), sb.toString());
 	}
 }

@@ -15,19 +15,22 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import net.minecraft.scoreboard.ScoreboardPlayerScore;
+import net.minecraft.scoreboard.ScoreboardScore;
 
-@Mixin(ScoreboardPlayerScore.class)
+@Mixin(ScoreboardScore.class)
 public class ScoreboardPlayerScoreMixin implements ExtendedScore {
-    @Shadow public static @Final @Mutable Comparator<ScoreboardPlayerScore> field_5683 = (a, b) -> {
+    @Shadow public static @Final @Mutable Comparator<ScoreboardScore> COMPARATOR = (a, b) -> {
         int comparePoint = Integer.compare(((ExtendedScore) a).getScorePointsDelta(), ((ExtendedScore) b).getScorePointsDelta());
-        return comparePoint == 0 ? b.getPlayerName().compareToIgnoreCase(a.getPlayerName()) : comparePoint;
+        return comparePoint == 0 ? b.getOwner().compareToIgnoreCase(a.getOwner()) : comparePoint;
     };
     @Shadow private int score;
     private int scorePointsDelta;
     private final List<Pair<Long, Integer>> list = new LinkedList<>();
 
-    @Inject(method = "setScore", at = @At("HEAD"))
+    @Inject(
+            method = "set",
+            at = @At("HEAD")
+    )
     private void updateDelta(int points, CallbackInfo ci) {
         if (CarpetSettings.scoreboardDelta > 0) {
             list.add(Pair.of(System.currentTimeMillis(), points));

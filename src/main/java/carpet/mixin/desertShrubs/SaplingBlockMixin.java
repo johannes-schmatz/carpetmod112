@@ -2,7 +2,7 @@ package carpet.mixin.desertShrubs;
 
 import carpet.CarpetSettings;
 import carpet.helpers.BlockSaplingHelper;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SaplingBlock;
 import net.minecraft.util.math.BlockPos;
@@ -18,16 +18,16 @@ import java.util.Random;
 @Mixin(SaplingBlock.class)
 public class SaplingBlockMixin {
     @Inject(
-            method = "grow(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Ljava/util/Random;)V",
+            method = "tryGrow(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/BlockState;Ljava/util/Random;)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/SaplingBlock;generateTree(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Ljava/util/Random;)V"
+                    target = "Lnet/minecraft/block/SaplingBlock;grow(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/BlockState;Ljava/util/Random;)V"
             ),
             cancellable = true
     )
     private void desertShrubs(World world, BlockPos pos, BlockState state, Random rand, CallbackInfo ci) {
         if (CarpetSettings.desertShrubs && world.getBiome(pos) == Biomes.DESERT && !BlockSaplingHelper.hasWater(world, pos)) {
-            world.setBlockState(pos, Blocks.DEADBUSH.getDefaultState());
+            world.setBlockState(pos, Blocks.DEADBUSH.defaultState());
             ci.cancel();
         }
     }

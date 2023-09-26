@@ -6,17 +6,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.command.*;
+import net.minecraft.block.state.BlockState;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandResults;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -24,12 +28,12 @@ import carpet.helpers.CapturedDrops;
 import carpet.worldedit.WorldEditBridge;
 import org.jetbrains.annotations.Nullable;
 
-public class CommandFeel extends AbstractCommand
+public class CommandFeel extends Command
 {
 	/**
 	 * Gets the name of the command
 	 */
-	public String getCommandName()
+	public String getName()
 	{
 		return "feel";
 	}
@@ -37,7 +41,7 @@ public class CommandFeel extends AbstractCommand
 	/**
 	 * Return the required permission level for this command.
 	 */
-	public int getPermissionLevel()
+	public int getRequiredPermissionLevel()
 	{
 		return 2;
 	}
@@ -45,7 +49,7 @@ public class CommandFeel extends AbstractCommand
 	/**
 	 * Gets the usage string for the command.
 	 */
-	public String getUsageTranslationKey(CommandSource sender)
+	public String getUsage(CommandSource sender)
 	{
 		return "commands.fill.usage";
 	}
@@ -53,7 +57,7 @@ public class CommandFeel extends AbstractCommand
 	/**
 	 * Callback for when the command is executed
 	 */
-	public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
 	{
 		if (args.length < 7)
 		{
@@ -61,19 +65,19 @@ public class CommandFeel extends AbstractCommand
 		}
 		else
 		{
-			sender.setStat(CommandStats.Type.AFFECTED_BLOCKS, 0);
-			BlockPos blockpos = getBlockPos(sender, args, 0, false);
-			BlockPos blockpos1 = getBlockPos(sender, args, 3, false);
-			Block block = AbstractCommand.getBlock(sender, args[6]);
+			sender.addResult(CommandResults.Type.AFFECTED_BLOCKS, 0);
+			BlockPos blockpos = parseBlockPos(sender, args, 0, false);
+			BlockPos blockpos1 = parseBlockPos(sender, args, 3, false);
+			Block block = parseBlock(sender, args[6]);
 			BlockState iblockstate;
 
 			if (args.length >= 8)
 			{
-				iblockstate = method_13901(block, args[7]);
+				iblockstate = parseBlockState(block, args[7]);
 			}
 			else
 			{
-				iblockstate = block.getDefaultState();
+				iblockstate = block.defaultState();
 			}
 
 			BlockPos blockpos2 = new BlockPos(Math.min(blockpos.getX(), blockpos1.getX()), Math.min(blockpos.getY(), blockpos1.getY()), Math.min(blockpos.getZ(), blockpos1.getZ()));
@@ -82,14 +86,14 @@ public class CommandFeel extends AbstractCommand
 
 			if (blockpos2.getY() >= 0 && blockpos3.getY() < 256)
 			{
-				World world = sender.getWorld();
+				World world = sender.getSourceWorld();
 
 				NbtCompound nbttagcompound = new NbtCompound();
 				boolean flag = false;
 
 				if (args.length >= 10 && block.hasBlockEntity())
 				{
-					String s = method_10706(args, 9);
+					String s = parseString(args, 9);
 
 					try
 					{
@@ -111,9 +115,9 @@ public class CommandFeel extends AbstractCommand
 				Block toReplace = null;
 				Predicate<BlockState> toReplacePredicate = state -> true;
 				if ((mode == FillType.REPLACE || mode == FillType.NOUPDATE) && args.length > 9) {
-					toReplace = AbstractCommand.getBlock(sender, args[9]);
+					toReplace = parseBlock(sender, args[9]);
 					if (args.length > 10 && !args[10].equals("-1") && !args[10].equals("*")) {
-						toReplacePredicate = AbstractCommand.method_13904(toReplace, args[10]);
+						toReplacePredicate = parseBlockStatePredicate(toReplace, args[10]);
 					}
 				}
 
@@ -137,9 +141,9 @@ public class CommandFeel extends AbstractCommand
 								{
 									if (mode == FillType.DESTROY)
 									{
-										WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos4, Blocks.AIR.getDefaultState(), worldEditTag);
+										WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos4, Blocks.AIR.defaultState(), worldEditTag);
 										CapturedDrops.setCapturingDrops(true);
-										world.removeBlock(blockpos4, true);
+										world.breakBlock(blockpos4, true);
 										CapturedDrops.setCapturingDrops(false);
 										for (ItemEntity drop : CapturedDrops.getCapturedDrops())
 											WorldEditBridge.recordEntityCreation(worldEditPlayer, world, drop);
@@ -165,8 +169,8 @@ public class CommandFeel extends AbstractCommand
 								{
 									if (mode == FillType.HOLLOW)
 									{
-										WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos4, Blocks.AIR.getDefaultState(), worldEditTag);
-										world.setBlockState(blockpos4, Blocks.AIR.getDefaultState(), 2);
+										WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos4, Blocks.AIR.defaultState(), worldEditTag);
+										world.setBlockState(blockpos4, Blocks.AIR.defaultState(), 2);
 										list.add(blockpos4);
 									}
 
@@ -196,7 +200,7 @@ public class CommandFeel extends AbstractCommand
 										nbttagcompound.putInt("x", blockpos4.getX());
 										nbttagcompound.putInt("y", blockpos4.getY());
 										nbttagcompound.putInt("z", blockpos4.getZ());
-										tileentity.fromNbt(nbttagcompound);
+										tileentity.readNbt(nbttagcompound);
 									}
 								}
 							}
@@ -211,7 +215,7 @@ public class CommandFeel extends AbstractCommand
 					for (BlockPos blockpos5 : list)
 					{
 						Block block2 = world.getBlockState(blockpos5).getBlock();
-						world.method_8531(blockpos5, block2, false);
+						world.onBlockChanged(blockpos5, block2, false);
 					}
 				} //carpet mod back extra indentation
 
@@ -221,8 +225,8 @@ public class CommandFeel extends AbstractCommand
 				}
 				else
 				{
-					sender.setStat(CommandStats.Type.AFFECTED_BLOCKS, i);
-					run(sender, this, "commands.fill.success", new Object[] {i});
+					sender.addResult(CommandResults.Type.AFFECTED_BLOCKS, i);
+					sendSuccess(sender, this, "commands.fill.success", new Object[] {i});
 				}
 			}
 			else
@@ -235,28 +239,28 @@ public class CommandFeel extends AbstractCommand
 	/**
 	 * Get a list of options for when the user presses the TAB key
 	 */
-	public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
+	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
 	{
 		if (args.length > 0 && args.length <= 3)
 		{
-			return method_10707(args, 0, targetPos);
+			return suggestCoordinate(args, 0, targetPos);
 		}
 		else if (args.length > 3 && args.length <= 6)
 		{
-			return method_10707(args, 3, targetPos);
+			return suggestCoordinate(args, 3, targetPos);
 		}
 		else if (args.length == 7)
 		{
-			return method_10708(args, Block.REGISTRY.getKeySet());
+			return suggestMatching(args, Block.REGISTRY.keySet());
 		}
 		else if (args.length == 9)
 		{
-			return method_2894(args, "replace", "destroy", "keep", "hollow", "outline", "noupdate", "replace_noupdate");
+			return suggestMatching(args, "replace", "destroy", "keep", "hollow", "outline", "noupdate", "replace_noupdate");
 		}
 		else
 		{
-			return args.length == 10 && ("replace".equalsIgnoreCase(args[8]) || "noupdate".equalsIgnoreCase(args[8])) ? method_10708(args,
-					Block.REGISTRY.getKeySet()) : Collections.emptyList();
+			return args.length == 10 && ("replace".equalsIgnoreCase(args[8]) || "noupdate".equalsIgnoreCase(args[8])) ? suggestMatching(args,
+					Block.REGISTRY.keySet()) : Collections.emptyList();
 		}
 	}
 

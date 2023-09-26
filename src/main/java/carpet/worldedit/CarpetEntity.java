@@ -27,10 +27,10 @@ class CarpetEntity implements Entity {
     public BaseEntity getState() {
         net.minecraft.entity.Entity entity = entityRef.get();
         if (entity != null) {
-            String id = net.minecraft.entity.EntityType.getEntityName(entity);
+            String id = net.minecraft.entity.Entities.getName(entity);
             if (id != null) {
                 NbtCompound tag = new NbtCompound();
-                entity.toNbt(tag);
+                entity.writeEntityNbt(tag);
                 return new BaseEntity(id, NBTConverter.fromNative(tag));
             } else {
                 return null;

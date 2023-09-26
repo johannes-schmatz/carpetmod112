@@ -30,12 +30,12 @@ public class ExplosionMixin implements LogableExplosion {
 	}
 
 	@Inject(
-			method = "affectWorld",
+			method = "damageBlocks",
 			at = @At("TAIL")
 	)
 	public void logExplosionDone(boolean showSmallParticles, CallbackInfo ci) {
 		if (LoggerRegistry.__explosions) {
-			this.logHelper.onExplosionDone(this.world.getLastUpdateTime());
+			this.logHelper.onExplosionDone(this.world.getTime());
 		}
 	}
 

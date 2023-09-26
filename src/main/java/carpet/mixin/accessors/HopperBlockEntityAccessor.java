@@ -7,5 +7,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(HopperBlockEntity.class)
 public interface HopperBlockEntityAccessor {
-    @Invoker static boolean invokeCanMergeItems(ItemStack a, ItemStack b) { throw new AbstractMethodError(); }
+    @Invoker("canMergeItems") static boolean invokeCanMergeItems(ItemStack a, ItemStack b) { throw new AbstractMethodError(); }
 }

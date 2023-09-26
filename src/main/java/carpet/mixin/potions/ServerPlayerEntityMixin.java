@@ -2,9 +2,9 @@ package carpet.mixin.potions;
 
 import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.entity.living.effect.StatusEffectInstance;
+import net.minecraft.entity.living.player.PlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,21 +19,21 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     }
 
     @Redirect(
-            method = "method_2649",
+            method = "onStatusEffectRemoved",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;method_2649(Lnet/minecraft/entity/effect/StatusEffectInstance;)V"
+                    target = "Lnet/minecraft/entity/living/player/PlayerEntity;onStatusEffectRemoved(Lnet/minecraft/entity/living/effect/StatusEffectInstance;)V"
             )
     )
     private void finishPotionEffectHead(PlayerEntity entityPlayer, StatusEffectInstance effect) {
-        if (!CarpetSettings.effectsFix) super.method_2649(effect);
+        if (!CarpetSettings.effectsFix) super.onStatusEffectRemoved(effect);
     }
 
     @Inject(
-            method = "method_2649",
+            method = "onStatusEffectRemoved",
             at = @At("RETURN")
     )
     private void finishedPotionEffectReturn(StatusEffectInstance effect, CallbackInfo ci) {
-        if (CarpetSettings.effectsFix) super.method_2649(effect);
+        if (CarpetSettings.effectsFix) super.onStatusEffectRemoved(effect);
     }
 }

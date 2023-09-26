@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(ShulkerBoxBlock.class)
 public class ShulkerBoxBlockMixin {
     @Redirect(
-            method = "onBreaking",
+            method = "onRemoved",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/item/ItemStack;setNbt(Lnet/minecraft/nbt/NbtCompound;)V"

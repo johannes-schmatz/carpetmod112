@@ -2,11 +2,11 @@ package carpet.commands;
 
 import carpet.helpers.LagSpikeHelper;
 import com.google.common.collect.Collections2;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.IncorrectUsageException;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.dimension.DimensionType;
@@ -21,33 +21,33 @@ public class CommandLagSpike extends CommandCarpetBase {
     private static final long MAX_LAG_TIME = 60000;
 
     @Override
-    public String getCommandName() {
+    public String getName() {
         return "lagspike";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender) {
+    public String getUsage(CommandSource sender) {
         return "/lagspike <seconds> [tick_phase] [sub_phase] [dimension]";
     }
 
     @Override
-    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
+    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
         if (!command_enabled("commandLagspike", sender)) {
             return;
         }
 
         if (args.length < 1) {
-            throw new IncorrectUsageException(getUsageTranslationKey(sender));
+            throw new IncorrectUsageException(getUsage(sender));
         }
 
         // don't allow a lag spike which will trigger the watchdog
-        long maxMillis = (long) ((double)((MinecraftDedicatedServer) server).getMaxTickTime() * 0.9);
+        long maxMillis = (long) ((double)((DedicatedServer) server).getMaxTickTime() * 0.9);
         if (maxMillis <= 0) {
             maxMillis = MAX_LAG_TIME;
         } else if (maxMillis > MAX_LAG_TIME) {
             maxMillis = MAX_LAG_TIME;
         }
-        int seconds = parseClampedInt(args[0], 1, MathHelper.ceil((double)maxMillis / 1000));
+        int seconds = parseInt(args[0], 1, MathHelper.ceil((double)maxMillis / 1000));
         long millis = (long)seconds * 1000;
         if (millis > maxMillis) {
             millis = maxMillis;
@@ -59,7 +59,7 @@ public class CommandLagSpike extends CommandCarpetBase {
         DimensionType dimension;
         if (phase.isDimensionApplicable()) {
             try {
-                dimension = args.length > 4 ? DimensionType.fromName(args[3]) : DimensionType.OVERWORLD;
+                dimension = args.length > 4 ? DimensionType.byKey(args[3]) : DimensionType.OVERWORLD;
             } catch (IllegalArgumentException e) {
                 throw new CommandException("Invalid dimension: " + args[3]);
             }
@@ -68,7 +68,7 @@ public class CommandLagSpike extends CommandCarpetBase {
         }
 
         LagSpikeHelper.addLagSpike(dimension, phase, subPhase, millis);
-        run(sender, this,
+        sendSuccess(sender, this,
                 "Lagging the server for " + seconds + " seconds in phase " + phase.name().toLowerCase(Locale.ROOT) + "/" + subPhase.name().toLowerCase(Locale.ROOT));
     }
 
@@ -92,9 +92,9 @@ public class CommandLagSpike extends CommandCarpetBase {
     }
 
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
         if (args.length == 2) {
-            return method_10708(args, getEnumCompletions(LagSpikeHelper.TickPhase.class));
+            return suggestMatching(args, getEnumCompletions(LagSpikeHelper.TickPhase.class));
         } else if (args.length >= 3) {
             LagSpikeHelper.TickPhase phase;
             try {
@@ -104,12 +104,12 @@ public class CommandLagSpike extends CommandCarpetBase {
             }
 
             if (args.length == 3) {
-                return method_10708(args, getEnumCompletions(phase.getSubPhaseClass()));
+                return suggestMatching(args, getEnumCompletions(phase.getSubPhaseClass()));
             }
 
             if (args.length == 4 && phase.isDimensionApplicable()) {
-                return method_10708(args, Collections2.transform(Arrays.asList(DimensionType.values()), dimensionType -> dimensionType != null ?
-                        dimensionType.getName() : null));
+                return suggestMatching(args, Collections2.transform(Arrays.asList(DimensionType.values()), dimensionType -> dimensionType != null ?
+                        dimensionType.getKey() : null));
             }
         }
 

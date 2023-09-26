@@ -30,7 +30,7 @@ public class ServerWorldMixin {
     }*/
 
     @Inject(
-            method = "method_12781",
+            method = "canAddEntity",
             at = @At(
                     value = "CONSTANT",
                     args = "classValue=net/minecraft/entity/player/PlayerEntity"

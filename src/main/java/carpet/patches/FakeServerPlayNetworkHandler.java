@@ -1,14 +1,14 @@
 package carpet.patches;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.network.handler.ServerPlayNetworkHandler;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.Packet;
+import net.minecraft.network.Connection;
+import net.minecraft.network.packet.Packet;
 
 public class FakeServerPlayNetworkHandler extends ServerPlayNetworkHandler {
-    public FakeServerPlayNetworkHandler(MinecraftServer server, ClientConnection nm, ServerPlayerEntity playerIn) {
+    public FakeServerPlayNetworkHandler(MinecraftServer server, Connection nm, ServerPlayerEntity playerIn) {
         super(server, nm, playerIn);
     }
 
@@ -17,8 +17,8 @@ public class FakeServerPlayNetworkHandler extends ServerPlayNetworkHandler {
     }
 
     @Override
-    public void method_14977(Text textComponent) {
-        player.kill();
+    public void sendDisconnect(Text textComponent) {
+        player.m_3468489();
     }
 }
 

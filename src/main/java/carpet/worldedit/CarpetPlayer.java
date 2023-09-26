@@ -20,10 +20,10 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.LiteralText;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 @SuppressWarnings("deprecation")
 class CarpetPlayer extends AbstractPlayerActor {
@@ -43,12 +43,12 @@ class CarpetPlayer extends AbstractPlayerActor {
     @Override
     public int getItemInHand() {
         ItemStack is = this.player.getMainHandStack();
-        return is == null ? 0 : Item.getRawId(is.getItem());
+        return is == null ? 0 : Item.getId(is.getItem());
     }
 
     @Override
     public String getName() {
-        return this.player.getTranslationKey();
+        return this.player.getName();
     }
 
     @Override
@@ -88,7 +88,7 @@ class CarpetPlayer extends AbstractPlayerActor {
 
     @Override
     public void giveItem(int type, int amt) {
-        this.player.inventory.insertStack(new ItemStack(Item.byRawId(type), amt, 0));
+        this.player.inventory.m_4381741(new ItemStack(Item.byId(type), amt, 0));
     }
 
     @Override
@@ -133,7 +133,7 @@ class CarpetPlayer extends AbstractPlayerActor {
 
     @Override
     public void setPosition(Vector pos, float pitch, float yaw) {
-        this.player.networkHandler.requestTeleport(pos.getX(), pos.getY(), pos.getZ(), pitch, yaw);
+        this.player.networkHandler.teleport(pos.getX(), pos.getY(), pos.getZ(), pitch, yaw);
     }
 
     @Override
@@ -152,7 +152,7 @@ class CarpetPlayer extends AbstractPlayerActor {
 
         if (!server.isDedicated() && player.isCreative()) return true;
 
-        int opLevel = server.getPlayerManager().getOpList().method_12832(player.getGameProfile());
+        int opLevel = server.getPlayerManager().getOps().getOpPermissionLevel(player.getGameProfile());
         int requiredOpLevel = CarpetWorldEdit.inst.getConfig().getPermissionLevel(perm);
         return opLevel >= requiredOpLevel;
     }
@@ -165,7 +165,7 @@ class CarpetPlayer extends AbstractPlayerActor {
 
     @Override
     public SessionKey getSessionKey() {
-        return new SessionKeyImpl(player.getUuid(), player.getTranslationKey());
+        return new SessionKeyImpl(player.getUuid(), player.getName());
     }
 
     private static class SessionKeyImpl implements SessionKey {

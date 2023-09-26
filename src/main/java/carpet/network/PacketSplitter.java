@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 
 public class PacketSplitter {
     public static final int MAX_TOTAL_PER_PACKET = 1048576; // 32767 for c2s
@@ -37,7 +37,7 @@ public class PacketSplitter {
 
     public static PacketByteBuf receive(ServerPlayerEntity player, CustomPayloadC2SPacket message, int maxLength) {
         Pair<ServerPlayerEntity, String> key = Pair.of(player, message.getChannel());
-        return readingSessions.computeIfAbsent(key, ReadingSession::new).receive(message.getPayload(), maxLength);
+        return readingSessions.computeIfAbsent(key, ReadingSession::new).receive(message.getData(), maxLength);
     }
 
     private static class ReadingSession {

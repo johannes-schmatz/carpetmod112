@@ -7,8 +7,8 @@ import carpet.utils.Messenger;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 
 public class CarpetClientRuleChanger {
 
@@ -62,7 +62,7 @@ public class CarpetClientRuleChanger {
     private static void ruleChangeLogic(ServerPlayerEntity sender, String rule, String value) {
         CarpetSettings.set(rule, value);
         String s = CarpetSettings.getDescription(rule) + " is set to: " + CarpetSettings.get(rule);
-        Messenger.print_server_message(sender.getWorld().getServer(), s);
+        Messenger.print_server_message(sender.getSourceWorld().getServer(), s);
     }
 
     public static void updateCarpetClientsRule(String rule, String value) {

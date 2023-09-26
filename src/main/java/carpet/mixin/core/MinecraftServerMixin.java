@@ -7,12 +7,13 @@ import carpet.helpers.ScoreboardDelta;
 import carpet.helpers.TickSpeed;
 import carpet.utils.CarpetProfiler;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ServerMetadata;
+import net.minecraft.server.ServerStatus;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
-import net.minecraft.world.level.LevelGeneratorType;
+import net.minecraft.world.gen.WorldGeneratorType;
+
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,46 +33,46 @@ import java.util.Date;
 public abstract class MinecraftServerMixin {
     @Shadow @Final private static Logger LOGGER;
     @Shadow private int ticks;
-    @Shadow @Final private ServerMetadata serverMetadata;
+    @Shadow @Final private ServerStatus status;
     @Shadow private boolean running;
-    @Shadow private long timeReference;
+    @Shadow private long nextTickTime;
     @Shadow private boolean loading;
     @Shadow private long lastWarnTime;
     @Shadow public ServerWorld[] worlds;
     @Shadow private boolean stopped;
 
-    @Shadow public abstract void stopServer();
+    @Shadow public abstract void stop();
     @Shadow public abstract void exit();
-    @Shadow public abstract void setCrashReport(CrashReport report);
+    @Shadow public abstract void onServerCrashed(CrashReport report);
     @Shadow public abstract CrashReport populateCrashReport(CrashReport report);
-    @Shadow public abstract File getRunDirectory();
-    @Shadow public abstract void setupWorld();
-    @Shadow public abstract void setServerMeta(ServerMetadata response);
-    @Shadow public abstract boolean setupServer() throws IOException;
+    @Shadow public abstract File getRunDir();
+    @Shadow public abstract void tick();
+    @Shadow public abstract void setStatus(ServerStatus response);
+    @Shadow public abstract boolean init() throws IOException;
     @Shadow public static long getTimeMillis() { throw new AbstractMethodError(); }
 
     @Shadow private String motd;
 
     @Inject(
-            method = "setupWorld(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/world/level/LevelGeneratorType;Ljava/lang/String;)V",
+            method = "loadWorld",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/MinecraftServer;prepareWorlds()V"
             )
     )
-    private void onLoadAllWorlds(String saveName, String worldNameIn, long seed, LevelGeneratorType type, String generatorOptions, CallbackInfo ci) {
+    private void onLoadAllWorlds(String name, String serverName, long seed, WorldGeneratorType generatorType, String generatorOptions, CallbackInfo ci) {
         CarpetServer.getInstance().onLoadAllWorlds();
     }
 
     @Inject(
-            method = "setupWorld(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/world/level/LevelGeneratorType;Ljava/lang/String;)V",
+            method = "loadWorld",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/MinecraftServer;prepareWorlds()V",
                     shift = At.Shift.AFTER
             )
     )
-    private void loadCarpetBots(String saveName, String worldNameIn, long seed, LevelGeneratorType type, String generatorOptions, CallbackInfo ci) {
+    private void loadCarpetBots(String saveName, String worldNameIn, long seed, WorldGeneratorType type, String generatorOptions, CallbackInfo ci) {
         CarpetServer.getInstance().loadBots();
     }
 
@@ -135,35 +136,36 @@ public abstract class MinecraftServerMixin {
     @Overwrite
     public void run() {
         try {
-            if (this.setupServer()) {
-                this.timeReference = getTimeMillis();
+            if (this.init()) {
+                this.nextTickTime = getTimeMillis();
                 long msGoal = 0L;
+                // carpet
                 String motd = "_".equals(CarpetSettings.customMOTD) ? this.motd : CarpetSettings.customMOTD;
-                this.serverMetadata.setDescription(new LiteralText(motd));
-                this.serverMetadata.setVersion(new ServerMetadata.Version("1.12.2", 340));
-                this.setServerMeta(this.serverMetadata);
+                // carpet end
+                this.status.setDescription(new LiteralText(motd)); // was this.motd
+                this.status.setVersion(new ServerStatus.Version("1.12.2", 340));
+                this.setStatus(this.status);
 
-                while (this.running) {
+                while(this.running) {
                     /* carpet mod commandTick */
                     //todo check if this check is necessary
                     if (TickSpeed.time_warp_start_time != 0) {
                         if (TickSpeed.continueWarp()) {
-                            this.setupWorld();
-                            this.timeReference = getTimeMillis();
+                            this.tick();
+                            this.nextTickTime = getTimeMillis();
                             this.loading = true;
                         }
                         continue;
                     }
                     /* end */
                     long now = getTimeMillis();
-                    long timeDelta = now - this.timeReference;
-
-                    if (timeDelta > 2000L && this.timeReference - this.lastWarnTime >= 15000L) {
+                    long timeDelta = now - this.nextTickTime;
+                    if (timeDelta > 2000L && this.nextTickTime - this.lastWarnTime >= 15000L) {
                         //LOGGER.warn( /* carpet */
-                        //        "Can't keep up! Did the system time change, or is the server overloaded? Running {}ms behind, skipping {} tick(s)", n, n / 50L
+                        //        "Can't keep up! Did the system time change, or is the server overloaded? Running {}ms behind, skipping {} tick(s)", timeDelta, timeDelta / 50L
                         //);
                         timeDelta = 2000L;
-                        this.lastWarnTime = this.timeReference;
+                        this.lastWarnTime = this.nextTickTime;
                     }
 
                     if (timeDelta < 0L) {
@@ -172,28 +174,27 @@ public abstract class MinecraftServerMixin {
                     }
 
                     msGoal += timeDelta;
-                    this.timeReference = now;
+                    this.nextTickTime = now;
                     boolean falling_behind = false; /* carpet mod */
-
-                    if (this.worlds[0].isReady()) {
-                        this.setupWorld();
+                    if (this.worlds[0].canSkipNight()) {
+                        this.tick();
                         msGoal = 0L;
                     } else {
-                        //while (msGoal > 50L) { /* carpet */
+                        //while(msGoal > 50L) { /* carpet */
                         //    msGoal -= 50L;
-                        //    this.setupWorld();
+                        //    this.tick();
                         //}
-                        boolean keeping_up = false;
-                        while (msGoal > TickSpeed.mspt) /* carpet mod 50L */ {
-                            msGoal -= TickSpeed.mspt; /* carpet mod 50L */
-                            if (CarpetSettings.watchdogFix && keeping_up) {
-                                this.timeReference = getTimeMillis();
+                        boolean keeping_up = false; /* carpet */
+                        while (msGoal > TickSpeed.mspt) /* carpet mod 50L -> TickSpeed.mspt */ {
+                            msGoal -= TickSpeed.mspt; /* carpet mod 50L -> TickSpeed.mspt */
+                            if (CarpetSettings.watchdogFix && keeping_up) { /* carpet */
+                                this.nextTickTime = getTimeMillis();
                                 this.loading = true;
                                 falling_behind = true;
                             }
-                            this.setupWorld();
-                            keeping_up = true;
-                            if (CarpetSettings.disableVanillaTickWarp) {
+                            this.tick();
+                            keeping_up = true; /* carpet */
+                            if (CarpetSettings.disableVanillaTickWarp) { /* carpet */
                                 msGoal = getTimeMillis() - now;
                                 break;
                             }
@@ -202,42 +203,45 @@ public abstract class MinecraftServerMixin {
 
                     //Thread.sleep(Math.max(1L, 50L - msGoal)); /* carpet */
                     if (falling_behind) {
-                        Thread.sleep(1L); /* carpet mod 50L */
+                        Thread.sleep(1L); /* carpet mod 50L -> 1L */
                     } else {
-                        Thread.sleep(Math.max(1L, TickSpeed.mspt - msGoal)); /* carpet mod 50L */
+                        Thread.sleep(Math.max(1L, TickSpeed.mspt - msGoal)); /* carpet mod 50L -> TickSpeed.mspt */
                     }
                     this.loading = true;
                 }
             } else {
-                this.setCrashReport(null);
+                this.onServerCrashed(null);
             }
-        } catch (Throwable throwable1) {
-            LOGGER.error("Encountered an unexpected exception", throwable1);
-            CrashReport crashreport;
-            if (throwable1 instanceof CrashException) {
-                crashreport = this.populateCrashReport(((CrashException) throwable1).getReport());
+        } catch (Throwable var46) {
+            LOGGER.error("Encountered an unexpected exception", var46);
+            CrashReport c_2975244 = null;
+            if (var46 instanceof CrashException) {
+                c_2975244 = this.populateCrashReport(((CrashException)var46).getReport());
             } else {
-                crashreport = this.populateCrashReport(new CrashReport("Exception in server tick loop", throwable1));
+                c_2975244 = this.populateCrashReport(new CrashReport("Exception in server tick loop", var46));
             }
 
-            File file1 = new File(new File(this.getRunDirectory(), "crash-reports"), "crash-" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date()) + "-server.txt");
-
-            if (crashreport.writeToFile(file1)) {
-                LOGGER.error("This crash report has been saved to: {}", file1.getAbsolutePath());
+            File file = new File(
+                    new File(this.getRunDir(), "crash-reports"), "crash-" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date()) + "-server.txt"
+            );
+            if (c_2975244.writeToFile(file)) {
+                LOGGER.error("This crash report has been saved to: {}", file.getAbsolutePath());
             } else {
                 LOGGER.error("We were unable to save this crash report to disk.");
             }
 
-            this.setCrashReport(crashreport);
+            this.onServerCrashed(c_2975244);
         } finally {
             try {
                 this.stopped = true;
-                this.stopServer();
-            } catch (Throwable throwable) {
-                LOGGER.error("Exception stopping the server", throwable);
+                this.stop();
+            } catch (Throwable var44) {
+                LOGGER.error("Exception stopping the server", var44);
             } finally {
                 this.exit();
             }
+
         }
+
     }
 }

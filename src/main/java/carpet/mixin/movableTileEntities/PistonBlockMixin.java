@@ -4,12 +4,12 @@ import carpet.CarpetSettings;
 import carpet.helpers.PistonHelper;
 import carpet.utils.extensions.ExtendedPistonBlockEntityMBE;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.MovingBlock;
+import net.minecraft.block.piston.PistonMoveStructureResolver;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.CraftingTableBlock;
-import net.minecraft.block.PistonBlock;
-import net.minecraft.block.PistonExtensionBlock;
+import net.minecraft.block.PistonBaseBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.piston.PistonHandler;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -23,10 +23,10 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mixin(PistonBlock.class)
+@Mixin(PistonBaseBlock.class)
 public class PistonBlockMixin {
     @Redirect(
-            method = "method_9001",
+            method = "canMoveBlock",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/block/Block;hasBlockEntity()Z"
@@ -49,7 +49,8 @@ public class PistonBlockMixin {
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void createTileEntityList(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir, PistonHandler helper, List<BlockPos> positions) {
+    private void createTileEntityList(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir,
+            PistonMoveStructureResolver helper, List<BlockPos> positions) {
         if(CarpetSettings.movableTileEntities || CarpetSettings.autocrafter){
             List<BlockEntity> tileEntities = new ArrayList<>();
             for (BlockPos blockpos : positions) {
@@ -71,7 +72,7 @@ public class PistonBlockMixin {
             method = "move",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/PistonExtensionBlock;createPistonEntity(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;ZZ)Lnet/minecraft/block/entity/BlockEntity;",
+                    target = "Lnet/minecraft/block/MovingBlock;createMovingBlockEntity(Lnet/minecraft/block/state/BlockState;Lnet/minecraft/util/math/Direction;ZZ)Lnet/minecraft/block/entity/BlockEntity;",
                     ordinal = 0
             )
     )
@@ -96,8 +97,8 @@ public class PistonBlockMixin {
             locals = LocalCapture.CAPTURE_FAILHARD
     )
     private void handleMovableTileEntity(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir,
-             PistonHandler helper, List<BlockPos> positions, List<BlockState> states, List<BlockPos> list2, int k, BlockState[] aiblockstate, Direction enumfacing, int index, BlockPos currentPos, BlockState currentState) {
-        BlockEntity tilePiston = PistonExtensionBlock.createPistonEntity(states.get(index), direction, extending, false);
+            PistonMoveStructureResolver helper, List<BlockPos> positions, List<BlockState> states, List<BlockPos> list2, int k, BlockState[] aiblockstate, Direction enumfacing, int index, BlockPos currentPos, BlockState currentState) {
+        BlockEntity tilePiston = MovingBlock.createMovingBlockEntity(states.get(index), direction, extending, false);
         if (CarpetSettings.autocrafter && currentState instanceof CraftingTableBlock || CarpetSettings.movableTileEntities && PistonHelper.isPushableTileEntityBlock(currentState.getBlock())) {
             ((ExtendedPistonBlockEntityMBE) tilePiston).setCarriedTileEntity(movedTileEntities.get().get(index));
         }

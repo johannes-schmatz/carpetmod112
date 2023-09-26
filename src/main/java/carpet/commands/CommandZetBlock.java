@@ -5,12 +5,15 @@ import carpet.worldedit.WorldEditBridge;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.command.*;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandResults;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.IncorrectUsageException;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtException;
@@ -27,7 +30,7 @@ public class CommandZetBlock extends SetBlockCommand {
 	/**
 	 * Gets the name of the command
 	 */
-	public String getCommandName()
+	public String getName()
 	{
 		return "zetblock";
 	}
@@ -36,7 +39,7 @@ public class CommandZetBlock extends SetBlockCommand {
 	 * Return the required permission level for this command.
 	 * TODO: overwritten method has same content, why overwrite?
 	 */
-	public int getPermissionLevel()
+	public int getRequiredPermissionLevel()
 	{
 		return 2;
 	}
@@ -45,7 +48,7 @@ public class CommandZetBlock extends SetBlockCommand {
 	 * Gets the usage string for the command.
 	 * TODO: overwritten method has same content, why overwrite?
 	 */
-	public String getUsageTranslationKey(CommandSource sender)
+	public String getUsage(CommandSource sender)
 	{
 		return "commands.setblock.usage";
 	}
@@ -56,7 +59,7 @@ public class CommandZetBlock extends SetBlockCommand {
 	 * - there's a mixin for SetBlockCommand (which should not affect us then!)
 	 * - we don't care about loaded chunks
 	 */
-	public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
 	{
 		if (args.length < 4)
 		{
@@ -64,28 +67,28 @@ public class CommandZetBlock extends SetBlockCommand {
 		}
 		else
 		{
-			sender.setStat(CommandStats.Type.AFFECTED_BLOCKS, 0);
-			BlockPos blockpos = getBlockPos(sender, args, 0, false);
-			Block block = AbstractCommand.getBlock(sender, args[3]);
+			sender.addResult(CommandResults.Type.AFFECTED_BLOCKS, 0);
+			BlockPos blockpos = parseBlockPos(sender, args, 0, false);
+			Block block = parseBlock(sender, args[3]);
 			BlockState iblockstate;
 
 			if (args.length >= 5)
 			{
-				iblockstate = method_13901(block, args[4]);
+				iblockstate = parseBlockState(block, args[4]);
 			}
 			else
 			{
-				iblockstate = block.getDefaultState();
+				iblockstate = block.defaultState();
 			}
 
-			World world = sender.getWorld();
+			World world = sender.getSourceWorld();
 
 			NbtCompound nbttagcompound = new NbtCompound();
 			boolean flag = false;
 
 			if (args.length >= 7 && block.hasBlockEntity())
 			{
-				String s = method_10706(args, 6);
+				String s = parseString(args, 6);
 
 				try
 				{
@@ -107,9 +110,9 @@ public class CommandZetBlock extends SetBlockCommand {
 			{
 				if ("destroy".equals(args[5]))
 				{
-					WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos, Blocks.AIR.getDefaultState(), worldEditTag);
+					WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos, Blocks.AIR.defaultState(), worldEditTag);
 					CapturedDrops.setCapturingDrops(true);
-					world.removeBlock(blockpos, true);
+					world.breakBlock(blockpos, true);
 					CapturedDrops.setCapturingDrops(false);
 					for (ItemEntity drop : CapturedDrops.getCapturedDrops())
 						WorldEditBridge.recordEntityCreation(worldEditPlayer, world, drop);
@@ -117,7 +120,7 @@ public class CommandZetBlock extends SetBlockCommand {
 
 					if (block == Blocks.AIR)
 					{
-						run(sender, this, "commands.setblock.success");
+						sendSuccess(sender, this, "commands.setblock.success");
 						return;
 					}
 				}
@@ -158,15 +161,15 @@ public class CommandZetBlock extends SetBlockCommand {
 						nbttagcompound.putInt("x", blockpos.getX());
 						nbttagcompound.putInt("y", blockpos.getY());
 						nbttagcompound.putInt("z", blockpos.getZ());
-						tileentity.fromNbt(nbttagcompound);
+						tileentity.readNbt(nbttagcompound);
 					}
 				}
 
 				if (updates) {
-					world.method_8531(blockpos, iblockstate.getBlock(), false);
+					world.onBlockChanged(blockpos, iblockstate.getBlock(), false);
 				}
-				sender.setStat(CommandStats.Type.AFFECTED_BLOCKS, 1);
-				run(sender, this, "commands.setblock.success");
+				sender.addResult(CommandResults.Type.AFFECTED_BLOCKS, 1);
+				sendSuccess(sender, this, "commands.setblock.success");
 			}
 		}
 	}
@@ -175,19 +178,19 @@ public class CommandZetBlock extends SetBlockCommand {
 	 * Get a list of options for when the user presses the TAB key
 	 * TODO: overwritten method has same content, why overwrite?
 	 */
-	public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
+	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
 	{
 		if (args.length > 0 && args.length <= 3)
 		{
-			return method_10707(args, 0, targetPos);
+			return suggestCoordinate(args, 0, targetPos);
 		}
 		else if (args.length == 4)
 		{
-			return method_10708(args, Block.REGISTRY.getKeySet());
+			return suggestMatching(args, Block.REGISTRY.keySet());
 		}
 		else
 		{
-			return args.length == 6 ? method_2894(args, "replace", "destroy", "keep", "noupdate") : Collections.emptyList();
+			return args.length == 6 ? suggestMatching(args, "replace", "destroy", "keep", "noupdate") : Collections.emptyList();
 		}
 	}
 }

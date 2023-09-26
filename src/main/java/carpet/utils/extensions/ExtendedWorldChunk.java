@@ -1,6 +1,6 @@
 package carpet.utils.extensions;
 
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.util.math.BlockPos;
 
 public interface ExtendedWorldChunk {

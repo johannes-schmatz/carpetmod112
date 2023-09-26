@@ -6,8 +6,10 @@ import java.io.File;
 import java.util.Map;
 
 import carpetmod.Build;
-import net.minecraft.command.Command;
-import net.minecraft.command.CommandSource;
+
+import net.minecraft.entity.Entities;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.command.source.CommandSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,16 +31,15 @@ import com.sk89q.worldedit.history.change.EntityRemove;
 import com.sk89q.worldedit.internal.LocalWorldAdapter;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -88,7 +89,7 @@ class CarpetWorldEdit {
             if (((ServerPlayerEntity) sender).world.isClient) return;
             String[] split = new String[args.length + 1];
             System.arraycopy(args, 0, split, 1, args.length);
-            split[0] = command.getCommandName();
+            split[0] = command.getName();
             com.sk89q.worldedit.event.platform.CommandEvent weEvent =
                     new com.sk89q.worldedit.event.platform.CommandEvent(wrap((ServerPlayerEntity) sender), Joiner.on(" ").join(split));
             WorldEdit.getInstance().getEventBus().post(weEvent);
@@ -188,17 +189,17 @@ class CarpetWorldEdit {
         BlockVector position = new BlockVector(pos.getX(), pos.getY(), pos.getZ());
         
         BlockState oldBlock = world.getBlockState(pos);
-        int oldBlockId = Block.getIdByBlock(oldBlock.getBlock());
-        int oldMeta = oldBlock.getBlock().getMeta(oldBlock);
+        int oldBlockId = Block.getId(oldBlock.getBlock());
+        int oldMeta = oldBlock.getBlock().getDropItemMetadata(oldBlock);
         BlockEntity oldTileEntity = world.getBlockEntity(pos);
         BaseBlock previous;
         if (oldTileEntity == null)
             previous = new BaseBlock(oldBlockId, oldMeta);
         else
-            previous = new BaseBlock(oldBlockId, oldMeta, NBTConverter.fromNative(oldTileEntity.toNbt(new NbtCompound())));
+            previous = new BaseBlock(oldBlockId, oldMeta, NBTConverter.fromNative(oldTileEntity.writeNbt(new NbtCompound())));
         
-        int newBlockId = Block.getIdByBlock(newBlock.getBlock());
-        int newMeta = newBlock.getBlock().getMeta(newBlock);
+        int newBlockId = Block.getId(newBlock.getBlock());
+        int newMeta = newBlock.getBlock().getDropItemMetadata(newBlock);
         BaseBlock current;
         if (newTileEntity == null)
             current = new BaseBlock(newBlockId, newMeta);
@@ -217,8 +218,8 @@ class CarpetWorldEdit {
         }
         
         CarpetEntity carpetEntity = new CarpetEntity(created);
-        String entityId = EntityType.getId(created).toString();
-        CompoundTag tag = NBTConverter.fromNative(created.toNbt(new NbtCompound()));
+        String entityId = Entities.getKey(created).toString();
+        CompoundTag tag = NBTConverter.fromNative(created.writeEntityNbt(new NbtCompound()));
         BaseEntity baseEntity = new BaseEntity(entityId, tag);
         
         editSession.getChangeSet().add(new EntityCreate(carpetEntity.getLocation(), baseEntity, carpetEntity));
@@ -233,17 +234,17 @@ class CarpetWorldEdit {
         }
         
         CarpetEntity carpetEntity = new CarpetEntity(removed);
-        String entityId = EntityType.getId(removed).toString();
-        CompoundTag tag = NBTConverter.fromNative(removed.toNbt(new NbtCompound()));
+        String entityId = Entities.getKey(removed).toString();
+        CompoundTag tag = NBTConverter.fromNative(removed.writeEntityNbt(new NbtCompound()));
         BaseEntity baseEntity = new BaseEntity(entityId, tag);
         
         editSession.getChangeSet().add(new EntityRemove(carpetEntity.getLocation(), baseEntity));
     }
 
     public static ItemStack toCarpetItemStack(BaseItemStack item) {
-        ItemStack ret = new ItemStack(Item.byRawId(item.getType()), item.getAmount(), item.getData());
+        ItemStack ret = new ItemStack(Item.byId(item.getType()), item.getAmount(), item.getData());
         for (Map.Entry<Integer, Integer> entry : item.getEnchantments().entrySet()) {
-            ret.addEnchantment(Enchantment.byIndex((entry.getKey())), entry.getValue());
+            ret.addEnchantment(Enchantment.byId((entry.getKey())), entry.getValue());
         }
 
         return ret;

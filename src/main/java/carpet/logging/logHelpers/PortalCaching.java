@@ -16,7 +16,7 @@ public class PortalCaching {
         final int count = uncacheCount.size();
         List<Text> comp = new ArrayList<>();
         LoggerRegistry.getLogger("portalCaching").log( (option) -> {
-            comp.add(Messenger.s(null, String.format("%s Portals cached %d, Portal caches removed %d", world.dimension.getDimensionType(), cachedCount, count)));
+            comp.add(Messenger.s(null, String.format("%s Portals cached %d, Portal caches removed %d", world.dimension.getType(), cachedCount, count)));
             switch (option) {
                 case "brief":
                     return comp.toArray(new Text[0]);
@@ -34,7 +34,7 @@ public class PortalCaching {
         {
             Vec3d p = uncacheCount.get(i);
             Vec3d pos, tp, mot;
-            if(world.dimension.getDimensionType().getId() == -1){
+            if(world.dimension.getType().getId() == -1){
                 pos = new Vec3d(p.x * 8, p.y, p.z * 8);
                 tp = pos.add(4, 0, 4);
                 mot = pos.add(8, 0, 8);

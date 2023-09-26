@@ -26,14 +26,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.chunk.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.chunk.ServerChunkCache;
+import net.minecraft.world.chunk.ChunkSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.ChunkProvider;
-import net.minecraft.world.chunk.ChunkStorage;
-import net.minecraft.world.chunk.ServerChunkProvider;
+import net.minecraft.world.chunk.storage.AnvilChunkStorage;
+import net.minecraft.world.chunk.storage.ChunkStorage;
 
 public abstract class TickingArea
 {
@@ -43,7 +43,7 @@ public abstract class TickingArea
     
     public static boolean isTickingChunk(World world, int chunkX, int chunkZ)
     {
-        return ((WorldWithTickingAreas) world).getTickingChunks().contains(ChunkPos.getIdFromCoords(chunkX, chunkZ));
+        return ((WorldWithTickingAreas) world).getTickingChunks().contains(ChunkPos.toLong(chunkX, chunkZ));
     }
     
     public static List<TickingArea> getTickingAreas(World world)
@@ -56,7 +56,7 @@ public abstract class TickingArea
         ((WorldWithTickingAreas) world).getTickingAreas().add(area);
         for (ChunkPos pos : area.listIncludedChunks(world))
         {
-            ((WorldWithTickingAreas) world).getTickingChunks().add(ChunkPos.getIdFromCoords(pos.x, pos.z));
+            ((WorldWithTickingAreas) world).getTickingChunks().add(ChunkPos.toLong(pos.x, pos.z));
         }
     }
     
@@ -85,7 +85,7 @@ public abstract class TickingArea
                 {
                     if (((WorldWithTickingAreas) world).getTickingAreas().stream().noneMatch(a -> a.contains(world, chunk.x, chunk.z)))
                     {
-                        ((WorldWithTickingAreas) world).getTickingChunks().remove(ChunkPos.getIdFromCoords(chunk.x, chunk.z));
+                        ((WorldWithTickingAreas) world).getTickingChunks().remove(ChunkPos.toLong(chunk.x, chunk.z));
                     }
                 }
             }
@@ -112,13 +112,13 @@ public abstract class TickingArea
         {
             removeAllTickingAreas(world);
             
-            ChunkProvider chunkProvider = world.getChunkProvider();
-            if (!(chunkProvider instanceof ServerChunkProvider))
+            ChunkSource chunkProvider = world.getChunkSource();
+            if (!(chunkProvider instanceof ServerChunkCache))
             {
                 continue;
             }
             ChunkStorage chunkLoader = ((ServerChunkProviderAccessor) chunkProvider).getChunkLoader();
-            if (!(chunkLoader instanceof ThreadedAnvilChunkStorage))
+            if (!(chunkLoader instanceof AnvilChunkStorage))
             {
                 continue;
             }
@@ -168,11 +168,11 @@ public abstract class TickingArea
     {
         for (World world : server.worlds)
         {
-            ChunkProvider chunkProvider = world.getChunkProvider();
-            if (!(chunkProvider instanceof ServerChunkProvider))
+            ChunkSource chunkProvider = world.getChunkSource();
+            if (!(chunkProvider instanceof ServerChunkCache))
                 continue;
             ChunkStorage chunkLoader = ((ServerChunkProviderAccessor) chunkProvider).getChunkLoader();
-            if (!(chunkLoader instanceof ThreadedAnvilChunkStorage))
+            if (!(chunkLoader instanceof AnvilChunkStorage))
                 continue;
             
             File configFile = new File(((ThreadedAnvilChunkStorageAccessor) chunkLoader).getChunkSaveLocation(), "tickingareas.conf");
@@ -202,7 +202,7 @@ public abstract class TickingArea
             if (TickingArea.hasTickingArea(world))
             {
                 if (log)
-                    LOGGER.info("[CM]: Preparing start region for level {}", world.dimension.getDimensionType().getName());
+                    LOGGER.info("[CM]: Preparing start region for level {}", world.dimension.getType().getKey());
 
                 TreeSet<ChunkPos> chunksToLoad = new TreeSet<>(Comparator.<ChunkPos>comparingInt(chunk -> chunk.x).thenComparingInt(chunk -> chunk.z));
                 for (TickingArea area : TickingArea.getTickingAreas(world))
@@ -227,7 +227,7 @@ public abstract class TickingArea
                     }
                     
                     count++;
-                    world.getChunkProvider().getOrGenerateChunks(chunk.x, chunk.z);
+                    world.getChunkSource().getChunkNow(chunk.x, chunk.z);
                 }
             }
         }
@@ -264,13 +264,13 @@ public abstract class TickingArea
         @Override
         protected boolean contains(World world, int chunkX, int chunkZ)
         {
-            return world.isChunkInsideSpawnChunks(chunkX, chunkZ);
+            return world.isSpawnChunk(chunkX, chunkZ);
         }
         
         @Override
         public List<ChunkPos> listIncludedChunks(World world)
         {
-            BlockPos spawnPoint = world.getSpawnPos();
+            BlockPos spawnPoint = world.getSpawnPoint();
             int spawnChunkX = spawnPoint.getX() / 16;
             int spawnChunkZ = spawnPoint.getZ() / 16;
             
@@ -280,7 +280,7 @@ public abstract class TickingArea
             {
                 for (int z = spawnChunkZ - 9; z <= spawnChunkZ + 9; z++)
                 {
-                    if (world.isChunkInsideSpawnChunks(x, z))
+                    if (world.isSpawnChunk(x, z))
                     {
                         spawnChunks.add(new ChunkPos(x, z));
                     }

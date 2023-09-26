@@ -7,32 +7,32 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
-import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.living.effect.StatusEffectInstance;
 import net.minecraft.entity.thrown.PotionEntity;
-import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.world.HitResult;
 
 @Mixin(PotionEntity.class)
 public class ThrownPotionEntityMixin {
     @Inject(
-            method = "applySplashPotion",
+            method = "m_6536215",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LivingEntity;addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;)V"
+                    target = "Lnet/minecraft/entity/living/LivingEntity;addStatusEffect(Lnet/minecraft/entity/living/effect/StatusEffectInstance;)V"
             )
     )
-    private void preAddPotionEffect(BlockHitResult p_190543_1_, List<StatusEffectInstance> p_190543_2_, CallbackInfo ci) {
+    private void preAddPotionEffect(HitResult p_190543_1_, List<StatusEffectInstance> p_190543_2_, CallbackInfo ci) {
         ExtendedStatusEffectInstance.ItemPotionHolder.itemPotion = true;
     }
 
     @Inject(
-            method = "applySplashPotion",
+            method = "m_6536215",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LivingEntity;addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;)V",
+                    target = "Lnet/minecraft/entity/living/LivingEntity;addStatusEffect(Lnet/minecraft/entity/living/effect/StatusEffectInstance;)V",
                     shift = At.Shift.AFTER
             )
     )
-    private void postAddPotionEffect(BlockHitResult p_190543_1_, List<StatusEffectInstance> p_190543_2_, CallbackInfo ci) {
+    private void postAddPotionEffect(HitResult p_190543_1_, List<StatusEffectInstance> p_190543_2_, CallbackInfo ci) {
         ExtendedStatusEffectInstance.ItemPotionHolder.itemPotion = false;
     }
 }

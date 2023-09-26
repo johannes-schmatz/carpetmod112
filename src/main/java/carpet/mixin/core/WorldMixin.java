@@ -38,11 +38,11 @@ public class WorldMixin implements ExtendedWorld {
             method = "tickEntities",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;checkChunk(Lnet/minecraft/entity/Entity;)V"
+                    target = "Lnet/minecraft/world/World;tickEntity(Lnet/minecraft/entity/Entity;)V"
             )
     )
     private void dontProcessEntities(World world, Entity entity) {
-        if (this.isClient || TickSpeed.process_entities) world.checkChunk(entity);
+        if (this.isClient || TickSpeed.process_entities) world.tickEntity(entity);
     }
 
     @Override

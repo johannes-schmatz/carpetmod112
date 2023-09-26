@@ -5,10 +5,10 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import carpet.utils.CarpetProfiler;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import carpet.CarpetSettings;
@@ -19,39 +19,39 @@ import carpet.helpers.TickSpeed;
 public class CommandTick extends CommandCarpetBase
 {
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "tick";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender)
+    public String getUsage(CommandSource sender)
     {
         return "Usage: tick rate <tickrate in tps> | warp [time in ticks to skip]";
     }
 
     @Override
-    public void method_3279(final MinecraftServer server, final CommandSource sender, String[] args) throws CommandException
+    public void run(final MinecraftServer server, final CommandSource sender, String[] args) throws CommandException
     {
         if (!command_enabled("commandTick", sender)) return;
         if (args.length == 0)
         {
-            throw new IncorrectUsageException(getUsageTranslationKey(sender));
+            throw new IncorrectUsageException(getUsage(sender));
         }
         if ("rate".equalsIgnoreCase(args[0]))
         {
             if (args.length == 2)
             {
-                float tickrate = (float) parseClampedDouble(args[1], 0.01D);
+                float tickrate = (float) parseDouble(args[1], 0.01D);
                 TickSpeed.tickrate(tickrate);
             }
             CarpetClientMessageHandler.sendTickRateChanges();
-            run(sender, this, String.format("tick rate is %.1f", TickSpeed.tickrate));
+            sendSuccess(sender, this, String.format("tick rate is %.1f", TickSpeed.tickrate));
             return;
         }
         else if ("warp".equalsIgnoreCase(args[0]))
         {
-            long advance = args.length >= 2 ? parseClampedLong(args[1], 0, Long.MAX_VALUE) : TickSpeed.time_bias > 0 ? 0 : Long.MAX_VALUE;
+            long advance = args.length >= 2 ? parseLong(args[1], 0, Long.MAX_VALUE) : TickSpeed.time_bias > 0 ? 0 : Long.MAX_VALUE;
             PlayerEntity player = null;
             if (sender instanceof PlayerEntity)
             {
@@ -62,14 +62,14 @@ public class CommandTick extends CommandCarpetBase
             CommandSource icommandsender = null;
             if (args.length > 3)
             {
-                s = method_10706(args, 2);
+                s = parseString(args, 2);
                 icommandsender = sender;
             }
 
             String message = TickSpeed.tickrate_advance(player, advance, s, icommandsender);
             if (!message.isEmpty())
             {
-                run(sender, this, message);
+                sendSuccess(sender, this, message);
             }
             return;
         }
@@ -78,11 +78,11 @@ public class CommandTick extends CommandCarpetBase
             TickSpeed.is_paused = !TickSpeed.is_paused;
             if (TickSpeed.is_paused)
             {
-                run(sender, this, "Game is paused");
+                sendSuccess(sender, this, "Game is paused");
             }
             else
             {
-                run(sender, this, "Game runs normally");
+                sendSuccess(sender, this, "Game runs normally");
             }
             return;
         }
@@ -91,7 +91,7 @@ public class CommandTick extends CommandCarpetBase
             int advance = 1;
             if (args.length > 1)
             {
-                advance = parseClampedInt(args[1], 1, 72000);
+                advance = parseInt(args[1], 1, 72000);
             }
             TickSpeed.add_ticks_to_run_in_pause(advance);
             return;
@@ -112,11 +112,11 @@ public class CommandTick extends CommandCarpetBase
             TickSpeed.is_superHot = !TickSpeed.is_superHot;
             if (TickSpeed.is_superHot)
             {
-                run(sender, this, "Superhot enabled");
+                sendSuccess(sender, this, "Superhot enabled");
             }
             else
             {
-                run(sender, this, "Superhot disabled");
+                sendSuccess(sender, this, "Superhot disabled");
             }
             return;
         }
@@ -125,7 +125,7 @@ public class CommandTick extends CommandCarpetBase
             int step = 100;
             if (args.length > 1)
             {
-                step = parseClampedInt(args[1], 20, 72000);
+                step = parseInt(args[1], 20, 72000);
             }
             CarpetProfiler.prepare_tick_report(step);
             return;
@@ -135,16 +135,16 @@ public class CommandTick extends CommandCarpetBase
             int step = 100;
             if (args.length > 1)
             {
-                step = parseClampedInt(args[1], 20, 72000);
+                step = parseInt(args[1], 20, 72000);
             }
             CarpetProfiler.prepare_entity_report(step);
             return;
         }
-        throw new IncorrectUsageException(getUsageTranslationKey(sender));
+        throw new IncorrectUsageException(getUsage(sender));
     }
 
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
     {
         if (!CarpetSettings.commandTick)
         {
@@ -152,27 +152,27 @@ public class CommandTick extends CommandCarpetBase
         }
         if (args.length == 1)
         {
-            return method_2894(args, "rate","warp", "freeze", "step", "superHot", "health", "entities");
+            return suggestMatching(args, "rate","warp", "freeze", "step", "superHot", "health", "entities");
         }
         if (args.length == 2 && "superHot".equalsIgnoreCase(args[0]))
         {
-            return method_2894(args, "stop","start");
+            return suggestMatching(args, "stop","start");
         }
         if (args.length == 2 && "rate".equalsIgnoreCase(args[0]))
         {
-            return method_2894(args, "20");
+            return suggestMatching(args, "20");
         }
         if (args.length == 2 && "warp".equalsIgnoreCase(args[0]))
         {
-            return method_2894(args, "1000","24000","72000");
+            return suggestMatching(args, "1000","24000","72000");
         }
         if (args.length == 2 && "health".equalsIgnoreCase(args[0]))
         {
-            return method_2894(args, "100","200","1000");
+            return suggestMatching(args, "100","200","1000");
         }
         if (args.length == 2 && "entities".equalsIgnoreCase(args[0]))
         {
-            return method_2894(args, "100","200","1000");
+            return suggestMatching(args, "100","200","1000");
         }
         return Collections.emptyList();
     }

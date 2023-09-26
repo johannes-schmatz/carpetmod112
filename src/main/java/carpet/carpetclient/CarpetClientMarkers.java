@@ -8,16 +8,16 @@ import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.structure.StructureFeature;
-import net.minecraft.structure.StructurePiece;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.world.gen.structure.StructureFeature;
+import net.minecraft.world.gen.structure.StructurePiece;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.village.Village;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.GeneratorConfig;
+import net.minecraft.world.gen.structure.StructureStart;
+import net.minecraft.world.village.Village;
 
 public class CarpetClientMarkers {
 
@@ -40,9 +40,9 @@ public class CarpetClientMarkers {
         NbtList nbttaglist = new NbtList();
         NbtCompound tagCompound = new NbtCompound();
 
-        for (Village village : worldObj.getVillageState().method_2843()) {
+        for (Village village : worldObj.getVillages().getVillages()) {
             NbtCompound nbttagcompound = new NbtCompound();
-            village.toNbt(nbttagcompound);
+            village.writeNbt(nbttagcompound);
             nbttaglist.add(nbttagcompound);
         }
 
@@ -55,12 +55,12 @@ public class CarpetClientMarkers {
 
     public static void updateClientBoundingBoxMarkers(ServerPlayerEntity sender, PacketByteBuf data) {
         MinecraftServer ms = sender.world.getServer();
-        ServerWorld ws = ms.getWorld(sender.dimension);
-        NbtList list = ((BoundingBoxProvider) ws.getChunkProvider()).getBoundingBoxes(sender);
+        ServerWorld ws = ms.getWorld(sender.dimensionId);
+        NbtList list = ((BoundingBoxProvider) ws.getChunkSource()).getBoundingBoxes(sender);
         NbtCompound nbttagcompound = new NbtCompound();
 
         nbttagcompound.put("Boxes", list);
-        nbttagcompound.putInt("Dimention", sender.dimension);
+        nbttagcompound.putInt("Dimention", sender.dimensionId);
         nbttagcompound.putLong("Seed", sender.world.getSeed());
 
         CarpetClientMessageHandler.sendNBTBoundingboxData(sender, nbttagcompound);
@@ -83,15 +83,15 @@ public class CarpetClientMarkers {
     // Retrieval method to get the bounding boxes CARPET-XCOM
     public static NbtList getBoundingBoxes(StructureFeature structure, Entity entity, int type) {
         NbtList list = new NbtList();
-        for (GeneratorConfig structurestart : ((StructureFeatureAccessor) structure).getStructureMap().values()) {
-            if (MathHelper.sqrt(new ChunkPos(structurestart.getChunkX(), structurestart.getChunkZ()).squaredDistanceToCenter(entity)) > 700) {
+        for (StructureStart structurestart : ((StructureFeatureAccessor) structure).getStructureMap().values()) {
+            if (MathHelper.sqrt(new ChunkPos(structurestart.getChunkX(), structurestart.getChunkZ()).squaredDistanceTo(entity)) > 700) {
                 continue;
             }
             NbtCompound outerBox = new NbtCompound();
             outerBox.putInt("type", OUTER_BOUNDING_BOX);
-            outerBox.put("bb", structurestart.getBoundingBox().toNbt());
+            outerBox.put("bb", structurestart.getBounds().toNbt());
             list.add(outerBox);
-            for (StructurePiece child : structurestart.method_11855()) {
+            for (StructurePiece child : structurestart.getPieces()) {
                 NbtCompound innerBox = new NbtCompound();
                 innerBox.putInt("type", type);
                 innerBox.put("bb", child.getBoundingBox().toNbt());

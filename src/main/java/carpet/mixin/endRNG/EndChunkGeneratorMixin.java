@@ -10,18 +10,18 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.world.chunk.EndChunkGenerator;
+import net.minecraft.world.gen.chunk.TheEndChunkGenerator;
 
 import java.util.Random;
 
-@Mixin(EndChunkGenerator.class)
+@Mixin(TheEndChunkGenerator.class)
 public class EndChunkGeneratorMixin implements ExtendedEndChunkGenerator {
     @Shadow @Final private Random random;
     private long lastRandomSeed = 0;
     private boolean randomSeedUsed = false;
 
     @Redirect(
-            method = "generate",
+            method = "getChunk",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/Random;setSeed(J)V"

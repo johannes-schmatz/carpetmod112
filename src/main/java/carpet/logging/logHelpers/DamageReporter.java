@@ -3,10 +3,10 @@ package carpet.logging.logHelpers;
 import carpet.logging.LoggerRegistry;
 import carpet.utils.Messenger;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
+import net.minecraft.entity.living.effect.StatusEffects;
 import net.minecraft.text.Text;
 import java.util.function.Supplier;
 
@@ -40,7 +40,7 @@ public class DamageReporter
     public static void register_damage(LivingEntity target, DamageSource source, float amount)
     {
         if (!LoggerRegistry.__damage) return;
-        if (source.isFire() && (target.isFireImmune() ||
+        if (source.isFire() && (target.isImmuneToFire() ||
                 target.hasStatusEffect(StatusEffects.FIRE_RESISTANCE)))
             return;
         LoggerRegistry.getLogger("damage").logNoCommand( (option, player)->
@@ -64,8 +64,8 @@ public class DamageReporter
                         String.format("r %.2f", amount),
                         "g  points of damage")
             ),
-            "ATTACKER", source.getAttacker() == null ? null : source.getAttacker().getEntityName(),
-            "TARGET", target.getEntityName(),
+            "ATTACKER", source.getAttacker() == null ? null : source.getAttacker().getScoreboardName(),
+            "TARGET", target.getScoreboardName(),
             "AMOUNT", amount,
             "DAMAGE_TYPE", source.getName()
         );
@@ -77,7 +77,7 @@ public class DamageReporter
             return;
         if (previous_amount == final_amount)
             return;
-        if (source.isFire() && (target.isFireImmune() ||
+        if (source.isFire() && (target.isImmuneToFire() ||
                 target.hasStatusEffect(StatusEffects.FIRE_RESISTANCE)))
             return;
         LoggerRegistry.getLogger("damage").logNoCommand( (option, player)->

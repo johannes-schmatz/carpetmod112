@@ -1,11 +1,11 @@
 package carpet.utils;
 
 import carpet.CarpetSettings;
-import net.minecraft.util.Formatting;
+import net.minecraft.text.Formatting;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.EntityCategory;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.entity.living.mob.MobCategory;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
@@ -52,26 +52,26 @@ public class Messenger
         //could be rewritten to be more efficient
         comp.getStyle().setItalic(style.indexOf('i')>=0);
         comp.getStyle().setStrikethrough(style.indexOf('s')>=0);
-        comp.getStyle().setUnderline(style.indexOf('u')>=0);
+        comp.getStyle().setUnderlined(style.indexOf('u')>=0);
         comp.getStyle().setBold(style.indexOf('b')>=0);
         comp.getStyle().setObfuscated(style.indexOf('o')>=0);
-        comp.getStyle().setFormatting(Formatting.WHITE);
-        if (style.indexOf('w')>=0) comp.getStyle().setFormatting(Formatting.WHITE); // not needed
-        if (style.indexOf('y')>=0) comp.getStyle().setFormatting(Formatting.YELLOW);
-        if (style.indexOf('m')>=0) comp.getStyle().setFormatting(Formatting.LIGHT_PURPLE);
-        if (style.indexOf('r')>=0) comp.getStyle().setFormatting(Formatting.RED);
-        if (style.indexOf('c')>=0) comp.getStyle().setFormatting(Formatting.AQUA);
-        if (style.indexOf('l')>=0) comp.getStyle().setFormatting(Formatting.GREEN);
-        if (style.indexOf('t')>=0) comp.getStyle().setFormatting(Formatting.BLUE);
-        if (style.indexOf('f')>=0) comp.getStyle().setFormatting(Formatting.DARK_GRAY);
-        if (style.indexOf('g')>=0) comp.getStyle().setFormatting(Formatting.GRAY);
-        if (style.indexOf('d')>=0) comp.getStyle().setFormatting(Formatting.GOLD);
-        if (style.indexOf('p')>=0) comp.getStyle().setFormatting(Formatting.DARK_PURPLE);
-        if (style.indexOf('n')>=0) comp.getStyle().setFormatting(Formatting.DARK_RED);
-        if (style.indexOf('q')>=0) comp.getStyle().setFormatting(Formatting.DARK_AQUA);
-        if (style.indexOf('e')>=0) comp.getStyle().setFormatting(Formatting.DARK_GREEN);
-        if (style.indexOf('v')>=0) comp.getStyle().setFormatting(Formatting.DARK_BLUE);
-        if (style.indexOf('k')>=0) comp.getStyle().setFormatting(Formatting.BLACK);
+        comp.getStyle().setColor(Formatting.WHITE);
+        if (style.indexOf('w')>=0) comp.getStyle().setColor(Formatting.WHITE); // not needed
+        if (style.indexOf('y')>=0) comp.getStyle().setColor(Formatting.YELLOW);
+        if (style.indexOf('m')>=0) comp.getStyle().setColor(Formatting.LIGHT_PURPLE);
+        if (style.indexOf('r')>=0) comp.getStyle().setColor(Formatting.RED);
+        if (style.indexOf('c')>=0) comp.getStyle().setColor(Formatting.AQUA);
+        if (style.indexOf('l')>=0) comp.getStyle().setColor(Formatting.GREEN);
+        if (style.indexOf('t')>=0) comp.getStyle().setColor(Formatting.BLUE);
+        if (style.indexOf('f')>=0) comp.getStyle().setColor(Formatting.DARK_GRAY);
+        if (style.indexOf('g')>=0) comp.getStyle().setColor(Formatting.GRAY);
+        if (style.indexOf('d')>=0) comp.getStyle().setColor(Formatting.GOLD);
+        if (style.indexOf('p')>=0) comp.getStyle().setColor(Formatting.DARK_PURPLE);
+        if (style.indexOf('n')>=0) comp.getStyle().setColor(Formatting.DARK_RED);
+        if (style.indexOf('q')>=0) comp.getStyle().setColor(Formatting.DARK_AQUA);
+        if (style.indexOf('e')>=0) comp.getStyle().setColor(Formatting.DARK_GREEN);
+        if (style.indexOf('v')>=0) comp.getStyle().setColor(Formatting.DARK_BLUE);
+        if (style.indexOf('k')>=0) comp.getStyle().setColor(Formatting.BLACK);
         return comp;
     }
     public static String heatmap_color(double actual, double reference)
@@ -82,17 +82,17 @@ public class Messenger
         if (actual > reference) color = "m";
         return color;
     }
-    public static String creatureTypeColor(EntityCategory type)
+    public static String creatureTypeColor(MobCategory type)
     {
         switch (type)
         {
             case MONSTER:
                 return "n";
-            case PASSIVE:
+            case CREATURE:
                 return "e";
             case AMBIENT:
                 return "f";
-            case AQUATIC:
+            case WATER_CREATURE:
                 return "v";
         }
         return "w";
@@ -262,7 +262,7 @@ public class Messenger
             CarpetSettings.LOG.error("Message not delivered: {}", message);
         server.sendMessage(new LiteralText(message));
         Text txt = m(null, "gi "+message);
-        for (PlayerEntity player : server.getPlayerManager().getPlayers())
+        for (PlayerEntity player : server.getPlayerManager().getAll())
         {
             player.sendMessage(txt);
         }
@@ -270,9 +270,9 @@ public class Messenger
     public static void print_server_message(MinecraftServer server, Text message)
     {
         if (server == null)
-            CarpetSettings.LOG.error("Message not delivered: {}", message.asUnformattedString());
+            CarpetSettings.LOG.error("Message not delivered: {}", message.buildString());
         server.sendMessage(message);
-        for (PlayerEntity player : server.getPlayerManager().getPlayers())
+        for (PlayerEntity player : server.getPlayerManager().getAll())
         {
             player.sendMessage(message);
         }

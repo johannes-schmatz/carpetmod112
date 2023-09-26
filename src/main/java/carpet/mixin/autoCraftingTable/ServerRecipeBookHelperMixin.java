@@ -1,24 +1,24 @@
 package carpet.mixin.autoCraftingTable;
 
 import carpet.helpers.ContainerAutoCraftingTable;
-import net.minecraft.class_3345;
 import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.inventory.menu.CraftingTableMenu;
+import net.minecraft.unmapped.C_1544625;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(class_3345.class)
+@Mixin(C_1544625.class)
 public class ServerRecipeBookHelperMixin {
     @Redirect(
-            method = "method_14907",
+            method = "m_1260733",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/screen/CraftingScreenHandler;craftingInv:Lnet/minecraft/inventory/CraftingInventory;"
+                    target = "Lnet/minecraft/inventory/menu/CraftingTableMenu;craftingTable:Lnet/minecraft/inventory/CraftingInventory;"
             )
     )
-    private CraftingInventory getCraftMatrix(CraftingScreenHandler container) {
-        return container instanceof ContainerAutoCraftingTable ? ((ContainerAutoCraftingTable) container).getInventoryCrafting() : container.craftingInv;
+    private CraftingInventory getCraftMatrix(CraftingTableMenu container) {
+        return container instanceof ContainerAutoCraftingTable ? ((ContainerAutoCraftingTable) container).getInventoryCrafting() : container.craftingTable;
     }
 }

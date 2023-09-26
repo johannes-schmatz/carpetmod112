@@ -2,14 +2,14 @@ package carpet.mixin.noteBlockImitationOf1_13;
 
 import carpet.CarpetSettings;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.NoteBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Hand;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,7 +22,7 @@ public class NoteBlockMixin {
     private int previousInstrument;
 
     @Inject(
-            method = "neighborUpdate",
+            method = "neighborChanged",
             at = @At("RETURN")
     )
     private void onInstrumentChange(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, CallbackInfo ci) {
@@ -30,7 +30,7 @@ public class NoteBlockMixin {
         if (previousInstrument != instrument) {
             previousInstrument = instrument;
             // Instrument change updates only observers
-            if (CarpetSettings.noteBlockImitationOf1_13) world.method_13693(pos, block);
+            if (CarpetSettings.noteBlockImitationOf1_13) world.updateObservers(pos, block);
         }
     }
 
@@ -41,24 +41,24 @@ public class NoteBlockMixin {
                     ordinal = 1
             )
     )
-    private void onPitchChange(World world, BlockPos pos, BlockState state, PlayerEntity player, Hand hand, Direction facing, float hitX, float hitY, float hitZ, CallbackInfoReturnable<Boolean> cir) {
+    private void onPitchChange(World world, BlockPos pos, BlockState state, PlayerEntity player, InteractionHand hand, Direction facing, float hitX, float hitY, float hitZ, CallbackInfoReturnable<Boolean> cir) {
         // Right click sends block updates and updates observers
-        if(CarpetSettings.noteBlockImitationOf1_13) world.method_13692(pos, (NoteBlock) (Object) this, true);
+        if(CarpetSettings.noteBlockImitationOf1_13) world.updateNeighbors(pos, (NoteBlock) (Object) this, true);
     }
 
     @Inject(
-            method = "neighborUpdate",
+            method = "neighborChanged",
             at = @At(
                     value = "FIELD",
                     target = "Lnet/minecraft/block/entity/NoteBlockBlockEntity;powered:Z"
             ))
     private void onPowerChange(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, CallbackInfo ci) {
         // Dual-edge redstone power change sends block updates and updates observers
-        if(CarpetSettings.noteBlockImitationOf1_13) world.method_13692(pos, (NoteBlock) (Object) this, true);
+        if(CarpetSettings.noteBlockImitationOf1_13) world.updateNeighbors(pos, (NoteBlock) (Object) this, true);
     }
 
     /**
-     * {@linkplain net.minecraft.block.entity.NoteBlockBlockEntity.playNote}
+     * {@linkplain net.minecraft.block.entity.NoteBlockBlockEntity#playNote(World, BlockPos)}
      */
     private static int getInstrumentId(BlockState state) {
         Material material = state.getMaterial();

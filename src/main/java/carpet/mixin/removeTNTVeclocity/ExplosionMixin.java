@@ -11,7 +11,7 @@ import net.minecraft.world.explosion.Explosion;
 @Mixin(Explosion.class)
 public class ExplosionMixin {
 	@Inject(
-			method = "collectBlocksAndDamageEntities",
+			method = "damageEntities",
 			at = @At(
 					value = "INVOKE",
 					target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z",

@@ -2,7 +2,7 @@ package carpet.mixin.maxEntityCollisions;
 
 import carpet.CarpetSettings;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.living.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -12,7 +12,7 @@ import java.util.List;
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin {
     @Redirect(
-            method = "tickCramming",
+            method = "pushAwayCollidingEntities",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/List;size()I",

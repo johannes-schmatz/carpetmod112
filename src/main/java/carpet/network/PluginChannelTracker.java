@@ -4,7 +4,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,14 +25,14 @@ public class PluginChannelTracker {
      * Returns the collection of channels {@code player} is registered to.
      */
     public Set<String> getChannels(ServerPlayerEntity player) {
-        return name2channels.get(player.getTranslationKey());
+        return name2channels.get(player.getName());
     }
 
     /**
      * Returns whether or not {@code player} is reigstered to {@code channel}.
      */
     public boolean isRegistered(ServerPlayerEntity player, String channel) {
-        return name2channels.containsEntry(player.getTranslationKey(), channel);
+        return name2channels.containsEntry(player.getName(), channel);
     }
 
     /**
@@ -49,7 +49,7 @@ public class PluginChannelTracker {
     public Set<ServerPlayerEntity> getPlayers(String channel) {
         PlayerManager pl = server.getPlayerManager();
         return channel2names.get(channel).stream()
-                .map(pl::getPlayer)
+                .map(pl::get)
                 .collect(Collectors.toSet());
     }
 
@@ -57,16 +57,16 @@ public class PluginChannelTracker {
      * Registers {@code player} on {@code channel}.
      */
     public void register(ServerPlayerEntity player, String channel) {
-        name2channels.put(player.getTranslationKey(), channel);
-        channel2names.put(channel, player.getTranslationKey());
+        name2channels.put(player.getName(), channel);
+        channel2names.put(channel, player.getName());
     }
 
     /**
      * Unregisters {@code player} from {@code channel}.
      */
     public void unregister(ServerPlayerEntity player, String channel) {
-        name2channels.remove(player.getTranslationKey(), channel);
-        channel2names.remove(channel, player.getTranslationKey());
+        name2channels.remove(player.getName(), channel);
+        channel2names.remove(channel, player.getName());
     }
 
     /**
@@ -74,9 +74,9 @@ public class PluginChannelTracker {
      */
     public void unregisterAll(ServerPlayerEntity player) {
         for (String channel : getChannels(player)) {
-            channel2names.remove(channel, player.getTranslationKey());
+            channel2names.remove(channel, player.getName());
         }
-        name2channels.removeAll(player.getTranslationKey());
+        name2channels.removeAll(player.getName());
     }
 
 }

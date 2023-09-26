@@ -4,12 +4,12 @@ import carpet.CarpetSettings;
 import carpet.helpers.EntityPlayerActionPack;
 import carpet.patches.FakeServerPlayerEntity;
 import carpet.utils.extensions.ActionPackOwner;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
 import org.jetbrains.annotations.Nullable;
@@ -26,19 +26,19 @@ import net.minecraft.world.World;
 public class CommandPlayer extends CommandCarpetBase
 {
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "player";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender)
+    public String getUsage(CommandSource sender)
     {
         return "player <spawn|kill|stop|drop|swapHands|mount|dismount> <player_name>  OR /player <use|attack|jump> <player_name> <once|continuous|interval.. ticks>";
     }
 
     @Override
-    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (!command_enabled("commandPlayer", sender)) return;
         if (args.length < 2)
@@ -47,11 +47,11 @@ public class CommandPlayer extends CommandCarpetBase
         }
         String playerName = args[0];
         String action = args[1];
-        ServerPlayerEntity player = server.getPlayerManager().getPlayer(playerName);
+        ServerPlayerEntity player = server.getPlayerManager().get(playerName);
         if (sender instanceof PlayerEntity)
         {
-            PlayerEntity sendingPlayer = getAsPlayer(sender);
-            if (!(server.getPlayerManager().isOperator(sendingPlayer.getGameProfile())))
+            PlayerEntity sendingPlayer = asPlayer(sender);
+            if (!(server.getPlayerManager().isOp(sendingPlayer.getGameProfile())))
             {
                 if (!(sendingPlayer == player || player == null || player instanceof FakeServerPlayerEntity))
                 {
@@ -73,7 +73,7 @@ public class CommandPlayer extends CommandCarpetBase
                 option = args[2];
                 if (args.length > 3 && option.equalsIgnoreCase("interval"))
                 {
-                    interval = parseClampedInt(args[3],2,72000);
+                    interval = parseInt(args[3],2,72000);
                 }
             }
             if (action.equalsIgnoreCase("use"))
@@ -133,30 +133,30 @@ public class CommandPlayer extends CommandCarpetBase
             if (isWhitelistedPlayer(server, playerName) && !sender.canUseCommand(2, "gamemode")) {
                 throw new CommandException("You are not allowed to spawn a whitelisted player");
             }
-            Vec3d vec3d = sender.getPos();
+            Vec3d vec3d = sender.getSourcePos();
             double d0 = vec3d.x;
             double d1 = vec3d.y;
             double d2 = vec3d.z;
             double yaw = 0.0D;
             double pitch = 0.0D;
-            World world = sender.getWorld();
-            int dimension = world.dimension.getDimensionType().getId();
-            int gamemode = server.method_3026().getGameModeId();
+            World world = sender.getSourceWorld();
+            int dimension = world.dimension.getType().getId();
+            int gamemode = server.getDefaultGameMode().getId();
 
             if (sender instanceof ServerPlayerEntity)
             {
-                ServerPlayerEntity entity = getAsPlayer(sender);
+                ServerPlayerEntity entity = asPlayer(sender);
                 yaw = (double)entity.yaw;
                 pitch = (double)entity.pitch;
-                gamemode = entity.interactionManager.getGameMode().getGameModeId();
+                gamemode = entity.interactionManager.getGameMode().getId();
             }
             if (args.length >= 5)
             {
-                d0 = getCoordinate(d0, args[2], true).getAmount();
-                d1 = getCoordinate(d1, args[3], -4096, 4096, false).getAmount();
-                d2 = getCoordinate(d2, args[4], true).getAmount();
-                yaw = getCoordinate(yaw, args.length > 5 ? args[5] : "~", false).getAmount();
-                pitch = getCoordinate(pitch, args.length > 6 ? args[6] : "~", false).getAmount();
+                d0 = parseCoordinate(d0, args[2], true).getRelative();
+                d1 = parseCoordinate(d1, args[3], -4096, 4096, false).getRelative();
+                d2 = parseCoordinate(d2, args[4], true).getRelative();
+                yaw = parseCoordinate(yaw, args.length > 5 ? args[5] : "~", false).getRelative();
+                pitch = parseCoordinate(pitch, args.length > 6 ? args[6] : "~", false).getRelative();
             }
             if (args.length >= 8)
             {
@@ -173,7 +173,7 @@ public class CommandPlayer extends CommandCarpetBase
             }
             if (args.length >= 9)
             {
-                gamemode = parseClampedInt(args[8],0,3);
+                gamemode = parseInt(args[8],0,3);
                 if (gamemode == 1 && !sender.canUseCommand(2, "gamemode")) {
                     throw new CommandException("You are not allowed to spawn a creative player");
                 }
@@ -187,7 +187,7 @@ public class CommandPlayer extends CommandCarpetBase
             {
                 throw new IncorrectUsageException("use /kill or /kick on regular players");
             }
-            player.kill();
+            player.m_3468489();
             return;
         }
         if ("shadow".equalsIgnoreCase(action))
@@ -265,8 +265,8 @@ public class CommandPlayer extends CommandCarpetBase
                 }
                 else if (args.length > 3)
                 {
-                    float yaw = (float) getCoordinate(player.yaw, args[2], false).getAmount();
-                    float pitch = (float) getCoordinate(player.pitch, args[3], false).getAmount();
+                    float yaw = (float) parseCoordinate(player.yaw, args[2], false).getRelative();
+                    float pitch = (float) parseCoordinate(player.pitch, args[3], false).getRelative();
                     actionPack.look(yaw,pitch);
                 }
                 else
@@ -305,14 +305,14 @@ public class CommandPlayer extends CommandCarpetBase
     }
 
     private boolean isWhitelistedPlayer(MinecraftServer server, String playerName) {
-        for(String s : server.getPlayerManager().getWhitelistedNames()){
+        for(String s : server.getPlayerManager().getWhitelistNames()){
             if(s.toLowerCase().equals(playerName.toLowerCase())) return true;
         }
         return false;
     }
 
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
     {
         if (!CarpetSettings.commandPlayer)
         {
@@ -323,12 +323,12 @@ public class CommandPlayer extends CommandCarpetBase
             Set<String> players = new HashSet<>(Arrays.asList(server.getPlayerNames()));
             players.add("Steve");
             players.add("Alex");
-            return method_2894(args, players.toArray(new String[0]));
+            return suggestMatching(args, players.toArray(new String[0]));
         }
         if (args.length == 2)
         {
             //currently for all, needs to be restricted for Fake plaeyrs
-            return method_2894(args,
+            return suggestMatching(args,
                     "spawn","kill","attack","use","jump","stop","shadow",
                     "swapHands","drop","mount","dismount",
                     "move","sneak","sprint","look", "despawn", "respawn");
@@ -336,38 +336,38 @@ public class CommandPlayer extends CommandCarpetBase
         if (args.length == 3 && (args[1].matches("^(?:use|attack|jump)$")))
         {
             //currently for all, needs to be restricted for Fake plaeyrs
-            return method_2894(args, "once","continuous","interval");
+            return suggestMatching(args, "once","continuous","interval");
         }
         if (args.length == 4 && (args[1].equalsIgnoreCase("interval")))
         {
             //currently for all, needs to be restricted for Fake plaeyrs
-            return method_2894(args, "20");
+            return suggestMatching(args, "20");
         }
         if (args.length == 3 && (args[1].equalsIgnoreCase("move")))
         {
-            return method_2894(args, "left", "right","forward","backward");
+            return suggestMatching(args, "left", "right","forward","backward");
         }
         if (args.length == 3 && (args[1].equalsIgnoreCase("look")))
         {
-            return method_2894(args, "left", "right","north","south","east","west","up","down");
+            return suggestMatching(args, "left", "right","north","south","east","west","up","down");
         }
         if (args.length > 2 && (args[1].equalsIgnoreCase("spawn") ))
         {
             if (args.length <= 5)
             {
-                return method_10707(args, 2, targetPos);
+                return suggestCoordinate(args, 2, targetPos);
             }
             else if (args.length <= 7)
             {
-                return method_2894(args, "0.0");
+                return suggestMatching(args, "0.0");
             }
             else if (args.length == 8)
             {
-                return method_2894(args, "overworld", "end", "nether");
+                return suggestMatching(args, "overworld", "end", "nether");
             }
             else if (args.length == 9)
             {
-                return method_2894(args, "0", "1", "2", "3");
+                return suggestMatching(args, "0", "1", "2", "3");
             }
         }
         return Collections.emptyList();

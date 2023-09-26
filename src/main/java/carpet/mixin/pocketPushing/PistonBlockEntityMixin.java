@@ -1,17 +1,19 @@
 package carpet.mixin.pocketPushing;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.BlockState;
+
+import net.minecraft.block.piston.PistonMoveBehavior;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.PistonBlockEntity;
-import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.block.entity.MovingBlockEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.MovementType;
+import net.minecraft.entity.MoverType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldView;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,15 +22,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-@Mixin(PistonBlockEntity.class)
+@Mixin(MovingBlockEntity.class)
 public abstract class PistonBlockEntityMixin extends BlockEntity {
-    @Shadow public abstract Box method_11701(BlockView p_184321_1_, BlockPos p_184321_2_);
+    @Shadow public abstract Box getShape(WorldView p_184321_1_, BlockPos p_184321_2_);
     @Shadow private boolean extending;
-    @Shadow private Direction direction;
-    @Shadow private BlockState pushedBlock;
+    @Shadow private Direction facing;
+    @Shadow private BlockState movedState;
 
     @Inject(
-            method = "method_13758",
+            method = "moveEntities",
             at = @At("HEAD"),
             cancellable = true
     )
@@ -40,17 +42,17 @@ public abstract class PistonBlockEntityMixin extends BlockEntity {
     }
 
     private void translocateCollidedEntities() {
-        Box axisalignedbb = this.method_11701(this.world, this.pos).offset(this.pos);
-        List<Entity> entities = this.world.getEntitiesIn(null, axisalignedbb);
+        Box axisalignedbb = this.getShape(this.world, this.pos).move(this.pos);
+        List<Entity> entities = this.world.getEntities((Entity) null, axisalignedbb);
         if (!entities.isEmpty()) {
-            Direction facing = this.extending ? this.direction : this.direction.getOpposite();
+            Direction facing = this.extending ? this.facing : this.facing.getOpposite();
             for (Entity entity : entities) {
-                if (entity.getPistonBehavior() != PistonBehavior.IGNORE) {
+                if (entity.getPistonMoveBehavior() != PistonMoveBehavior.IGNORE) {
                     double dx = 0;
                     double dy = 0;
                     double dz = 0;
-                    Box box = entity.getBoundingBox();
-                    if (this.pushedBlock.getBlock() == Blocks.SLIME_BLOCK) {
+                    Box box = entity.getShape();
+                    if (this.movedState.getBlock() == Blocks.SLIME) {
                         switch (facing.getAxis()) {
                             case X:
                                 entity.velocityX = facing.getOffsetX();
@@ -89,7 +91,7 @@ public abstract class PistonBlockEntityMixin extends BlockEntity {
                             dz = dz + 0.01D;
                             break;
                     }
-                    entity.move(MovementType.SELF, dx * facing.getOffsetX(), dy * facing.getOffsetY(), dz * facing.getOffsetZ());
+                    entity.move(MoverType.SELF, dx * facing.getOffsetX(), dy * facing.getOffsetY(), dz * facing.getOffsetZ());
                 }
             }
         }

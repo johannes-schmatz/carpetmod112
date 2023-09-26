@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin implements ExtendedItemStack {
-    @Shadow private int count;
+    @Shadow private int size;
     @Shadow public abstract Item getItem();
     @Shadow public abstract boolean hasNbt();
 
@@ -26,11 +26,11 @@ public abstract class ItemStackMixin implements ExtendedItemStack {
 
     @Override
     public void forceStackSize(int size) {
-        this.count = size;
+        this.size = size;
     }
 
     @Inject(
-            method = "getMaxCount",
+            method = "getMaxSize",
             at = @At("HEAD"),
             cancellable = true
     )

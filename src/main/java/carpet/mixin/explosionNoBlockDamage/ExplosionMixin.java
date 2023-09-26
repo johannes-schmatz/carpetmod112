@@ -13,7 +13,7 @@ import java.util.List;
 @Mixin(Explosion.class)
 public class ExplosionMixin {
     @Redirect(
-            method = "collectBlocksAndDamageEntities",
+            method = "damageEntities",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z",

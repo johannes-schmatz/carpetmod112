@@ -28,7 +28,7 @@ import carpet.utils.TickingArea;
 import carpet.utils.extensions.WorldWithBlockEventSerializer;
 import carpet.worldedit.WorldEditBridge;
 
-import net.minecraft.server.ServerMetadata;
+import net.minecraft.server.ServerStatus;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FallingBlock;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
+import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.world.ServerWorld;
 
 import static carpet.CarpetSettings.RuleCategory.*;
@@ -173,9 +173,9 @@ public final class CarpetSettings
 
     private static boolean validateInstantFallingFlag(boolean value) {
         if (value) {
-            FallingBlock.instantFall = true;
+            FallingBlock.fallImmediately = true;
         }else {
-            FallingBlock.instantFall = false;
+            FallingBlock.fallImmediately = false;
         }
         return true;
     }
@@ -293,17 +293,18 @@ public final class CarpetSettings
     @SurvivalDefault
     public static boolean cactusCounter = false;
 
+    @Deprecated
     @Rule(desc = "Enables integration with NarcolepticFrog's Redstone Multimeter mod", category = {CREATIVE, SURVIVAL}, validator = "validateRedstoneMultimeterLegacy", extra = {
             "Required clients with RSMM Mod by Narcoleptic Frog. Enables multiplayer experience with RSMM Mod"
     })
     public static boolean redstoneMultimeterLegacy = false;
 
+    @Deprecated
     private static boolean validateRedstoneMultimeterLegacy(boolean value) {
-        CarpetServer carpet = CarpetServer.getNullableInstance();
-        if (carpet != null) carpet.legacyRsmmChannel.setEnabled(value);
         return true;
     }
 
+    @Deprecated
     @Rule(desc = "Enables integration with the new Redstone Multimeter mod", category = {CREATIVE, SURVIVAL, COMMANDS}, extra = {
             "To use, the new Redstone Multimeter mod must be installed client-side as well"
     })
@@ -388,7 +389,7 @@ public final class CarpetSettings
     private static boolean validateCustomMotd(String value) {
         MinecraftServer server = CarpetServer.getNullableMinecraftServer();
         if (server == null) return true;
-        ServerMetadata metadata = server.getServerMetadata();
+        ServerStatus metadata = server.getStatus();
 
         String motd = "_".equals(value) ? server.getServerMotd() : value;
         metadata.setDescription(new LiteralText(motd));
@@ -418,13 +419,13 @@ public final class CarpetSettings
         if (server == null) return true;
         if (value == 0) {
             if (server.isDedicated()) {
-                value = ((MinecraftDedicatedServer) server).getIntOrDefault("view-distance", 10);
+                value = ((DedicatedServer) server).getPropertyOrDefault("view-distance", 10);
             } else {
                 return false;
             }
         }
         if (value != server.getPlayerManager().getViewDistance()) {
-            server.getPlayerManager().setViewDistance(value);
+            server.getPlayerManager().updateViewDistance(value);
         }
         return true;
     }
@@ -449,7 +450,7 @@ public final class CarpetSettings
         if (!value && server.worlds != null) {
             World overworld = server.worlds[0];
             for (ChunkPos chunk : new TickingArea.SpawnChunks().listIncludedChunks(overworld))
-                overworld.getChunkProvider().getOrGenerateChunks(chunk.x, chunk.z);
+                overworld.getChunkSource().getChunkNow(chunk.x, chunk.z);
         }
         return true;
     }
@@ -1409,7 +1410,7 @@ public final class CarpetSettings
     {
         try
         {
-            File settings_file = server.getSaveStorage().method_11957(server.getLevelName(), "carpet.conf");
+            File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "carpet.conf");
             BufferedReader b = new BufferedReader(new FileReader(settings_file));
             String line = "";
             Map<String,String> result = new HashMap<String, String>();
@@ -1450,7 +1451,7 @@ public final class CarpetSettings
         if (locked) return;
         try
         {
-            File settings_file = server.getSaveStorage().method_11957(server.getLevelName(), "carpet.conf");
+            File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "carpet.conf");
             FileWriter fw = new FileWriter(settings_file);
             for (String key: values.keySet())
             {

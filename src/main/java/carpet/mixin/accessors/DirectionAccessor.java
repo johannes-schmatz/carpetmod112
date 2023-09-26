@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(Direction.class)
 public interface DirectionAccessor {
-    @Accessor("vec") Vec3i getVector();
+    @Accessor("normal") Vec3i getVector();
     @Accessor("ALL") static Direction[] getValues() { throw new AbstractMethodError(); }
-    @Accessor("HORIZONTAL") static Direction[] getHorizontals() { throw new AbstractMethodError(); }
+    @Accessor("BY_ID_HORIZONTAL") static Direction[] getHorizontals() { throw new AbstractMethodError(); }
 }

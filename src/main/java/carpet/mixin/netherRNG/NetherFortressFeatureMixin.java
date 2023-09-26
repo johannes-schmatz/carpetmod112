@@ -5,15 +5,15 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import net.minecraft.world.gen.structure.StructureFeature;
+import net.minecraft.world.gen.structure.FortressStructure;
+
 import java.util.Random;
 
-import net.minecraft.structure.NetherFortressStructure;
-import net.minecraft.structure.StructureFeature;
-
-@Mixin(NetherFortressStructure.class)
+@Mixin(FortressStructure.class)
 public abstract class NetherFortressFeatureMixin extends StructureFeature {
     @Redirect(
-            method = "shouldStartAt",
+            method = "isFeatureChunk",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/Random;setSeed(J)V",

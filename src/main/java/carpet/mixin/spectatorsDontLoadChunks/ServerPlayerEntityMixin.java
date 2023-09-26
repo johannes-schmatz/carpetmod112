@@ -2,8 +2,8 @@ package carpet.mixin.spectatorsDontLoadChunks;
 
 import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
@@ -19,28 +19,28 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     }
 
     @Inject(
-            method = "method_3170",
+            method = "setGameMode",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;method_14157()V"
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;m_2820371()V"
             )
     )
     private void onChangeToSpectator(GameMode gameType, CallbackInfo ci) {
         if (CarpetSettings.spectatorsDontLoadChunks) {
-            ((ServerWorld) world).getPlayerWorldManager().method_2115((ServerPlayerEntity) (Object) this);
+            ((ServerWorld) world).getChunkMap().removePlayer((ServerPlayerEntity) (Object) this);
         }
     }
 
     @Inject(
-            method = "method_3170",
+            method = "setGameMode",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;method_10763(Lnet/minecraft/entity/Entity;)V"
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;setCamera(Lnet/minecraft/entity/Entity;)V"
             )
     )
     private void onChangeFromSpectator(GameMode gameType, CallbackInfo ci) {
         if (CarpetSettings.spectatorsDontLoadChunks) {
-            ((ServerWorld) world).getPlayerWorldManager().method_2109((ServerPlayerEntity) (Object) this);
+            ((ServerWorld) world).getChunkMap().addPlayer((ServerPlayerEntity) (Object) this);
         }
     }
 }

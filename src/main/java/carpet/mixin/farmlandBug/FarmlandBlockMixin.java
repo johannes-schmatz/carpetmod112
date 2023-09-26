@@ -14,17 +14,17 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(FarmlandBlock.class)
 public class FarmlandBlockMixin {
-    @Shadow @Final protected static Box field_15757;
+    @Shadow @Final protected static Box SHAPE_ABOVE;
 
     @Redirect(
-            method = "method_13706",
+            method = "setDirt",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;refreshPositionAfterTeleport(DDD)V"
+                    target = "Lnet/minecraft/entity/Entity;teleport(DDD)V"
             )
     )
     private static void changeY(Entity entity, double x, double y, double z, World world, BlockPos pos) {
-        if (CarpetSettings.farmlandBug) y = field_15757.offset(pos).maxY;
-        entity.refreshPositionAfterTeleport(x, y, z);
+        if (CarpetSettings.farmlandBug) y = SHAPE_ABOVE.move(pos).maxY;
+        entity.teleport(x, y, z);
     }
 }

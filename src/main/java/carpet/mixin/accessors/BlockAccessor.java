@@ -7,5 +7,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(Block.class)
 public interface BlockAccessor {
     @Invoker Block invokeSetOpacity(int opacity);
-    @Invoker("setTickRandomly") Block invokeSetRandomTicks(boolean shouldTick);
+    @Invoker("setTicksRandomly") Block invokeSetRandomTicks(boolean shouldTick);
 }

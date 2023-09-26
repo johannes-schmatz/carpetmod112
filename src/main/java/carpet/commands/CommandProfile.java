@@ -4,8 +4,8 @@ import org.jetbrains.annotations.Nullable;
 
 import carpet.CarpetSettings;
 import carpet.utils.CarpetProfiler;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -15,19 +15,19 @@ import java.util.List;
 public class CommandProfile extends CommandCarpetBase
 {
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "profile";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender)
+    public String getUsage(CommandSource sender)
     {
         return "Usage: /profile <entities>";
     }
 
     @Override
-    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (!command_enabled("commandProfile", sender)) return;
         if (args.length > 0 && "entities".equalsIgnoreCase(args[0]))
@@ -42,7 +42,7 @@ public class CommandProfile extends CommandCarpetBase
     }
 
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
     {
         if (!CarpetSettings.commandProfile)
         {
@@ -50,7 +50,7 @@ public class CommandProfile extends CommandCarpetBase
         }
         if (args.length == 1)
         {
-            return method_2894(args, "entities");
+            return suggestMatching(args, "entities");
         }
         return Collections.<String>emptyList();
     }

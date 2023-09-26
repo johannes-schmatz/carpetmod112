@@ -1,7 +1,7 @@
 package carpet.mixin.missingTools;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShearsItem;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ShearsItemMixin {
 
     @Inject(
-            method = "getBlockBreakingSpeed",
+            method = "getMiningSpeed",
             at = @At("HEAD"),
             cancellable = true
     )

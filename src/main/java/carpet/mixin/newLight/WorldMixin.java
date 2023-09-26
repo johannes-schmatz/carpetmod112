@@ -6,11 +6,11 @@ import carpet.utils.extensions.NewLightWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.LightType;
-import net.minecraft.world.SaveHandler;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldSaveHandler;
+import net.minecraft.world.WorldData;
 import net.minecraft.world.dimension.Dimension;
-import net.minecraft.world.level.LevelProperties;
+import net.minecraft.world.storage.WorldStorage;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,12 +28,12 @@ public class WorldMixin implements NewLightWorld {
             method = "<init>",
             at = @At("RETURN")
     )
-    private void onCtor(SaveHandler levelProperties, LevelProperties levelProperties2, Dimension dimension, Profiler profiler, boolean isClient, CallbackInfo ci) {
+    private void onCtor(WorldStorage levelProperties, WorldData levelProperties2, Dimension dimension, Profiler profiler, boolean isClient, CallbackInfo ci) {
         this.lightingEngine = new LightingEngine((World) (Object) this);
     }
 
     @Inject(
-            method = "method_8539",
+            method = "checkLight(Lnet/minecraft/world/LightType;Lnet/minecraft/util/math/BlockPos;)Z",
             at = @At("HEAD"),
             cancellable = true
     )

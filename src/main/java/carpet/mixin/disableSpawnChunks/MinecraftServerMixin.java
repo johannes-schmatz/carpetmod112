@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin {
-    @Shadow protected abstract void save();
+    @Shadow protected abstract void clearProgress();
 
     @Inject(
             method = "prepareWorlds",
@@ -23,7 +23,7 @@ public abstract class MinecraftServerMixin {
     )
     private void disableSpawnChunks(CallbackInfo ci) {
         if (CarpetSettings.disableSpawnChunks) {
-            save();
+            clearProgress();
             ci.cancel();
         }
     }

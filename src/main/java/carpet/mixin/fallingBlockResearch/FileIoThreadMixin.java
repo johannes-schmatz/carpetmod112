@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.util.FileIoCallback;
-import net.minecraft.util.FileIoThread;
+import net.minecraft.world.chunk.storage.io.FileIoCallback;
+import net.minecraft.world.chunk.storage.io.FileIoThread;
 
 import java.util.ArrayList;
 import java.util.Collections;

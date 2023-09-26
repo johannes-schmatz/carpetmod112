@@ -50,7 +50,7 @@ public class EnderChestBlockEntityMixin implements BlockEntityOptimizer.LazyBloc
     }
 
     @Inject(
-            method = "onBlockAction",
+            method = "doEvent",
             at = @At("HEAD")
     )
     private void wakeUpFromClientEvent(int id, int type, CallbackInfoReturnable<Boolean> cir) {

@@ -5,36 +5,35 @@ import carpet.utils.CarpetProfiler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldSaveHandler;
+import net.minecraft.world.WorldData;
 import net.minecraft.world.dimension.Dimension;
-import net.minecraft.world.level.LevelProperties;
+import net.minecraft.world.storage.WorldStorage;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import redstone.multimeter.common.TickTask;
-import redstone.multimeter.helper.WorldHelper;
 
 import static carpet.helpers.LagSpikeHelper.PrePostSubPhase.*;
 import static carpet.helpers.LagSpikeHelper.TickPhase.*;
 
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin extends World {
-    protected ServerWorldMixin(WorldSaveHandler levelProperties, LevelProperties levelProperties2, Dimension dimension, Profiler profiler, boolean isClient) {
-        super(levelProperties, levelProperties2, dimension, profiler, isClient);
+
+    protected ServerWorldMixin(WorldStorage storage, WorldData data, Dimension dimension, Profiler profiler,
+            boolean isClient) {
+        super(storage, data, dimension, profiler, isClient);
     }
 
     @Inject(
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/MobSpawnerHelper;tickSpawners(Lnet/minecraft/server/world/ServerWorld;ZZZ)I"
+                    target = "Lnet/minecraft/world/NaturalSpawner;spawnEntities(Lnet/minecraft/server/world/ServerWorld;ZZZ)I"
             )
     )
     private void preSpawning(CallbackInfo ci) {
-        WorldHelper.startTickTask(TickTask.MOB_SPAWNING); // RSMM
-
-        CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "spawning");
+        CarpetProfiler.start_section(this.dimension.getType().getKey(), "spawning");
 
         LagSpikeHelper.processLagSpikes(this, MOB_SPAWNING, PRE);
     }
@@ -43,7 +42,7 @@ public abstract class ServerWorldMixin extends World {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/MobSpawnerHelper;tickSpawners(Lnet/minecraft/server/world/ServerWorld;ZZZ)I",
+                    target = "Lnet/minecraft/world/NaturalSpawner;spawnEntities(Lnet/minecraft/server/world/ServerWorld;ZZZ)I",
                     shift = At.Shift.AFTER
             )
     )
@@ -51,20 +50,16 @@ public abstract class ServerWorldMixin extends World {
         LagSpikeHelper.processLagSpikes(this, MOB_SPAWNING, POST);
 
         CarpetProfiler.end_current_section();
-
-        WorldHelper.endTickTask();
     }
 
     @Inject(
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/chunk/ChunkProvider;tickChunks()Z"
+                    target = "Lnet/minecraft/world/chunk/ChunkSource;tick()Z"
             )
     )
     private void preChunkUnloading(CallbackInfo ci) {
-        WorldHelper.startTickTask(TickTask.CHUNK_SOURCE); // RSMM
-
         LagSpikeHelper.processLagSpikes(this, CHUNK_UNLOADING, PRE);
     }
 
@@ -72,25 +67,23 @@ public abstract class ServerWorldMixin extends World {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/chunk/ChunkProvider;tickChunks()Z",
+                    target = "Lnet/minecraft/world/chunk/ChunkSource;tick()Z",
                     shift = At.Shift.AFTER
             )
     )
     private void postChunkUnloading(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, CHUNK_UNLOADING, POST);
-
-        WorldHelper.endTickTask(); // RSMM
     }
 
     @Inject(
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/world/ServerWorld;method_3644(Z)Z"
+                    target = "Lnet/minecraft/server/world/ServerWorld;doScheduledTicks(Z)Z"
             )
     )
     private void preTileTick(CallbackInfo ci) {
-        CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "blocks");
+        CarpetProfiler.start_section(this.dimension.getType().getKey(), "blocks");
         LagSpikeHelper.processLagSpikes(this, TILE_TICK, PRE);
     }
 
@@ -98,7 +91,7 @@ public abstract class ServerWorldMixin extends World {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/world/ServerWorld;method_3644(Z)Z",
+                    target = "Lnet/minecraft/server/world/ServerWorld;doScheduledTicks(Z)Z",
                     shift = At.Shift.AFTER
             )
     )
@@ -111,12 +104,11 @@ public abstract class ServerWorldMixin extends World {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/world/ServerWorld;tickBlocks()V"
+                    target = "Lnet/minecraft/server/world/ServerWorld;tickChunks()V"
             )
     )
     private void preRandomTick(CallbackInfo ci) {
-        WorldHelper.startTickTask(TickTask.TICK_CHUNKS); // RSMM
-        CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "blocks");
+        CarpetProfiler.start_section(this.dimension.getType().getKey(), "blocks");
         LagSpikeHelper.processLagSpikes(this, RANDOM_TICK, PRE);
     }
 
@@ -124,7 +116,7 @@ public abstract class ServerWorldMixin extends World {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/world/ServerWorld;tickBlocks()V",
+                    target = "Lnet/minecraft/server/world/ServerWorld;tickChunks()V",
                     shift = At.Shift.AFTER
             )
     )
@@ -137,12 +129,10 @@ public abstract class ServerWorldMixin extends World {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/PlayerWorldManager;method_2111()V"
+                    target = "Lnet/minecraft/server/ChunkMap;tick()V"
             )
     )
     private void preChunkMap(CallbackInfo ci) {
-        WorldHelper.swapTickTask(TickTask.CHUNK_MAP); // RSMM
-
         LagSpikeHelper.processLagSpikes(this, PLAYER_CHUNK_MAP, PRE);
     }
 
@@ -150,26 +140,22 @@ public abstract class ServerWorldMixin extends World {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/PlayerWorldManager;method_2111()V",
+                    target = "Lnet/minecraft/server/ChunkMap;tick()V",
                     shift = At.Shift.AFTER
             )
     )
     private void postChunkMap(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, PLAYER_CHUNK_MAP, POST);
-
-        WorldHelper.endTickTask(); // RSMM
     }
 
     @Inject(
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/village/VillageState;method_2839()V"
+                    target = "Lnet/minecraft/world/village/SavedVillageData;tick()V"
             )
     )
     private void preVillage(CallbackInfo ci) {
-        WorldHelper.startTickTask(TickTask.VILLAGES); // RSMM
-
         LagSpikeHelper.processLagSpikes(this, VILLAGE, PRE);
     }
 
@@ -177,21 +163,19 @@ public abstract class ServerWorldMixin extends World {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/village/ZombieSiegeManager;method_2835()V",
+                    target = "Lnet/minecraft/world/village/VillageSiege;tick()V",
                     shift = At.Shift.AFTER
             )
     )
     private void postVillage(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, VILLAGE, POST);
-
-        WorldHelper.swapTickTask(TickTask.PORTALS); // RSMM
     }
 
     @Inject(
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/world/ServerWorld;method_2131()V"
+                    target = "Lnet/minecraft/server/world/ServerWorld;doBlockEvents()V"
             )
     )
     private void preBlockEvent(CallbackInfo ci) {
@@ -202,13 +186,11 @@ public abstract class ServerWorldMixin extends World {
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/world/ServerWorld;method_2131()V",
+                    target = "Lnet/minecraft/server/world/ServerWorld;doBlockEvents()V",
                     shift = At.Shift.AFTER
             )
     )
     private void postBlockEvent(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes(this, BLOCK_EVENT, POST);
-
-        WorldHelper.endTickTask(); // RSMM
     }
 }

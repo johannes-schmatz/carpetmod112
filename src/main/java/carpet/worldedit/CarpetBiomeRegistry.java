@@ -58,8 +58,8 @@ class CarpetBiomeRegistry implements BiomeRegistry {
             if ((biome == null) || (biomes.containsValue(biome))) {
                 continue;
             }
-            biomes.put(Biome.getBiomeIndex(biome), biome);
-            biomeData.put(Biome.getBiomeIndex(biome), new CarpetBiomeData(biome));
+            biomes.put(Biome.getId(biome), biome);
+            biomeData.put(Biome.getId(biome), new CarpetBiomeData(biome));
         }
 
         CarpetBiomeRegistry.biomes = biomes;

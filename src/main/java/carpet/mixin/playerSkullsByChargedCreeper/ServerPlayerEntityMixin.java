@@ -4,13 +4,13 @@ import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.mob.hostile.CreeperEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,11 +33,11 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         Entity entity = cause.getAttacker();
         if (!(entity instanceof CreeperEntity)) return;
         CreeperEntity creeper = (CreeperEntity) entity;
-        if (!creeper.method_3074() || !creeper.shouldDropHead()) return;
-        creeper.onHeadDropped();
+        if (!creeper.isCharged() || !creeper.shouldDropMobHead()) return;
+        creeper.addMobHeadDrop();
         try {
             ItemStack skull = new ItemStack(Items.SKULL, 1, 3);
-            skull.setNbt(StringNbtReader.parse(String.format("{SkullOwner:\"%s\"}", getTranslationKey().toLowerCase())));
+            skull.setNbt(StringNbtReader.parse(String.format("{SkullOwner:\"%s\"}", getName().toLowerCase())));
             this.dropItem(skull, 0.0F);
         } catch (NbtException e) {
             e.printStackTrace();

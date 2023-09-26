@@ -4,10 +4,10 @@ import carpet.logging.LoggerRegistry;
 import carpet.logging.logHelpers.DamageReporter;
 import carpet.logging.logHelpers.KillLogHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.living.LivingEntity;
+import net.minecraft.entity.living.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -34,7 +34,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             method = "damage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;getGlobalDifficulty()Lnet/minecraft/world/Difficulty;",
+                    target = "Lnet/minecraft/world/World;getDifficulty()Lnet/minecraft/world/Difficulty;",
                     ordinal = 0
             )
     )
@@ -60,14 +60,14 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             method = "applyDamage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;applyArmorDamage(Lnet/minecraft/entity/damage/DamageSource;F)F"
+                    target = "Lnet/minecraft/entity/living/player/PlayerEntity;damageAfterArmorResistance(Lnet/minecraft/entity/damage/DamageSource;F)F"
             )
     )
     private float modifyDamageArmor(PlayerEntity entityPlayer, DamageSource source, float damage) {
-        float modified = applyArmorDamage(source, damage);
+        float modified = damageAfterArmorResistance(source, damage);
         if (LoggerRegistry.__damage) {
             DamageReporter.modify_damage(this, source, damage, modified,
-                String.format("armour %.1f and toughness %.1f", (float)this.getArmorProtectionValue(), (float)this.initializeAttribute(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).getValue()));
+                String.format("armour %.1f and toughness %.1f", (float)this.getArmorProtection(), (float)this.getAttribute(EntityAttributes.f_8039308).get()));
         }
         return modified;
     }
@@ -76,7 +76,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             method = "applyDamage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;setAbsorption(F)V"
+                    target = "Lnet/minecraft/entity/living/player/PlayerEntity;setAbsorption(F)V"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
@@ -88,7 +88,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             method = "applyDamage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;setHealth(F)V"
+                    target = "Lnet/minecraft/entity/living/player/PlayerEntity;setHealth(F)V"
             )
     )
     private void logFinalDamage(DamageSource source, float amount, CallbackInfo ci) {
@@ -100,7 +100,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             at = @At("HEAD")
     )
     private void logInvulnerable(DamageSource source, float amount, CallbackInfo ci) {
-        if (LoggerRegistry.__damage && isInvulnerableTo(source)) {
+        if (LoggerRegistry.__damage && isInvulnerable(source)) {
             DamageReporter.modify_damage(this, source, amount, 0, "invulnerability to the damage source");
         }
     }
@@ -118,7 +118,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             method = "attack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
+                    target = "Lnet/minecraft/entity/living/LivingEntity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
             )
     )
     private void onAttackingEntity(Entity targetEntity, CallbackInfo ci) {
@@ -129,7 +129,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             method = "attack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;method_13267()V"
+                    target = "Lnet/minecraft/entity/living/player/PlayerEntity;m_4615949()V"
             )
     )
     private void onSweep(Entity targetEntity, CallbackInfo ci) {
@@ -142,8 +142,8 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             at = @At("RETURN")
     )
     private void onAttackEnd(Entity targetEntity, CallbackInfo ci) {
-        if (!LoggerRegistry.__kills || sweeping || !targetEntity.isAttackable()) return;
-        if (!targetEntity.handleAttack(this)) {
+        if (!LoggerRegistry.__kills || sweeping || !targetEntity.canBePunched()) return;
+        if (!targetEntity.onPunched(this)) {
             KillLogHelper.onNonSweepAttack((PlayerEntity) (Object) this);
         } else {
             KillLogHelper.onDudHit((PlayerEntity) (Object) this);

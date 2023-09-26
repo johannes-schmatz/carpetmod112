@@ -1,7 +1,8 @@
 package carpet.mixin.carefulBreak;
 
 import carpet.helpers.CarefulBreakHelper;
-import net.minecraft.util.Util;
+import net.minecraft.util.Utils;
+
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,10 +11,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.concurrent.FutureTask;
 
-@Mixin(Util.class)
+@Mixin(Utils.class)
 public class UtilMixin {
     @Inject(
-            method = "executeTask",
+            method = "run",
             at = @At(
                     value = "RETURN",
                     ordinal = 1

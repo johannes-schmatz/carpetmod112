@@ -9,6 +9,6 @@ import net.minecraft.entity.ai.goal.GoalSelector;
 
 @Mixin(GoalSelector.class)
 public interface GoalSelectorAccessor {
-    // TODO: unsure, could be field_14577 as well...
-    @Accessor("field_14578") Set<AccessibleGoalSelectorEntry> getExecutingTaskEntries();
+    // TODO: unsure, could be `goals` as well...
+    @Accessor("activeGoals") Set<AccessibleGoalSelectorEntry> getExecutingTaskEntries();
 }

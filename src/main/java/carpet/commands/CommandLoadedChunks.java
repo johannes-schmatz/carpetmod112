@@ -6,16 +6,16 @@ import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.IncorrectUsageException;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.chunk.ServerChunkCache;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ServerChunkProvider;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -32,12 +32,12 @@ public class CommandLoadedChunks extends CommandCarpetBase
 	 * Gets the name of the command
 	 */
 	protected World world; // TODO: convert to local variable + parameters
-	public String getUsageTranslationKey(CommandSource sender)
+	public String getUsage(CommandSource sender)
 	{
 		return "Usage: loadedChunks <size | key | value>";
 	}
 
-	public String getCommandName()
+	public String getName()
 	{
 		return "loadedChunks";
 	}
@@ -45,12 +45,12 @@ public class CommandLoadedChunks extends CommandCarpetBase
 	/**
 	 * Callback for when the command is executed
 	 */
-	public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
 	{
 		if (!command_enabled("commandLoadedChunks", sender)) return;
-		if (args.length == 0) throw new IncorrectUsageException(getUsageTranslationKey(sender));
+		if (args.length == 0) throw new IncorrectUsageException(getUsage(sender));
 
-		world = sender.getWorld();
+		world = sender.getSourceWorld();
 
 		try {
 			switch (args[0]){
@@ -58,16 +58,16 @@ public class CommandLoadedChunks extends CommandCarpetBase
 					size(server, sender, args);
 					break;
 				case "search":
-					if (args.length != 3) throw new IncorrectUsageException(getUsageTranslationKey(sender));
-					search(sender, parseChunkPosition(args[1], sender.getBlockPos().getX()), parseChunkPosition(args[2], sender.getBlockPos().getZ()));
+					if (args.length != 3) throw new IncorrectUsageException(getUsage(sender));
+					search(sender, parseChunkPosition(args[1], sender.getSourceBlockPos().getX()), parseChunkPosition(args[2], sender.getSourceBlockPos().getZ()));
 					break;
 				case "remove":
-					if (args.length != 3) throw new IncorrectUsageException(getUsageTranslationKey(sender));
-					remove(sender, parseChunkPosition(args[1], sender.getBlockPos().getX()), parseChunkPosition(args[2], sender.getBlockPos().getZ()));
+					if (args.length != 3) throw new IncorrectUsageException(getUsage(sender));
+					remove(sender, parseChunkPosition(args[1], sender.getSourceBlockPos().getX()), parseChunkPosition(args[2], sender.getSourceBlockPos().getZ()));
 					break;
 				case "add":
-					if (args.length != 3) throw new IncorrectUsageException(getUsageTranslationKey(sender));
-					add(sender, parseChunkPosition(args[1], sender.getBlockPos().getX()), parseChunkPosition(args[2], sender.getBlockPos().getZ()));
+					if (args.length != 3) throw new IncorrectUsageException(getUsage(sender));
+					add(sender, parseChunkPosition(args[1], sender.getSourceBlockPos().getX()), parseChunkPosition(args[2], sender.getSourceBlockPos().getZ()));
 					break;
 				case "inspect":
 					inspect(server, sender, args);
@@ -76,7 +76,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
 					dump(server, sender, args);
 					break;
 				default:
-					throw new IncorrectUsageException(getUsageTranslationKey(sender));
+					throw new IncorrectUsageException(getUsage(sender));
 			}
 		}catch (Exception exception){
 			exception.printStackTrace();
@@ -86,9 +86,10 @@ public class CommandLoadedChunks extends CommandCarpetBase
 	}
 
 	private Object getPrivateMethods(World world, String name){
-		ServerChunkProvider provider = (ServerChunkProvider) world.getChunkProvider();
-		Long2ObjectOpenHashMap<Chunk> loadedChunks = (Long2ObjectOpenHashMap<Chunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap();
+		ServerChunkCache provider = (ServerChunkCache) world.getChunkSource();
+		Long2ObjectOpenHashMap<WorldChunk> loadedChunks = (Long2ObjectOpenHashMap<WorldChunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap();
 		try {
+			// TODO: WTF, reflection
 			Field f = loadedChunks.getClass().getDeclaredField(name);
 			f.setAccessible(true);
 			return f.get(loadedChunks);
@@ -108,7 +109,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
 			int getHashSize = (int) getPrivateMethods(world, "n");
 			for (int i = 0, n = getHashSize; i <= n; i++) {
 				long key = keys[i];
-				Chunk val = (Chunk) values[i];
+				WorldChunk val = (WorldChunk) values[i];
 				if (val == null) {
 					pw.println(i + ",,,,");
 				} else {
@@ -117,23 +118,23 @@ public class CommandLoadedChunks extends CommandCarpetBase
 			}
 			pw.flush();
 		}
-		run(sender, this, "Written to %s", fileName);
+		sendSuccess(sender, this, "Written to %s", fileName);
 	}
 
-	protected Long2ObjectOpenHashMap<Chunk> getLoadedChunks (CommandSource sender){
-		world = sender.getWorld();
-		ServerChunkProvider provider = (ServerChunkProvider) world.getChunkProvider();
-		return (Long2ObjectOpenHashMap<Chunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap();
+	protected Long2ObjectOpenHashMap<WorldChunk> getLoadedChunks (CommandSource sender){
+		world = sender.getSourceWorld();
+		ServerChunkCache provider = (ServerChunkCache) world.getChunkSource();
+		return (Long2ObjectOpenHashMap<WorldChunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap();
 	}
 
 	protected void size(MinecraftServer server, CommandSource sender, String[] args)
 	throws CommandException, NoSuchFieldException, IllegalAccessException {
-		Long2ObjectOpenHashMap<Chunk> loadedChunks = this.getLoadedChunks(sender);
+		Long2ObjectOpenHashMap<WorldChunk> loadedChunks = this.getLoadedChunks(sender);
 		sender.sendMessage(new LiteralText(String.format("Hashmap size is %d, %.2f", loadedChunks.size(), getFillLevel(loadedChunks))));
 	}
 
 	protected void inspect(MinecraftServer server, CommandSource sender, String[] args) throws CommandException, NoSuchFieldException, IllegalAccessException {
-		Long2ObjectOpenHashMap<Chunk> loadedChunks = this.getLoadedChunks(sender);
+		Long2ObjectOpenHashMap<WorldChunk> loadedChunks = this.getLoadedChunks(sender);
 		Object[] chunks = getValues(loadedChunks);
 		int mask = getMask(loadedChunks);
 		Integer start = 0, end = chunks.length;
@@ -150,14 +151,14 @@ public class CommandLoadedChunks extends CommandCarpetBase
 					keyClass = Optional.of(Long.valueOf(args[++i]));
 					break;
 				default:
-					throw new IncorrectUsageException(getUsageTranslationKey(sender));
+					throw new IncorrectUsageException(getUsage(sender));
 			}
 		}
 		ArrayList<String> inspections = new ArrayList<>();
 		String last = "";
 		int lastN = 0;
 		for (int i = start; (i & mask) != (end & mask); i++) {
-			Chunk chunk = (Chunk) chunks[i & mask];
+			WorldChunk chunk = (WorldChunk) chunks[i & mask];
 			if(keyClass.isPresent()){
 				if(chunk == null){
 					if(!last.equals("null")){
@@ -195,11 +196,11 @@ public class CommandLoadedChunks extends CommandCarpetBase
 	}
 
 	protected void search(CommandSource sender, int chunkX, int chunkZ) throws NoSuchFieldException, IllegalAccessException {
-		Long2ObjectOpenHashMap<Chunk> loadedChunks = getLoadedChunks();
+		Long2ObjectOpenHashMap<WorldChunk> loadedChunks = getLoadedChunks();
 		Object[] chunks = getValues(loadedChunks);
 		int mask = getMask(loadedChunks);
 		for (int i = 0; i < chunks.length; i++) {
-			Chunk chunk = (Chunk) chunks[i];
+			WorldChunk chunk = (WorldChunk) chunks[i];
 			if(chunk == null)
 				continue;
 			if (chunk.chunkX != chunkX || chunk.chunkZ != chunkZ)
@@ -209,38 +210,38 @@ public class CommandLoadedChunks extends CommandCarpetBase
 		}
 	}
 
-	protected static HashMap<Long, Chunk> tempChunks = new HashMap<>();
+	protected static HashMap<Long, WorldChunk> tempChunks = new HashMap<>();
 
 	protected void add(CommandSource sender, int x, int z) {
-		long hash = ChunkPos.getIdFromCoords(x, z);
+		long hash = ChunkPos.toLong(x, z);
 		if(!tempChunks.containsKey(hash)){
 			sender.sendMessage(new LiteralText(String.format("Chunk (%d, %d) couldn't been found", x, z)));
 			return;
 		}
-		Chunk chunk = tempChunks.get(hash);
-		Long2ObjectOpenHashMap<Chunk> loadedChunks = getLoadedChunks();
+		WorldChunk chunk = tempChunks.get(hash);
+		Long2ObjectOpenHashMap<WorldChunk> loadedChunks = getLoadedChunks();
 		loadedChunks.put(hash, chunk);
 		sender.sendMessage(new LiteralText(String.format("Chunk (%d, %d) has been added back", x, z)));
 	}
 
 	protected void remove(CommandSource sender, int x, int z) {
-		long hash = ChunkPos.getIdFromCoords(x, z);
+		long hash = ChunkPos.toLong(x, z);
 
-		Long2ObjectOpenHashMap<Chunk> loadedChunks = getLoadedChunks();
+		Long2ObjectOpenHashMap<WorldChunk> loadedChunks = getLoadedChunks();
 		if(!loadedChunks.containsKey(hash)){
 			sender.sendMessage(new LiteralText(String.format("Chunk (%d, %d) is not in loaded list", x, z)));
 		}
-		Chunk chunk = loadedChunks.remove(hash);
+		WorldChunk chunk = loadedChunks.remove(hash);
 		tempChunks.put(hash, chunk);
 		sender.sendMessage(new LiteralText(String.format("Chunk (%d, %d) has been removed", x, z)));
 	}
 
-	protected Long2ObjectOpenHashMap<Chunk> getLoadedChunks(){
-		ServerChunkProvider provider = (ServerChunkProvider) world.getChunkProvider();
-		return (Long2ObjectOpenHashMap<Chunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap();
+	protected Long2ObjectOpenHashMap<WorldChunk> getLoadedChunks(){
+		ServerChunkCache provider = (ServerChunkCache) world.getChunkSource();
+		return (Long2ObjectOpenHashMap<WorldChunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap();
 	}
 
-	public String formatChunk(Chunk chunk, int pos, int mask){
+	public String formatChunk(WorldChunk chunk, int pos, int mask){
 		if (chunk == null) {
 			return String.format("%d: null", pos);
 
@@ -251,11 +252,11 @@ public class CommandLoadedChunks extends CommandCarpetBase
 				getKeyClass(chunk, mask));
 	}
 
-	public String getChunkDescriber(Chunk chunk){
+	public String getChunkDescriber(WorldChunk chunk){
 		int x = chunk.chunkX, z = chunk.chunkZ;
-		long hash = ChunkPos.getIdFromCoords(x, z);
+		long hash = ChunkPos.toLong(x, z);
 		String describer = "";
-		if(world.isChunkInsideSpawnChunks(x, z)){
+		if(world.isSpawnChunk(x, z)){
 			describer +="S ";
 		}
 		if(((hash ^ (hash >>> 16)) & 0xFFFF) == 0){
@@ -264,8 +265,8 @@ public class CommandLoadedChunks extends CommandCarpetBase
 		return describer;
 	}
 
-	public static long getKeyClass(Chunk chunk, int mask){
-		return HashCommon.mix(ChunkPos.getIdFromCoords(chunk.chunkX, chunk.chunkZ)) & mask;
+	public static long getKeyClass(WorldChunk chunk, int mask){
+		return HashCommon.mix(ChunkPos.toLong(chunk.chunkX, chunk.chunkZ)) & mask;
 	}
 
 	public static int getMaxField(Long2ObjectOpenHashMap hashMap) throws NoSuchFieldException, IllegalAccessException {
@@ -290,7 +291,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
 		return (Object[]) value.get(hashMap);
 	}
 
-	public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
+	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
 
 		if (!CarpetSettings.commandLoadedChunks)
 		{
@@ -299,7 +300,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
 
 		if (args.length == 1)
 		{
-			return method_2894(args,
+			return suggestMatching(args,
 					"size", "inspect", "search", "remove", "add", "dump");
 		}
 
@@ -311,7 +312,7 @@ public class CommandLoadedChunks extends CommandCarpetBase
 					case "to":
 						return Collections.emptyList();
 				}
-				return method_2894(args,
+				return suggestMatching(args,
 						"class", "from", "to");
 			case "search":
 			case "remove":
@@ -326,13 +327,13 @@ public class CommandLoadedChunks extends CommandCarpetBase
 
 
 	public List<String> getChunkCompletitions(CommandSource sender, String[] args, int index) {
-		int chunkX = sender.getBlockPos().getX() >> 4;
-		int chunkZ = sender.getBlockPos().getZ() >> 4;
+		int chunkX = sender.getSourceBlockPos().getX() >> 4;
+		int chunkZ = sender.getSourceBlockPos().getZ() >> 4;
 
 		if (args.length == index) {
-			return method_2894(args, Integer.toString(chunkX), "~");
+			return suggestMatching(args, Integer.toString(chunkX), "~");
 		} else if (args.length == index + 1) {
-			return method_2894(args, Integer.toString(chunkZ), "~");
+			return suggestMatching(args, Integer.toString(chunkZ), "~");
 		} else {
 			return Collections.emptyList();
 		}

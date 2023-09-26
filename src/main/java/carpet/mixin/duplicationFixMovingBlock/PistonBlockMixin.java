@@ -1,8 +1,9 @@
 package carpet.mixin.duplicationFixMovingBlock;
 
 import carpet.helpers.PistonHelper;
-import net.minecraft.block.PistonBlock;
-import net.minecraft.block.piston.PistonHandler;
+
+import net.minecraft.block.PistonBaseBlock;
+import net.minecraft.block.piston.PistonMoveStructureResolver;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -14,17 +15,17 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.List;
 
-@Mixin(PistonBlock.class)
+@Mixin(PistonBaseBlock.class)
 public class PistonBlockMixin {
     @Inject(
             method = "move",
             at = @At(
                     value = "INVOKE_ASSIGN",
-                    target = "Lnet/minecraft/block/piston/PistonHandler;getMovedBlocks()Ljava/util/List;"
+                    target = "Lnet/minecraft/block/piston/PistonMoveStructureResolver;getToMove()Ljava/util/List;"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void dupeFixStart(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir, PistonHandler helper, List<BlockPos> moving) {
+    private void dupeFixStart(World worldIn, BlockPos pos, Direction direction, boolean extending, CallbackInfoReturnable<Boolean> cir, PistonMoveStructureResolver helper, List<BlockPos> moving) {
         PistonHelper.registerPushed(moving);
     }
 

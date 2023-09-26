@@ -1,7 +1,7 @@
 package carpet.mixin.betterStatistics;
 
 import carpet.helpers.StatHelper;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stat.Stat;
@@ -12,10 +12,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
     @Redirect(
-            method = "dropStack(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;",
+            method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/stat/Stats;dropped(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
+                    target = "Lnet/minecraft/stat/Stats;itemDropped(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
             )
     )
     private Stat addDroppedObjectMeta(Item item, ItemStack stack) {

@@ -6,8 +6,8 @@ import carpet.network.PluginChannelHandler;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -36,20 +36,20 @@ public class CarpetClientServer implements PluginChannelHandler {
                 break;
             case MINE_CHANNEL_NAME:
                 // Mining packets for carpet client to get around few bugs and careful break. CARPET-XCOM
-                PacketByteBuf payload = packet.getPayload();
+                PacketByteBuf payload = packet.getData();
                 payload.readBoolean();
                 boolean start = payload.readBoolean();
                 BlockPos pos = payload.readBlockPos();
-                Direction facing = Direction.getById(payload.readUnsignedByte());
+                Direction facing = Direction.byId(payload.readUnsignedByte());
                 activateInstantMine = payload.readBoolean();
                 if (start) {
                     if (!this.minecraftServer.isSpawnProtected(player.world, pos, player) && player.world.getWorldBorder().contains(pos)) {
-                        player.interactionManager.processBlockBreakingAction(pos, facing);
+                        player.interactionManager.startMiningBlock(pos, facing);
                     } else {
                         player.networkHandler.sendPacket(new BlockUpdateS2CPacket(player.world, pos));
                     }
                 } else {
-                    player.interactionManager.method_10764(pos);
+                    player.interactionManager.finishMiningBlock(pos);
                 }
                 activateInstantMine = true;
                 break;

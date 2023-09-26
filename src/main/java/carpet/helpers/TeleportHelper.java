@@ -1,6 +1,6 @@
 package carpet.helpers;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -12,31 +12,31 @@ public class TeleportHelper {
 		double x = target.x;
 		double y = target.y;
 		double z = target.z;
-		MinecraftServer server = player.getMinecraftServer();
+		MinecraftServer server = player.getServer();
 		assert server != null;
 
 		ServerWorld worldFrom = (ServerWorld) player.world;
 		ServerWorld worldTo = (ServerWorld) target.world;
-		int dimension = worldTo.dimension.getDimensionType().getId();
-		player.dimension = dimension;
+		int dimension = worldTo.dimension.getType().getId();
+		player.dimensionId = dimension;
 
-		player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(dimension, worldFrom.getGlobalDifficulty(), worldFrom.getLevelProperties().getGeneratorType(),
+		player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(dimension, worldFrom.getDifficulty(), worldFrom.getData().getGeneratorType(),
 				player.interactionManager.getGameMode()));
-		server.getPlayerManager().method_12831(player);
-		worldFrom.method_3700(player);
+		server.getPlayerManager().updatePermissions(player);
+		worldFrom.removeEntityNow(player);
 		player.removed = false;
 		player.refreshPositionAndAngles(x, y, z, (float) target.yaw, (float) target.pitch);
 
-		worldFrom.checkChunk(player, false);
-		worldTo.spawnEntity(player);
-		worldTo.checkChunk(player, false);
+		worldFrom.tickEntity(player, false);
+		worldTo.addEntity(player);
+		worldTo.tickEntity(player, false);
 
 		player.setWorld(worldTo);
-		server.getPlayerManager().method_1986(player, worldFrom);
+		server.getPlayerManager().onChangedDimension(player, worldFrom);
 
-		player.refreshPositionAfterTeleport(x, y, z);
+		player.teleport(x, y, z);
 		player.interactionManager.setWorld(worldTo);
 		server.getPlayerManager().sendWorldInfo(player, worldTo);
-		server.getPlayerManager().method_2009(player);
+		server.getPlayerManager().sendPlayerInfo(player);
 	}
 }

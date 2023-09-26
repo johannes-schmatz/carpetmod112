@@ -4,8 +4,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 import com.sk89q.worldedit.LocalSession;
 
 class WECUIPacketHandler {
@@ -19,7 +19,7 @@ class WECUIPacketHandler {
                 return;
             }
         
-            PacketByteBuf buff = rawPacket.getPayload();
+            PacketByteBuf buff = rawPacket.getData();
             buff.resetReaderIndex();
             byte[] bytes = new byte[buff.readableBytes()];
             buff.readBytes(bytes);

@@ -4,7 +4,7 @@ import carpet.CarpetSettings;
 import carpet.utils.extensions.DupingPlayer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,14 +17,24 @@ public abstract class ItemEntityMixin extends Entity {
         super(worldIn);
     }
 
-    @Inject(method = "onPlayerCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getCount()I", shift = At.Shift.AFTER))
+    @Inject(
+            method = "onPlayerCollision",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/item/ItemStack;getSize()I",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void dupeItemScanStart(PlayerEntity entityIn, CallbackInfo ci) {
         if(CarpetSettings.craftingWindowDuplication && entityIn instanceof DupingPlayer){
             ((DupingPlayer)entityIn).dupeItemScan(true);
         }
     }
 
-    @Inject(method = "onPlayerCollision", at = @At("RETURN"))
+    @Inject(
+            method = "onPlayerCollision",
+            at = @At("RETURN")
+    )
     private void dupeItemScanEnd(PlayerEntity entityIn, CallbackInfo ci) {
         if (world.isClient) return;
         if(CarpetSettings.craftingWindowDuplication && entityIn instanceof DupingPlayer){

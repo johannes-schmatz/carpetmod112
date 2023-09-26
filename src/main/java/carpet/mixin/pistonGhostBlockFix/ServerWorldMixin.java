@@ -20,7 +20,7 @@ public class ServerWorldMixin implements ExtendedServerWorldPistonGhostBlockFix 
     }
 
     @Inject(
-            method = "method_2131",
+            method = "doBlockEvents",
             at = @At("RETURN")
     )
     private void onBlockEventsEnd(CallbackInfo ci) {

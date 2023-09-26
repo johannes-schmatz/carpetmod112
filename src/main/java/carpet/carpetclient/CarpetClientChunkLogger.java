@@ -15,21 +15,21 @@ import carpet.mixin.accessors.PlayerChunkMapAccessor;
 import carpet.utils.LRUCache;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.server.ChunkPlayerManager;
+import net.minecraft.server.ChunkHolder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.PlayerWorldManager;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.server.ChunkMap;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldView;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ServerChunkProvider;
+import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.server.world.chunk.ServerChunkCache;
 
 import org.jetbrains.annotations.Nullable;
 import java.util.*;
@@ -111,19 +111,19 @@ public class CarpetClientChunkLogger {
         reason = null;
     }
 
-    public static BlockState getBlockState(BlockView world, BlockPos pos, String reason) {
+    public static BlockState getBlockState(WorldView world, BlockPos pos, String reason) {
         setReason(reason);
         BlockState state = world.getBlockState(pos);
         resetToOldReason();
         return state;
     }
-    public static BlockState getBlockState(BlockView world, BlockPos pos, ChunkLoadingReason reason) {
+    public static BlockState getBlockState(WorldView world, BlockPos pos, ChunkLoadingReason reason) {
         setReason(reason);
         BlockState state = world.getBlockState(pos);
         resetToOldReason();
         return state;
     }
-    public static BlockState getBlockState(BlockView world, BlockPos pos, Supplier<ChunkLoadingReason> reason) {
+    public static BlockState getBlockState(WorldView world, BlockPos pos, Supplier<ChunkLoadingReason> reason) {
         setReason(reason);
         BlockState state = world.getBlockState(pos);
         resetToOldReason();
@@ -175,18 +175,18 @@ public class CarpetClientChunkLogger {
         ArrayList<ChunkLog> forNewClient = new ArrayList<>();
         int dimension = -1;
         for (World w : server.worlds) {
-            ServerChunkProvider provider = (ServerChunkProvider) (w.getChunkProvider());
+            ServerChunkCache provider = (ServerChunkCache) (w.getChunkSource());
             dimension++;
-            for (Chunk c : provider.method_12772()) {
+            for (WorldChunk c : provider.getLoadedChunks()) {
                 forNewClient.add(new ChunkLog(c.chunkX, c.chunkZ, dimension, Event.LOADING, null, null));
-                if (((ServerChunkProviderAccessor) provider).getDroppedChunks().contains(ChunkPos.getIdFromCoords(c.chunkX, c.chunkZ))) {
+                if (((ServerChunkProviderAccessor) provider).getDroppedChunks().contains(ChunkPos.toLong(c.chunkX, c.chunkZ))) {
                     forNewClient.add(new ChunkLog(c.chunkX, c.chunkZ, dimension, Event.QUEUE_UNLOAD, null, null));
-                    if (!c.field_12912) {
+                    if (!c.removed) {
                         forNewClient.add(new ChunkLog(c.chunkX, c.chunkZ, dimension, Event.CANCEL_UNLOAD, null, null));
                     }
                 }
             }
-            PlayerWorldManager chunkmap = ((ServerWorld) w).getPlayerWorldManager();
+            ChunkMap chunkmap = ((ServerWorld) w).getChunkMap();
             Iterator<ChunkPos> i = carpetGetAllChunkCoordinates(chunkmap);
             while (i.hasNext()) {
                 ChunkPos pos = i.next();
@@ -199,15 +199,15 @@ public class CarpetClientChunkLogger {
     /*
      * Gets the coordinates of all chunks
      */
-    private static Iterator<ChunkPos> carpetGetAllChunkCoordinates(PlayerWorldManager map){
+    private static Iterator<ChunkPos> carpetGetAllChunkCoordinates(ChunkMap map){
         return new AbstractIterator<ChunkPos>() {
-            final Iterator<ChunkPlayerManager> allChunks = Iterators.concat(((PlayerChunkMapAccessor) map).getEntries().iterator(),
+            final Iterator<ChunkHolder> allChunks = Iterators.concat(((PlayerChunkMapAccessor) map).getEntries().iterator(),
                     ((PlayerChunkMapAccessor) map).getEntriesWithoutChunks().iterator());
 
             @Override
             protected ChunkPos computeNext() {
                 if (allChunks.hasNext()) {
-                    return allChunks.next().getChunkPos();
+                    return allChunks.next().getPos();
                 } else {
                     return this.endOfData();
                 }
@@ -363,7 +363,7 @@ public class CarpetClientChunkLogger {
         }
 
         private void sendInitalChunks(ServerPlayerEntity sender) {
-            MinecraftServer server = sender.getMinecraftServer();
+            MinecraftServer server = sender.getServer();
             ArrayList<ChunkLog> logs = getInitialChunksForNewClient(server);
             sendMissingStackTracesForPlayer(sender, logs);
             for (int i = 0; i < logs.size(); i += LOGS_BATCH_SIZE) {

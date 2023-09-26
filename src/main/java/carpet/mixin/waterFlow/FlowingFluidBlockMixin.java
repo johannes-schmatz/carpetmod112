@@ -1,8 +1,8 @@
 package carpet.mixin.waterFlow;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FlowingFluidBlock;
+import net.minecraft.block.state.BlockState;
+import net.minecraft.block.FlowingLiquidBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,15 +17,15 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.Random;
 
 //@NotThreadSafe
-@Mixin(FlowingFluidBlock.class)
+@Mixin(FlowingLiquidBlock.class)
 public class FlowingFluidBlockMixin {
     private int level = 8; // Thread safety: needs to be thread local for multi-threaded dimensions
 
     @Inject(
-            method = "onScheduledTick",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/FlowingFluidBlock;getFlowDirections(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Ljava/util/Set;"
+                    target = "Lnet/minecraft/block/FlowingLiquidBlock;getSpreadDirections(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Ljava/util/Set;"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
@@ -34,7 +34,7 @@ public class FlowingFluidBlockMixin {
     }
 
     @ModifyConstant(
-            method = "getFlowDirections",
+            method = "getSpreadDirections",
             constant = @Constant(intValue = 1)
     )
     private int maxFlow(int flow) {

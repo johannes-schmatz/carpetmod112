@@ -2,16 +2,17 @@ package carpet.mixin.fillUpdates;
 
 import carpet.CarpetSettings;
 import net.minecraft.block.Block;
-import net.minecraft.class_2765;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.structure.template.StructureTemplate;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 
-@Mixin(class_2765.class)
+@Mixin(StructureTemplate.class)
 public class StructureMixin {
     @ModifyConstant(
-            method = "method_13392",
+            method = "place(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/gen/structure/template/StructureProcessor;Lnet/minecraft/world/gen/structure/template/StructurePlaceSettings;I)V",
             constant = @Constant(intValue = 4)
     )
     private int changeFlags1(int flags) {
@@ -19,10 +20,10 @@ public class StructureMixin {
     }
 
     @ModifyArg(
-            method = "method_13392",
+            method = "place(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/gen/structure/template/StructureProcessor;Lnet/minecraft/world/gen/structure/template/StructurePlaceSettings;I)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z",
+                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/BlockState;I)Z",
                     ordinal = 1
             ),
             index = 2
@@ -32,14 +33,14 @@ public class StructureMixin {
     }
 
     @Redirect(
-            method = "method_13392",
+            method = "place(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/gen/structure/template/StructureProcessor;Lnet/minecraft/world/gen/structure/template/StructurePlaceSettings;I)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;method_8531(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Z)V"
+                    target = "Lnet/minecraft/world/World;onBlockChanged(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Z)V"
             )
     )
     private void notifyNeighbors(World world, BlockPos pos, Block blockType, boolean updateObservers) {
         if (!CarpetSettings.fillUpdates) return;
-        world.method_8531(pos, blockType, updateObservers);
+        world.onBlockChanged(pos, blockType, updateObservers);
     }
 }

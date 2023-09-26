@@ -85,7 +85,9 @@ public class Buildscript extends LegacyFabricProject {
 			}
 
 			private List<Path> getSrcDirs(String caller) {
+				@SuppressWarnings("unchecked")
 				List<Path> srcDirs = (List<Path>) getField("src", project.settings);
+				@SuppressWarnings("unchecked")
 				List<Path> templateDirs = (List<Path>) getField("templates", project.settings);
 
 				switch (caller) {
@@ -100,11 +102,18 @@ public class Buildscript extends LegacyFabricProject {
 						// fill in the template, copy over, add that path to the build
 						// TODO: do that
 
+						@SuppressWarnings("unchecked")
 						List<Path> templatedTemplateDirs = (List<Path>) invoke(this, templateDirs);
 
 						List<Path> paths = new ArrayList<>(srcDirs.size() + templateDirs.size());
 						paths.addAll(srcDirs);
 						paths.addAll(templatedTemplateDirs);
+						return paths;
+					}
+					case "io.github.coolcrabs.brachyura.fabric.FabricModule.createIdeModule": {
+						List<Path> paths = new ArrayList<>(srcDirs.size() + templateDirs.size());
+						paths.addAll(srcDirs);
+						paths.addAll(templateDirs);
 						return paths;
 					}
 					default: {
@@ -172,7 +181,9 @@ public class Buildscript extends LegacyFabricProject {
 					compilation.addSourceDir(srcDir);
 				}
 				// ADDED
+				@SuppressWarnings("unchecked")
 				List<Path> p = (List<Path>) getField("templates", settings);
+				@SuppressWarnings("unchecked")
 				List<Path> p2 = (List<Path>) invoke(module.get(), p);
 				for (Path template : p2) {
 					compilation.addSourceDir(template);

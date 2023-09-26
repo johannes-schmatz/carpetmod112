@@ -8,6 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface ItemEntityAccessor {
     @Accessor int getAge();
     @Accessor void setAge(int age);
-    @Accessor int getPickupDelay();
-    @Accessor void setPickupDelay(int pickupDelay);
+    @Accessor("pickupCooldown") int getPickupDelay();
+    @Accessor("pickupCooldown") void setPickupDelay(int pickupDelay);
 }

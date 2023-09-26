@@ -2,14 +2,14 @@ package carpet.worldedit;
 
 import carpet.CarpetSettings;
 import carpet.network.PluginChannelHandler;
-import net.minecraft.block.BlockState;
-import net.minecraft.command.Command;
-import net.minecraft.command.CommandSource;
+import net.minecraft.block.state.BlockState;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 

@@ -13,25 +13,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Map;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.living.effect.StatusEffect;
+import net.minecraft.entity.living.effect.StatusEffectInstance;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
     @Shadow @Final private Map<StatusEffect, StatusEffectInstance> statusEffects;
-    @Shadow protected int despawnCounter;
-    @Shadow protected abstract void method_2649(StatusEffectInstance effect);
-    @Shadow protected abstract void method_2582(StatusEffectInstance id);
-    @Shadow protected abstract void method_6108(StatusEffectInstance id, boolean p_70695_2_);
+    @Shadow protected int despawnTicks;
+    @Shadow protected abstract void onStatusEffectRemoved(StatusEffectInstance effect);
+    @Shadow protected abstract void onStatusEffectApplied(StatusEffectInstance id);
+    @Shadow protected abstract void onStatusEffectUpgraded(StatusEffectInstance id, boolean p_70695_2_);
     @Shadow public abstract void addStatusEffect(StatusEffectInstance potioneffectIn);
 
     @Inject(
             method = "addStatusEffect",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/effect/StatusEffectInstance;setFrom(Lnet/minecraft/entity/effect/StatusEffectInstance;)V"
+                    target = "Lnet/minecraft/entity/living/effect/StatusEffectInstance;combine(Lnet/minecraft/entity/living/effect/StatusEffectInstance;)V"
             ),
             cancellable = true,
             locals = LocalCapture.CAPTURE_FAILHARD
@@ -40,18 +40,18 @@ public abstract class LivingEntityMixin {
         StatusEffectInstance newEffect = ((ExtendedStatusEffectInstance) current).combine(added);
         if (newEffect != current) {
             // carpet
-            this.statusEffects.put(newEffect.getStatusEffect(), newEffect);
-            this.method_2649(current);
-            this.method_2582(newEffect);
+            this.statusEffects.put(newEffect.getEffect(), newEffect);
+            this.onStatusEffectRemoved(current);
+            this.onStatusEffectApplied(newEffect);
         } else {
             // vanilla
-            this.method_6108(newEffect, true);
+            this.onStatusEffectUpgraded(newEffect, true);
         }
         ci.cancel();
     }
 
     @Inject(
-            method = "method_2649",
+            method = "onStatusEffectRemoved",
             at = @At("RETURN")
     )
     private void onPotionFinish(StatusEffectInstance effect, CallbackInfo ci) {
@@ -64,12 +64,12 @@ public abstract class LivingEntityMixin {
             method = "damage",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/LivingEntity;despawnCounter:I"
+                    target = "Lnet/minecraft/entity/living/LivingEntity;despawnTicks:I"
             )
     )
     private void potionDespawnFix1(LivingEntity entity, int despawnCounter) {
         if (!CarpetSettings.potionsDespawnFix) {
-            this.despawnCounter = despawnCounter;
+            this.despawnTicks = despawnCounter;
         }
     }
 
@@ -80,7 +80,7 @@ public abstract class LivingEntityMixin {
     )
     private void potionDespawnFix2(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.potionsDespawnFix) {
-            this.despawnCounter = 0;
+            this.despawnTicks = 0;
         }
     }
 }

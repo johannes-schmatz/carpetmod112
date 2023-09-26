@@ -1,24 +1,26 @@
 package carpet.mixin.blockEventSerializer;
 
+import net.minecraft.server.world.ReadOnlyServerWorld;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraft.world.MultiServerWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldSaveHandler;
+import net.minecraft.world.WorldData;
 import net.minecraft.world.dimension.Dimension;
-import net.minecraft.world.level.LevelProperties;
+import net.minecraft.world.storage.WorldStorage;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(MultiServerWorld.class)
+@Mixin(ReadOnlyServerWorld.class)
 public abstract class SecondaryServerWorldMixin extends ServerWorldMixin {
-    protected SecondaryServerWorldMixin(WorldSaveHandler levelProperties, LevelProperties levelProperties2, Dimension dimension, Profiler profiler, boolean isClient) {
-        super(levelProperties, levelProperties2, dimension, profiler, isClient);
+    protected SecondaryServerWorldMixin(WorldStorage storage, WorldData data, Dimension dimension,
+            Profiler profiler, boolean isClient) {
+        super(storage, data, dimension, profiler, isClient);
     }
 
     @Inject(
-            method = "getWorld",
+            method = "init",
             at = @At("RETURN")
     )
     private void onInit(CallbackInfoReturnable<World> cir) {

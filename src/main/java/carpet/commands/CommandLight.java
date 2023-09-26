@@ -1,8 +1,9 @@
 package carpet.commands;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.CommandException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
@@ -15,30 +16,30 @@ public class CommandLight extends CommandCarpetBase {
     public static final String USAGE = "/light [x1 y1 z1] [x2 y2 z2] <sky/block> <value>";
 
     @Override
-    public String getCommandName() {
+    public String getName() {
         return "light";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender) {
+    public String getUsage(CommandSource sender) {
         return USAGE;
     }
 
     @Override
-    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
+    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
         if(!command_enabled("commandLight", sender)) return;
 
         int x1, y1, z1, x2, y2, z2, lightLevel;
         String type;
         if (args.length > 7) {
             if (args.length > 8) throw new IncorrectUsageException(USAGE);
-            x1 = (int) Math.round(getCoordinate(sender.getBlockPos().getX(), args[0], false).getAmount());
-            y1 = (int) Math.round(getCoordinate(sender.getBlockPos().getY(), args[1], false).getAmount());
-            z1 = (int) Math.round(getCoordinate(sender.getBlockPos().getZ(), args[2], false).getAmount());
+            x1 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getRelative());
+            y1 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getY(), args[1], false).getRelative());
+            z1 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getZ(), args[2], false).getRelative());
 
-            x2 = (int) Math.round(getCoordinate(sender.getBlockPos().getX(), args[3], false).getAmount());
-            y2 = (int) Math.round(getCoordinate(sender.getBlockPos().getY(), args[4], false).getAmount());
-            z2 = (int) Math.round(getCoordinate(sender.getBlockPos().getZ(), args[5], false).getAmount());
+            x2 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getX(), args[3], false).getRelative());
+            y2 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getY(), args[4], false).getRelative());
+            z2 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getZ(), args[5], false).getRelative());
 
             type = args[6];
             try {
@@ -72,9 +73,9 @@ public class CommandLight extends CommandCarpetBase {
             } else {
                 throw new IncorrectUsageException(USAGE);
             }
-            fillLightInArea(sender.getWorld(), t, x1, y1, z1, x2, y2, z2, lightLevel);
+            fillLightInArea(sender.getSourceWorld(), t, x1, y1, z1, x2, y2, z2, lightLevel);
 
-            run(sender, this,
+            sendSuccess(sender, this,
                     String.format("Changing light level of %s to %d from:[%d %d %d] to:[%d %d %d]", type, lightLevel, x1, y1, z1, x2, y2, z2));
         } else {
             throw new IncorrectUsageException(USAGE);
@@ -86,32 +87,32 @@ public class CommandLight extends CommandCarpetBase {
             for (int y = y1; y <= y2; y++) {
                 for (int x = x1; x <= x2; x++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    world.method_8491(type, pos, lightLevel);
+                    world.setLight(type, pos, lightLevel);
                 }
             }
         }
     }
 
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, BlockPos targetPos) {
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, BlockPos targetPos) {
         if (args.length == 0) {
             return Collections.emptyList();
         } else if (args.length == 1) {
-            return method_2894(args, String.valueOf(targetPos.getX()));
+            return suggestMatching(args, String.valueOf(targetPos.getX()));
         } else if (args.length == 2) {
-            return method_2894(args, String.valueOf(targetPos.getY()));
+            return suggestMatching(args, String.valueOf(targetPos.getY()));
         } else if (args.length == 3) {
-            return method_2894(args, String.valueOf(targetPos.getZ()));
+            return suggestMatching(args, String.valueOf(targetPos.getZ()));
         } else if (args.length == 4) {
-            return method_2894(args, String.valueOf(targetPos.getX()));
+            return suggestMatching(args, String.valueOf(targetPos.getX()));
         } else if (args.length == 5) {
-            return method_2894(args, String.valueOf(targetPos.getY()));
+            return suggestMatching(args, String.valueOf(targetPos.getY()));
         } else if (args.length == 6) {
-            return method_2894(args, String.valueOf(targetPos.getZ()));
+            return suggestMatching(args, String.valueOf(targetPos.getZ()));
         } else if (args.length == 7) {
-            return method_2894(args, "sky", "block");
+            return suggestMatching(args, "sky", "block");
         } else if (args.length == 8) {
-            return method_2894(args, "0", "15");
+            return suggestMatching(args, "0", "15");
         } else {
             return Collections.emptyList();
         }

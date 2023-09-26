@@ -5,6 +5,7 @@ import carpet.mixin.accessors.BlockAccessor;
 import carpet.mixin.accessors.ServerChunkProviderAccessor;
 import net.minecraft.block.*;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.chunk.ServerChunkCache;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.*;
 
@@ -19,7 +20,7 @@ public class RandomTickOptimization {
     static {
         for (Block b : Block.REGISTRY) {
             if (b instanceof AbstractPressurePlateBlock
-                || b instanceof AbstractButtonBlock
+                || b instanceof ButtonBlock
                 || b instanceof PumpkinBlock
                 || b instanceof RedstoneTorchBlock) {
                 USELESS_RANDOMTICKS.add(b);
@@ -53,13 +54,13 @@ public class RandomTickOptimization {
         if (server == null || server.worlds == null) // worlds not loaded yet
             return;
         for (World world : server.worlds) {
-            ChunkProvider provider = world.getChunkProvider();
-            if (!(provider instanceof ServerChunkProvider))
+            ChunkSource provider = world.getChunkSource();
+            if (!(provider instanceof ServerChunkCache))
                 continue;
-            for (Chunk chunk : ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().values()) {
-                for (ChunkSection subchunk : chunk.getBlockStorage()) {
+            for (WorldChunk chunk : ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().values()) {
+                for (WorldChunkSection subchunk : chunk.getSections()) {
                     if (subchunk != null)
-                        subchunk.calculateCounts();
+                        subchunk.validateBlockCounters();
                 }
             }
         }

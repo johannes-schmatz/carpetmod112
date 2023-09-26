@@ -4,7 +4,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.DefaultedList;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -27,7 +27,7 @@ public class SaveSavestatesHelper {
 			if (!item.isEmpty()) {
 				NbtCompound itemTag = new NbtCompound();
 				itemTag.putByte("Slot", (byte) slot);
-				item.toNbt(itemTag);
+				item.writeNbt(itemTag);
 				itemsTag.add(itemTag);
 			}
 		}
@@ -38,8 +38,8 @@ public class SaveSavestatesHelper {
 	}
 
 	private static int compareItems(ItemStack a, ItemStack b) {
-		int idA = Item.getRawId(a.getItem());
-		int idB = Item.getRawId(b.getItem());
+		int idA = Item.getId(a.getItem());
+		int idB = Item.getId(b.getItem());
 		if (idA != idB) {
 			return Integer.compare(idA, idB);
 		}

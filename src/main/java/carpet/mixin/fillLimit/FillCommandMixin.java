@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 @Mixin(FillCommand.class)
 public class FillCommandMixin {
     @ModifyConstant(
-            method = "method_3279",
+            method = "run",
             constant = @Constant(intValue = 32768)
     )
     private int fillLimit(int orig) {

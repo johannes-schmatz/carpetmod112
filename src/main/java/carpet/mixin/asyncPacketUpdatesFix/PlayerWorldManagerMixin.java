@@ -9,27 +9,27 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.server.ChunkPlayerManager;
-import net.minecraft.server.PlayerWorldManager;
+import net.minecraft.server.ChunkHolder;
+import net.minecraft.server.ChunkMap;
 
 import java.util.List;
 
-@Mixin(PlayerWorldManager.class)
+@Mixin(ChunkMap.class)
 public class PlayerWorldManagerMixin {
-	@Shadow @Final private List<ChunkPlayerManager> playerInstances;
+	@Shadow @Final private List<ChunkHolder> ticking;
 
 	@Inject(
-			method = "method_2111",
+			method = "tick",
 			at = @At(
 					value = "FIELD",
-					target = "Lnet/minecraft/server/PlayerWorldManager;field_13872:Z",
+					target = "Lnet/minecraft/server/ChunkMap;sortLoading:Z",
 					ordinal = 0
 			)
 	)
 	private void asyncPacketUpdatesFix(CallbackInfo ci) {
 		// Fix for chunks not updating after async updates CARPET-PUNCHSTER
 		if (CarpetSettings.asyncPacketUpdatesFix) {
-			for (ChunkPlayerManager entry : playerInstances) {
+			for (ChunkHolder entry : ticking) {
 				((PlayerChunkMapEntryAccessor) entry).setChanges(0);
 			}
 		}

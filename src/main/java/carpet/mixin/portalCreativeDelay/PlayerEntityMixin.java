@@ -2,7 +2,7 @@ package carpet.mixin.portalCreativeDelay;
 
 import carpet.CarpetSettings;
 import carpet.helpers.PortalHelper;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

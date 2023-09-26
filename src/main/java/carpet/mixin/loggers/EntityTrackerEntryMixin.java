@@ -2,17 +2,18 @@ package carpet.mixin.loggers;
 
 import carpet.logging.logHelpers.DebugLogHelper;
 
-import net.minecraft.entity.TrackedEntityInstance;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.server.entity.EntityTrackerEntry;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(TrackedEntityInstance.class)
+@Mixin(EntityTrackerEntry.class)
 public class EntityTrackerEntryMixin {
     @Inject(
-            method = "method_2180",
+            method = "notifyEntityRemoved(Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;)V",
             at = @At("HEAD")
     )
     private void invisDebug(ServerPlayerEntity playerMP, CallbackInfo ci) {

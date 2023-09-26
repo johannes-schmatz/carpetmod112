@@ -9,7 +9,7 @@ public class BlockSaplingHelper
     // Added code for checking water for dead shrub rule CARPET-XCOM
     public static boolean hasWater(World worldIn, BlockPos pos)
     {
-        for (BlockPos.Mutable blockpos$mutableblockpos : BlockPos.mutableIterate(pos.add(-4, -4, -4), pos.add(4, 1, 4)))
+        for (BlockPos.Mutable blockpos$mutableblockpos : BlockPos.iterateRegionMutable(pos.add(-4, -4, -4), pos.add(4, 1, 4)))
         {
             if (worldIn.getBlockState(blockpos$mutableblockpos).getMaterial() == Material.WATER)
             {

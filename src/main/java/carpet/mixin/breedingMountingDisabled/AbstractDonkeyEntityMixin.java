@@ -2,32 +2,32 @@ package carpet.mixin.breedingMountingDisabled;
 
 import carpet.CarpetSettings;
 
-import net.minecraft.class_3135;
-import net.minecraft.class_3136;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.mob.passive.animal.HorseBaseEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
+import net.minecraft.unmapped.C_8826268;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(class_3135.class)
-public class AbstractDonkeyEntityMixin extends class_3136 {
+@Mixin(C_8826268.class)
+public class AbstractDonkeyEntityMixin extends HorseBaseEntity {
     public AbstractDonkeyEntityMixin(World worldIn) {
         super(worldIn);
     }
 
     @Redirect(
-            method = "interactMob",
+            method = "canInteract",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/class_3135;method_14003(Lnet/minecraft/entity/player/PlayerEntity;)V"
+                    target = "Lnet/minecraft/unmapped/C_8826268;putPlayerOnBack(Lnet/minecraft/entity/living/player/PlayerEntity;)V"
             )
     )
-    private void mountIfNotBreeding(class_3135 abstractChestHorse, PlayerEntity player, PlayerEntity playerAgain, Hand hand) {
-        if (CarpetSettings.breedingMountingDisabled && this.isValidBreedingItem(playerAgain.getStackInHand(hand))) return;
-        this.method_14003(player);
+    private void mountIfNotBreeding(C_8826268 abstractChestHorse, PlayerEntity player, PlayerEntity playerAgain, InteractionHand hand) {
+        if (CarpetSettings.breedingMountingDisabled && this.isValidBreedingItem(playerAgain.getHandStack(hand))) return;
+        this.putPlayerOnBack(player);
     }
 
     protected boolean isValidBreedingItem(ItemStack stack) {

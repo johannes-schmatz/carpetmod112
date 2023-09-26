@@ -8,8 +8,8 @@ import com.google.gson.JsonObject;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class CarpetClientMessageHandler {
@@ -172,6 +172,6 @@ public class CarpetClientMessageHandler {
     }
 
     public static void confirmationReceivedCustomRecipesSendUpdate(ServerPlayerEntity sender) {
-        sender.method_14965().method_14997(sender);
+        sender.m_2249138().m_1614649(sender);
     }
 }

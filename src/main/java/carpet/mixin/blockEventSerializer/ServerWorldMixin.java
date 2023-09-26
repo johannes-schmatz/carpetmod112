@@ -8,9 +8,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldSaveHandler;
+import net.minecraft.world.WorldData;
 import net.minecraft.world.dimension.Dimension;
-import net.minecraft.world.level.LevelProperties;
+import net.minecraft.world.storage.WorldStorage;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,12 +22,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ServerWorldMixin extends World implements WorldWithBlockEventSerializer {
     protected ScheduledBlockEventSerializer blockEventSerializer;
 
-    protected ServerWorldMixin(WorldSaveHandler levelProperties, LevelProperties levelProperties2, Dimension dimension, Profiler profiler, boolean isClient) {
-        super(levelProperties, levelProperties2, dimension, profiler, isClient);
+    protected ServerWorldMixin(WorldStorage storage, WorldData data, Dimension dimension, Profiler profiler,
+            boolean isClient) {
+        super(storage, data, dimension, profiler, isClient);
     }
 
     @Inject(
-            method = "getWorld",
+            method = "init",
             at = @At("RETURN")
     )
     private void onInit(CallbackInfoReturnable<World> cir) {
@@ -34,7 +36,7 @@ public abstract class ServerWorldMixin extends World implements WorldWithBlockEv
     }
 
     @Inject(
-            method = "addBlockAction",
+            method = "addBlockEvent",
             at = @At("RETURN")
     )
     private void onAddBlockEvent(BlockPos pos, Block blockIn, int eventID, int eventParam, CallbackInfo ci) {
@@ -42,11 +44,11 @@ public abstract class ServerWorldMixin extends World implements WorldWithBlockEv
     }
 
     protected void initBlockEventSerializer() {
-        blockEventSerializer = (ScheduledBlockEventSerializer)this.persistentStateManager.getOrCreate(ScheduledBlockEventSerializer.class, "blockEvents");
+        blockEventSerializer = (ScheduledBlockEventSerializer)this.savedDataStorage.load(ScheduledBlockEventSerializer.class, "blockEvents");
 
         if (blockEventSerializer == null) {
             blockEventSerializer = new ScheduledBlockEventSerializer();
-            this.persistentStateManager.replace("blockEvents", blockEventSerializer);
+            this.savedDataStorage.set("blockEvents", blockEventSerializer);
         }
 
         blockEventSerializer.setBlockEvents((ServerWorld) (Object) this);

@@ -15,7 +15,7 @@ import java.util.List;
 @Mixin(World.class)
 public class WorldMixin {
     @Inject(
-            method = "method_13689",
+            method = "getCollisions(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/math/Box;ZLjava/util/List;)Z",
             at = @At("HEAD"),
             cancellable = true
     )

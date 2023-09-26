@@ -3,15 +3,15 @@ package carpet.helpers;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.living.mob.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TraderOfferList;
 import net.minecraft.world.World;
+import net.minecraft.world.village.trade.TradeOffer;
+import net.minecraft.world.village.trade.TradeOffers;
 
 import java.util.Iterator;
 import java.util.List;
@@ -59,9 +59,9 @@ public class EntityAIAutotrader extends Goal {
      * Finds an emerald block the trader will use to throw the items towards.
      */
     private void findClosestEmeraldBlock() {
-        World worldIn = villager.getWorld();
+        World worldIn = villager.getSourceWorld();
         BlockPos villagerpos = new BlockPos(villager);
-        for (BlockPos pos : BlockPos.iterate(villagerpos.add(-3, -1, -3), villagerpos.add(3, 4, 3))) {
+        for (BlockPos pos : BlockPos.iterateRegion(villagerpos.add(-3, -1, -3), villagerpos.add(3, 4, 3))) {
             if (worldIn.getBlockState(pos).getBlock() == Blocks.EMERALD_BLOCK) {
                 emeraldBlockPosition = pos;
                 return;
@@ -77,15 +77,15 @@ public class EntityAIAutotrader extends Goal {
      * @param merchantList
      * @return
      */
-    public boolean updateEquipment(ItemEntity itemEntity, TraderOfferList merchantList) {
+    public boolean updateEquipment(ItemEntity itemEntity, TradeOffers merchantList) {
         for (TradeOffer merchantrecipe : merchantList) {
             if (!merchantrecipe.isDisabled()) {
                 ItemStack groundItems = itemEntity.getItemStack();
-                ItemStack buyItem = merchantrecipe.getFirstStack();
+                ItemStack buyItem = merchantrecipe.getPrimaryPayment();
                 if (groundItems.getItem() == buyItem.getItem()) {
                     int max = merchantrecipe.getMaxUses() - merchantrecipe.getUses();
-                    int price = buyItem.getCount();
-                    int gold = groundItems.getCount();
+                    int price = buyItem.getSize();
+                    int gold = groundItems.getSize();
                     int count = gold / price;
                     if (count > max) {
                         count = max;
@@ -94,7 +94,7 @@ public class EntityAIAutotrader extends Goal {
                     for (int i = 0; i < count; i++) {
                         villager.trade(merchantrecipe);
                         dropItem(merchantrecipe.getResult().copy());
-                        groundItems.decrement(price);
+                        groundItems.decrease(price);
                     }
 
                     return true;
@@ -121,8 +121,8 @@ public class EntityAIAutotrader extends Goal {
             double d1 = emeraldBlockPosition.getY() + 1.5D - (villager.y + (double) villager.getEyeHeight());
             double d2 = emeraldBlockPosition.getZ() + 0.5D - villager.z;
             double d3 = MathHelper.sqrt(d0 * d0 + d2 * d2);
-            f1 = (float) (MathHelper.atan2(d2, d0) * (180D / Math.PI)) - 90.0F;
-            f2 = (float) (-(MathHelper.atan2(d1, d3) * (180D / Math.PI)));
+            f1 = (float) (MathHelper.fastAtan2(d2, d0) * (180D / Math.PI)) - 90.0F;
+            f2 = (float) (-(MathHelper.fastAtan2(d1, d3) * (180D / Math.PI)));
         }
 
         double d0 = villager.y - 0.30000001192092896D + (double) villager.getEyeHeight();
@@ -132,8 +132,8 @@ public class EntityAIAutotrader extends Goal {
         entityitem.velocityX = -MathHelper.sin(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
         entityitem.velocityY = MathHelper.cos(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
         entityitem.velocityZ = -MathHelper.sin(f2 * 0.017453292F) * 0.3F + 0.1F;
-        entityitem.setToDefaultPickupDelay();
-        villager.world.spawnEntity(entityitem);
+        entityitem.resetPickupCooldown();
+        villager.world.addEntity(entityitem);
     }
 
     /**
@@ -143,11 +143,11 @@ public class EntityAIAutotrader extends Goal {
      * @param recipe
      * @param sortedTradeList
      */
-    public void addToFirstList(TraderOfferList buyingList, TradeOffer recipe, List<Integer> sortedTradeList) {
+    public void addToFirstList(TradeOffers buyingList, TradeOffer recipe, List<Integer> sortedTradeList) {
         int index = -1;
         for (int i = 0; i < buyingList.size(); i++) {
             TradeOffer b = buyingList.get(i);
-            if (b.getFirstStack().getItem().equals(recipe.getFirstStack().getItem()) && b.getSecondStack().getItem().equals(recipe.getSecondStack().getItem())) {
+            if (b.getPrimaryPayment().getItem().equals(recipe.getPrimaryPayment().getItem()) && b.getPrimaryPayment().getItem().equals(recipe.getPrimaryPayment().getItem())) {
                 index = i;
                 break;
             }
@@ -171,10 +171,10 @@ public class EntityAIAutotrader extends Goal {
      * @param buyingListsorted
      * @param sortedTradeList
      */
-    public void sortRepopulatedSortedList(TraderOfferList buyingList, TraderOfferList buyingListsorted, List<Integer> sortedTradeList) {
+    public void sortRepopulatedSortedList(TradeOffers buyingList, TradeOffers buyingListsorted, List<Integer> sortedTradeList) {
         if(buyingList == null) return;
 
-        TraderOfferList copy = new TraderOfferList();
+        TradeOffers copy = new TradeOffers();
         copy.addAll(buyingList);
         buyingListsorted.clear();
         for (int i : sortedTradeList) {

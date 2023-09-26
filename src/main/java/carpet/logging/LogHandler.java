@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import carpet.CarpetServer;
 import carpet.utils.HUDController;
@@ -33,7 +33,7 @@ public abstract class LogHandler
         @Override
         public void onRemovePlayer(String playerName)
         {
-            ServerPlayerEntity player = CarpetServer.getMinecraftServer().getPlayerManager().getPlayer(playerName);
+            ServerPlayerEntity player = CarpetServer.getMinecraftServer().getPlayerManager().get(playerName);
             if (player != null)
                 HUDController.clear_player(player);
         }

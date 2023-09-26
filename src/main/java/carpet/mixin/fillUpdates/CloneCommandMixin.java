@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(CloneCommand.class)
 public class CloneCommandMixin {
     @ModifyConstant(
-            method = "method_3279",
+            method = "run",
             constant = {
                     @Constant(intValue = 2),
                     @Constant(
@@ -24,30 +24,31 @@ public class CloneCommandMixin {
             }
     )
     private int changeFlags(int flags) {
+        // TODO: let this get a public static final field!
         return flags | (CarpetSettings.fillUpdates ? 0 : 1024);
     }
 
     @Redirect(
-            method = "method_3279",
+            method = "run",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;method_8531(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Z)V"
+                    target = "Lnet/minecraft/world/World;onBlockChanged(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Z)V"
             )
     )
     private void notifyNeighbors(World world, BlockPos pos, Block blockType, boolean updateObservers) {
         if (!CarpetSettings.fillUpdates) return;
-        world.method_8531(pos, blockType, updateObservers);
+        world.onBlockChanged(pos, blockType, updateObservers);
     }
 
     @Redirect(
-            method = "method_3279",
+            method = "run",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;scheduleTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V"
+                    target = "Lnet/minecraft/world/World;loadScheduledTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V"
             )
     )
     private void scheduleBlockUpdate(World world, BlockPos pos, Block blockIn, int delay, int priority) {
         if (!CarpetSettings.fillUpdates) return;
-        world.scheduleTick(pos, blockIn, delay, priority);
+        world.loadScheduledTick(pos, blockIn, delay, priority);
     }
 }

@@ -1,8 +1,8 @@
 package carpet.mixin.creativeNoClip;
 
 import carpet.CarpetSettings;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.network.handler.ServerPlayNetworkHandler;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,10 +14,10 @@ public class ServerPlayNetworkHandlerMixin {
 
     // Applies noClip, using isSleeping because pistonClippingFix already redirects noClip
     @Redirect(
-            method = "onPlayerMove",
+            method = "handlePlayerMove",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;isSleeping()Z",
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;isSleeping()Z",
                     ordinal = 2
             )
     )

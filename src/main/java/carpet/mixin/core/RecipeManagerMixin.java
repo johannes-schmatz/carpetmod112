@@ -13,27 +13,27 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.minecraft.recipe.RecipeDispatcher;
+import net.minecraft.crafting.CraftingManager;
 
-@Mixin(RecipeDispatcher.class)
+@Mixin(CraftingManager.class)
 public abstract class RecipeManagerMixin {
-    @Shadow private static boolean method_14261() { throw new AbstractMethodError(); }
+    @Shadow private static boolean load() { throw new AbstractMethodError(); }
 
     @Redirect(
-            method = "setup",
+            method = "init",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/recipe/RecipeDispatcher;method_14261()Z"
+                    target = "Lnet/minecraft/crafting/CraftingManager;load()Z"
             )
     )
     private static boolean registerCustomRecipes() throws IOException {
-        boolean result = method_14261();
+        boolean result = load();
         result = CustomCrafting.registerCustomRecipes(result);
         return result;
     }
 
     @Redirect(
-            method = "method_14261",
+            method = "load",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/stream/Stream;iterator()Ljava/util/Iterator;",

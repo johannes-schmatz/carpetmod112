@@ -1,24 +1,24 @@
 package carpet.mixin.playerChunkLoadingFix;
 
 import carpet.CarpetSettings;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.PlayerWorldManager;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.server.ChunkMap;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 // Fix the player chunk map truncation in negative coords causing offsets in chunk loading CARPET-XCOM
-@Mixin(PlayerWorldManager.class)
+@Mixin(ChunkMap.class)
 public class PlayerChunkMapMixin {
     @Redirect(
             method = {
-                    "method_2109",
-                    "method_2116"
+                    "addPlayer",
+                    "movePlayer"
             },
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;x:D",
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;x:D",
                     ordinal = 0
             )
     )
@@ -28,12 +28,12 @@ public class PlayerChunkMapMixin {
 
     @Redirect(
             method = {
-                    "method_2109",
-                    "method_2116"
+                    "addPlayer",
+                    "movePlayer"
             },
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;z:D",
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;z:D",
                     ordinal = 0
             )
     )
@@ -42,50 +42,50 @@ public class PlayerChunkMapMixin {
     }
 
     @Redirect(
-            method = "method_2115",
+            method = "removePlayer",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;serverPosX:D",
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;trackedX:D",
                     ordinal = 0
             )
     )
     private double getManagedPosX(ServerPlayerEntity player) {
-        return CarpetSettings.playerChunkLoadingFix ? Math.floor(player.serverPosX) : player.serverPosX;
+        return CarpetSettings.playerChunkLoadingFix ? Math.floor(player.trackedX) : player.trackedX;
     }
 
     @Redirect(
-            method = "method_2115",
+            method = "removePlayer",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;serverPosZ:D",
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;trackedZ:D",
                     ordinal = 0
             )
     )
     private double getManagedPosZ(ServerPlayerEntity player) {
-        return CarpetSettings.playerChunkLoadingFix ? Math.floor(player.serverPosZ) : player.serverPosZ;
+        return CarpetSettings.playerChunkLoadingFix ? Math.floor(player.trackedZ) : player.trackedZ;
     }
 
     @Redirect(
-            method = "method_2116",
+            method = "movePlayer",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;serverPosX:D",
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;trackedX:D",
                     ordinal = 1
             )
     )
     private double getManagedPosX2(ServerPlayerEntity player) {
-        return CarpetSettings.playerChunkLoadingFix ? Math.floor(player.serverPosX) : player.serverPosX;
+        return CarpetSettings.playerChunkLoadingFix ? Math.floor(player.trackedX) : player.trackedX;
     }
 
     @Redirect(
-            method = "method_2116",
+            method = "movePlayer",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;serverPosZ:D",
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;trackedZ:D",
                     ordinal = 1
             )
     )
     private double getManagedPosZ2(ServerPlayerEntity player) {
-        return CarpetSettings.playerChunkLoadingFix ? Math.floor(player.serverPosZ) : player.serverPosZ;
+        return CarpetSettings.playerChunkLoadingFix ? Math.floor(player.trackedZ) : player.trackedZ;
     }
 }

@@ -2,7 +2,7 @@ package carpet.mixin.flippinCactus;
 
 import carpet.helpers.BlockRotator;
 import net.minecraft.block.HopperBlock;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(HopperBlock.class)
 public class HopperBlockMixin {
     @Redirect(
-            method = "getStateFromData",
+            method = "getPlacementState",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/math/Direction;getOpposite()Lnet/minecraft/util/math/Direction;"

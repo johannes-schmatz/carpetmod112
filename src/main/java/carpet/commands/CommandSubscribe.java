@@ -1,18 +1,20 @@
 package carpet.commands;
 
-import net.minecraft.command.CommandSource;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.InvalidNumberException;
 
 public class CommandSubscribe extends CommandLog {
 
     private final String USAGE = "/subscribe <subscribeName> [?option]";
 
     @Override
-    public String getCommandName() {
+    public String getName() {
         return "subscribe";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender) {
+    public String getUsage(CommandSource sender) {
         return USAGE;
     }
 }

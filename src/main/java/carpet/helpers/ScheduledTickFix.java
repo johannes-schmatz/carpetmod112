@@ -2,7 +2,7 @@ package carpet.helpers;
 
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.ScheduledTick;
+import net.minecraft.server.world.ScheduledTick;
 
 public class ScheduledTickFix<T> extends ScheduledTick {
     public ScheduledTickFix(BlockPos positionIn, Block blockIn) {

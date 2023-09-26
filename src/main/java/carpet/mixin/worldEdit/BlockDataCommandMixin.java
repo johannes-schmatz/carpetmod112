@@ -1,12 +1,12 @@
 package carpet.mixin.worldEdit;
 
 import carpet.worldedit.WorldEditBridge;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.command.CommandSource;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.command.BlockDataCommand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -19,10 +19,10 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(BlockDataCommand.class)
 public class BlockDataCommandMixin {
     @Inject(
-            method = "method_3279",
+            method = "run",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/entity/BlockEntity;fromNbt(Lnet/minecraft/nbt/NbtCompound;)V"
+                    target = "Lnet/minecraft/block/entity/BlockEntity;readNbt(Lnet/minecraft/nbt/NbtCompound;)V"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
     @Redirect(
-            method = "tick",
+            method = "tickWorlds",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/world/ServerWorld;tick()V"
@@ -27,7 +27,7 @@ public class MinecraftServerMixin {
         try {
             worldServer.tick();
         } catch (CrashException e) {
-            if (!(e.getReport().getCause() instanceof ThrowableSuppression)) throw e;
+            if (!(e.getReport().getException() instanceof ThrowableSuppression)) throw e;
             logUpdateSuppression("world tick");
         } catch (ThrowableSuppression ignored) {
             logUpdateSuppression("world tick");
@@ -35,7 +35,7 @@ public class MinecraftServerMixin {
     }
 
     @Redirect(
-            method = "tick",
+            method = "tickWorlds",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/world/ServerWorld;tickEntities()V"
@@ -49,7 +49,7 @@ public class MinecraftServerMixin {
         try {
             worldServer.tickEntities();
         } catch (CrashException e) {
-            if (!(e.getReport().getCause() instanceof ThrowableSuppression)) throw e;
+            if (!(e.getReport().getException() instanceof ThrowableSuppression)) throw e;
             logUpdateSuppression("update entities");
         } catch (ThrowableSuppression ignored) {
             logUpdateSuppression("update entities");

@@ -3,7 +3,7 @@ package carpet.mixin.ai;
 import carpet.helpers.AIHelper;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.VillagerMatingGoal;
-import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.living.mob.passive.VillagerEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,9 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(VillagerMatingGoal.class)
 public abstract class EntityAIVillagerMateMixin extends Goal {
-    @Shadow @Final private VillagerEntity villager;
+    @Shadow @Final private VillagerEntity villagerOne;
 
-    @Shadow private int timer;
+    @Shadow private int breedTimer;
 
 
     @Inject(
@@ -24,8 +24,8 @@ public abstract class EntityAIVillagerMateMixin extends Goal {
             at = @At("HEAD")
     )
     private void readyToMate(CallbackInfoReturnable<Boolean> cir) {
-        if (this.villager.age() < 5 && this.villager.age() > 0) {
-            AIHelper.setDetailedInfo(this.villager, this, "Ready to Mate");
+        if (this.villagerOne.getBreedingAge() < 5 && this.villagerOne.getBreedingAge() > 0) {
+            AIHelper.setDetailedInfo(this.villagerOne, this, "Ready to Mate");
         }
     }
 
@@ -37,9 +37,9 @@ public abstract class EntityAIVillagerMateMixin extends Goal {
             )
     )
     private void waiting(CallbackInfoReturnable<Boolean> cir) {
-        int growingAge = this.villager.age();
+        int growingAge = this.villagerOne.getBreedingAge();
         if (growingAge >= 5) {
-            AIHelper.setDetailedInfo(this.villager, this, () -> "Waiting: " + growingAge);
+            AIHelper.setDetailedInfo(this.villagerOne, this, () -> "Waiting: " + growingAge);
         }
     }
 
@@ -51,7 +51,7 @@ public abstract class EntityAIVillagerMateMixin extends Goal {
             )
     )
     private void outsideOfVillage(CallbackInfoReturnable<Boolean> cir) {
-        AIHelper.setDetailedInfo(this.villager, this, "Outside of a village");
+        AIHelper.setDetailedInfo(this.villagerOne, this, "Outside of a village");
     }
 
     @Inject(
@@ -62,7 +62,7 @@ public abstract class EntityAIVillagerMateMixin extends Goal {
             )
     )
     private void dontWantToMate(CallbackInfoReturnable<Boolean> cir) {
-        AIHelper.setDetailedInfo(this.villager, this, "Don't want to mate");
+        AIHelper.setDetailedInfo(this.villagerOne, this, "Don't want to mate");
     }
 
     @Inject(
@@ -70,7 +70,7 @@ public abstract class EntityAIVillagerMateMixin extends Goal {
             at = @At("RETURN")
     )
     private void inLove300(CallbackInfo ci) {
-        AIHelper.setDetailedInfo(this.villager, this, "In love: 300");
+        AIHelper.setDetailedInfo(this.villagerOne, this, "In love: 300");
     }
 
     @Inject(
@@ -78,22 +78,22 @@ public abstract class EntityAIVillagerMateMixin extends Goal {
             at = @At("RETURN")
     )
     private void onResetTask(CallbackInfo ci) {
-        AIHelper.setDetailedInfo(this.villager, this, "Ready to Mate");
+        AIHelper.setDetailedInfo(this.villagerOne, this, "Ready to Mate");
     }
 
     @Inject(
             method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/ai/control/LookControl;lookAt(Lnet/minecraft/entity/Entity;FF)V"
+                    target = "Lnet/minecraft/entity/ai/control/LookControl;setLookatValues(Lnet/minecraft/entity/Entity;FF)V"
             )
     )
     private void onUpdateTask(CallbackInfo ci) {
-        int matingTimeout = this.timer;
+        int matingTimeout = this.breedTimer;
         if (matingTimeout > 0) {
-            AIHelper.setDetailedInfo(this.villager, this, () -> "In love: " + matingTimeout);
+            AIHelper.setDetailedInfo(this.villagerOne, this, () -> "In love: " + matingTimeout);
         } else {
-            AIHelper.setDetailedInfo(this.villager, this, "Ready to Mate");
+            AIHelper.setDetailedInfo(this.villagerOne, this, "Ready to Mate");
         }
     }
 }

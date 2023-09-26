@@ -10,14 +10,14 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(World.class)
 public class WorldMixin {
     @Redirect(
-            method = "checkChunk(Lnet/minecraft/entity/Entity;Z)V",
+            method = "tickEntity(Lnet/minecraft/entity/Entity;Z)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;teleportRequested()Z"
+                    target = "Lnet/minecraft/entity/Entity;m_8699128()Z"
             )
     )
     private boolean unloadedEntityFix(Entity entity) {
         // Faster entitys can move into unloaded chunks and can get stuck in memory lagging the server. this fixes it CARPET-XCOM
-        return entity.teleportRequested() || CarpetSettings.unloadedEntityFix;
+        return entity.m_8699128() || CarpetSettings.unloadedEntityFix;
     }
 }

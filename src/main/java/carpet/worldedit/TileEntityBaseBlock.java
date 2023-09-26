@@ -14,7 +14,7 @@ class TileEntityBaseBlock extends BaseBlock implements TileEntityBlock {
 
     private static NbtCompound copyNbtData(BlockEntity tile) {
         NbtCompound tag = new NbtCompound();
-        tile.toNbt(tag);
+        tile.writeNbt(tag);
         return tag;
     }
 

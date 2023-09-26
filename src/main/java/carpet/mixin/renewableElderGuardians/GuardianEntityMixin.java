@@ -2,10 +2,10 @@ package carpet.mixin.renewableElderGuardians;
 
 import carpet.CarpetSettings;
 
-import net.minecraft.entity.ElderGuardianEntity;
-import net.minecraft.entity.LightningBoltEntity;
-import net.minecraft.entity.mob.GuardianEntity;
-import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.living.mob.hostile.ElderGuardianEntity;
+import net.minecraft.entity.weather.LightningBoltEntity;
+import net.minecraft.entity.living.mob.hostile.GuardianEntity;
+import net.minecraft.entity.living.mob.hostile.HostileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,14 +22,14 @@ public abstract class GuardianEntityMixin extends HostileEntity {
             ElderGuardianEntity elderGuardian = new ElderGuardianEntity(this.world);
             elderGuardian.refreshPositionAndAngles(this.x, this.y, this.z, this.yaw, this.pitch);
             elderGuardian.initialize(this.world.getLocalDifficulty(new BlockPos(elderGuardian)), null);
-            elderGuardian.setAiDisabled(this.hasNoAi());
+            elderGuardian.m_9911305(this.m_7978386());
 
             if (this.hasCustomName()) {
                 elderGuardian.setCustomName(this.getCustomName());
                 elderGuardian.setCustomNameVisible(this.isCustomNameVisible());
             }
 
-            this.world.spawnEntity(elderGuardian);
+            this.world.addEntity(elderGuardian);
             this.remove();
         } else {
             super.onLightningStrike(lightningBolt);

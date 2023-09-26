@@ -4,31 +4,31 @@ import java.util.Collections;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
 import carpet.CarpetSettings;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.IncorrectUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 public class CommandAutosave extends CommandCarpetBase {
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "autosave";
 	}
 
 	@Override
-	public String getUsageTranslationKey(CommandSource sender) {
+	public String getUsage(CommandSource sender) {
 		return "Usage: autosave info | autosave detect <range-start> <range-end> <quiet t| run <command>>";
 	}
 
 	@Override
-	public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandAutosave", sender)) return;
 		
 		if(args.length < 1)
 		{
-			throw new IncorrectUsageException(getUsageTranslationKey(sender));
+			throw new IncorrectUsageException(getUsage(sender));
 		}
 		
 		int gametick = server.getTicks();
@@ -44,11 +44,11 @@ public class CommandAutosave extends CommandCarpetBase {
 			}
 			int next = 900 - previous;
 			int beforeAutosave = 900-previous;
-			run(sender, this, String.format("Autosave (interval %d) %d gameticks ago - in %d ticks", interval, previous, next));
+			sendSuccess(sender, this, String.format("Autosave (interval %d) %d gameticks ago - in %d ticks", interval, previous, next));
 		}
 		else if("detect".equalsIgnoreCase(args[0])) {
 			if(args.length < 3) {
-				throw new IncorrectUsageException(getUsageTranslationKey(sender));
+				throw new IncorrectUsageException(getUsage(sender));
 			}
 			
 			int start = parseInt(args[1]);
@@ -61,16 +61,16 @@ public class CommandAutosave extends CommandCarpetBase {
 					quiet = true;
 				}
 				else {
-					throw new IncorrectUsageException(getUsageTranslationKey(sender));
+					throw new IncorrectUsageException(getUsage(sender));
 				}
 			}
 			else if(args.length > 4) {
 				if("run".equals(args[3])) {
-					run = method_10706(args, 4);
+					run = parseString(args, 4);
 					quiet = true;
 				}
 				else {
-					throw new IncorrectUsageException(getUsageTranslationKey(sender));
+					throw new IncorrectUsageException(getUsage(sender));
 				}
 			}
 			
@@ -83,10 +83,10 @@ public class CommandAutosave extends CommandCarpetBase {
 			
 			if(pass) {
 				if(!quiet) {
-					run(sender, this, String.format("gametick %d in interval %d %d",afterAutosave, start, end));
+					sendSuccess(sender, this, String.format("gametick %d in interval %d %d",afterAutosave, start, end));
 				}
 				if(run != null) {
-					server.getCommandManager().execute(sender, run);
+					server.getCommandHandler().run(sender, run);
 				}
 			}
 			else {
@@ -94,22 +94,22 @@ public class CommandAutosave extends CommandCarpetBase {
 			}
 		}
 		else {
-			throw new IncorrectUsageException(getUsageTranslationKey(sender));
+			throw new IncorrectUsageException(getUsage(sender));
 		}
 	}
 
 	@Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
     {
         if (!CarpetSettings.commandAutosave)
         {
             return Collections.<String>emptyList();
         }
         if(args.length == 1) {
-        	return method_2894(args, "info", "detect");
+        	return suggestMatching(args, "info", "detect");
         }
         if(args.length == 4) {
-        	return method_2894(args, "run", "quiet");
+        	return suggestMatching(args, "run", "quiet");
         }
 		return Collections.<String>emptyList();
     }

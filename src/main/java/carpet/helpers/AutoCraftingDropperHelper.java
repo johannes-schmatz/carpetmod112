@@ -15,7 +15,7 @@ public class AutoCraftingDropperHelper
             itemEntity.velocityX = (CarpetMod.rand.nextDouble() - CarpetMod.rand.nextDouble()) * 0.05;
             itemEntity.velocityY = CarpetMod.rand.nextDouble() * 0.05;
             itemEntity.velocityZ = (CarpetMod.rand.nextDouble() - CarpetMod.rand.nextDouble()) * 0.05;
-            worldIn.spawnEntity(itemEntity);
+            worldIn.addEntity(itemEntity);
         }
     }
 }

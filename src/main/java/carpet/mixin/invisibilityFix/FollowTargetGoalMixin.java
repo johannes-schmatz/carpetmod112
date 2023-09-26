@@ -3,14 +3,14 @@ package carpet.mixin.invisibilityFix;
 import carpet.CarpetSettings;
 import com.google.common.base.Predicate;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.PathAwareEntity;
-import net.minecraft.entity.ai.goal.FollowTargetGoal;
+import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.TrackTargetGoal;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.SkeletonEntity;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.LivingEntity;
+import net.minecraft.entity.living.mob.PathAwareEntity;
+import net.minecraft.entity.living.mob.hostile.CreeperEntity;
+import net.minecraft.entity.living.mob.hostile.SkeletonEntity;
+import net.minecraft.entity.living.mob.hostile.ZombieEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import org.spongepowered.asm.mixin.Final;
@@ -23,10 +23,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-@Mixin(FollowTargetGoal.class)
+@Mixin(ActiveTargetGoal.class)
 public abstract class FollowTargetGoalMixin<T extends LivingEntity> extends TrackTargetGoal {
-    @Shadow @Final protected Predicate<? super T> targetPredicate;
-    @Shadow protected T target;
+    @Shadow @Final protected Predicate<? super T> canTargetEntityFilter;
+    @Shadow protected T targetEntity;
 
     public FollowTargetGoalMixin(PathAwareEntity creature, boolean checkSight) {
         super(creature, checkSight);
@@ -45,20 +45,20 @@ public abstract class FollowTargetGoalMixin<T extends LivingEntity> extends Trac
         E first = list.get(index);
         if (!CarpetSettings.invisibilityFix || !(first instanceof PlayerEntity)) return first;
 
-        return (E) this.mob.world.method_11477(
-                this.mob.x,
-                this.mob.y + (double) this.mob.getEyeHeight(),
-                this.mob.z,
+        return (E) this.entity.world.getClosestPlayer(
+                this.entity.x,
+                this.entity.y + (double) this.entity.getEyeHeight(),
+                this.entity.z,
                 this.getFollowRange(),
                 this.getFollowRange(),
                 player -> {
-                    ItemStack headSlot = player.getStack(EquipmentSlot.HEAD);
+                    ItemStack headSlot = player.getEquipmentStack(EquipmentSlot.HEAD);
 
                     if (headSlot.getItem() == Items.SKULL) {
                         int meta = headSlot.getDamage();
-                        boolean skeletonSkull = mob instanceof SkeletonEntity && meta == 0;
-                        boolean zombieSkull = mob instanceof ZombieEntity && meta == 2;
-                        boolean creeperSkull = mob instanceof CreeperEntity && meta == 4;
+                        boolean skeletonSkull = entity instanceof SkeletonEntity && meta == 0;
+                        boolean zombieSkull = entity instanceof ZombieEntity && meta == 2;
+                        boolean creeperSkull = entity instanceof CreeperEntity && meta == 4;
 
                         if (skeletonSkull || zombieSkull || creeperSkull) {
                             return 0.5;
@@ -67,7 +67,7 @@ public abstract class FollowTargetGoalMixin<T extends LivingEntity> extends Trac
 
                     return 1.0;
                 },
-                (Predicate<PlayerEntity>) this.targetPredicate
+                (Predicate<PlayerEntity>) this.canTargetEntityFilter
         );
     }
 
@@ -80,6 +80,6 @@ public abstract class FollowTargetGoalMixin<T extends LivingEntity> extends Trac
             cancellable = true
     )
     private void returnFalseIfNull(CallbackInfoReturnable<Boolean> cir) {
-        if (this.target == null) cir.setReturnValue(false);
+        if (this.targetEntity == null) cir.setReturnValue(false);
     }
 }

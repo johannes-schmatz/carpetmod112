@@ -2,12 +2,11 @@ package carpet.utils;
 
 import carpet.CarpetSettings;
 import carpet.helpers.HopperCounter;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.WoolBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.util.DyeColor;
+import net.minecraft.block.ColoredBlock;
+import net.minecraft.entity.living.player.PlayerEntity;
+import net.minecraft.item.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -49,7 +48,7 @@ public class WoolTool
                 {
                     DyeColor under = getWoolColorAtPosition(worldIn, pos.down());
                     if (under == null) return;
-                    Messenger.send(placer, HopperCounter.COUNTERS.get(under.asString()).format(worldIn.getServer(), false, false));
+                    Messenger.send(placer, HopperCounter.COUNTERS.get(under.getName()).format(worldIn.getServer(), false, false));
                 }
                 else if (CarpetSettings.hopperCounters == CarpetSettings.HopperCounters.all){
                     Messenger.send(placer, HopperCounter.COUNTERS.get("all").format(worldIn.getServer(), false, false));
@@ -60,8 +59,8 @@ public class WoolTool
                 {
                     DyeColor under = getWoolColorAtPosition(worldIn, pos.down());
                     if (under == null) return;
-                    HopperCounter.COUNTERS.get(under.asString()).reset(worldIn.getServer());
-                    Messenger.s(placer, String.format("%s counter reset",under.toString() ));
+                    HopperCounter.COUNTERS.get(under.getName()).reset(worldIn.getServer());
+                    Messenger.s(placer, String.format("%s counter reset",under.getName() ));
                 }
                 else if (CarpetSettings.hopperCounters == CarpetSettings.HopperCounters.all){
                     HopperCounter.COUNTERS.get("all").reset(worldIn.getServer());
@@ -75,6 +74,6 @@ public class WoolTool
     {
         BlockState state = worldIn.getBlockState(pos);
         if (state.getBlock() != Blocks.WOOL) return null;
-        return state.get(WoolBlock.COLOR);
+        return state.get(ColoredBlock.COLOR);
     }
 }

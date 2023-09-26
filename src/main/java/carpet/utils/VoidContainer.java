@@ -1,10 +1,10 @@
 package carpet.utils;
 
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.ScreenHandler;
+import net.minecraft.inventory.menu.InventoryMenu;
 
-public class VoidContainer extends ScreenHandler
+public class VoidContainer extends InventoryMenu
 {
     public VoidContainer()
     {
@@ -12,7 +12,7 @@ public class VoidContainer extends ScreenHandler
     }
     
     @Override
-    public boolean canUse(PlayerEntity player)
+    public boolean isValid(PlayerEntity player)
     {
         return false;
     }

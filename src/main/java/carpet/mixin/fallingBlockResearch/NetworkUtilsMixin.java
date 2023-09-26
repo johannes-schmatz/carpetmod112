@@ -6,11 +6,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import net.minecraft.client.util.NetworkUtils;
+import net.minecraft.util.HttpUtil;
 
 import java.util.concurrent.ThreadFactory;
 
-@Mixin(NetworkUtils.class)
+@Mixin(HttpUtil.class)
 public class NetworkUtilsMixin {
 	@Redirect(
 			method = "<clinit>",

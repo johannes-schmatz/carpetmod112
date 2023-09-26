@@ -10,10 +10,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(IntegratedServer.class)
 public abstract class IntegratedServerMixin {
     @Inject(
-            method = "setupServer",
+            method = "init",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/integrated/IntegratedServer;setupWorld(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/world/level/LevelGeneratorType;Ljava/lang/String;)V"
+                    target = "Lnet/minecraft/server/integrated/IntegratedServer;loadWorld(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/world/gen/WorldGeneratorType;Ljava/lang/String;)V"
             )
     )
     private void onSetupServerIntegrated(CallbackInfoReturnable<Boolean> cir) {

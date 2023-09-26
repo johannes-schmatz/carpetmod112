@@ -9,14 +9,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.chunk.ServerChunkProvider;
+import net.minecraft.server.world.chunk.ServerChunkCache;
 
-@Mixin(ServerChunkProvider.class)
+@Mixin(ServerChunkCache.class)
 public class ServerChunkProviderMixin {
 	@Shadow @Final private ServerWorld world;
 
 	@Inject(
-			method = "tickChunks",
+			method = "tick",
 			at = @At("HEAD")
 	)
 	private void end(CallbackInfoReturnable<Boolean> cir) {

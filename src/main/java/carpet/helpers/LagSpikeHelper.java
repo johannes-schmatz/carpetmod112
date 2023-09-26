@@ -22,7 +22,7 @@ public class LagSpikeHelper {
      * Safe to call without carpet rule as {@link #pendingLagPhase} is always {@code null} in vanilla
      */
     public static void processLagSpikes(@Nullable World world, TickPhase phase, Enum<?> subPhase) {
-        if (phase == pendingLagPhase && subPhase == pendingLagSubPhase && (world == null || world.dimension.getDimensionType() == pendingLagDimension)) {
+        if (phase == pendingLagPhase && subPhase == pendingLagSubPhase && (world == null || world.dimension.getType() == pendingLagDimension)) {
             try {
                 Thread.sleep(pendingLagTime);
             } catch (InterruptedException e) {

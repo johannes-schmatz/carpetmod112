@@ -3,9 +3,9 @@ package carpet.mixin.accessors;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import net.minecraft.world.chunk.palette.PaletteData;
+import net.minecraft.util.BitStorage;
 
-@Mixin(PaletteData.class)
+@Mixin(BitStorage.class)
 public interface PaletteDataAccessor {
-	@Accessor int getBitsPerBlock();
+	@Accessor("bits") int getBitsPerBlock();
 }

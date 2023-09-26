@@ -5,15 +5,17 @@ import carpet.mixin.accessors.ThreadedAnvilChunkStorageAccessor;
 import carpet.mixin.accessors.ServerChunkProviderAccessor;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.PlayerWorldManager;
-import net.minecraft.world.chunk.ServerChunkProvider;
+import net.minecraft.server.ChunkMap;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.server.world.chunk.ServerChunkCache;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.chunk.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.chunk.storage.AnvilChunkStorage;
+
 import java.io.BufferedOutputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -34,32 +36,32 @@ public class ChunkLoading
 {
     public static final ThreadLocal<ServerPlayerEntity> INITIAL_PLAYER_FOR_CHUNK_MAP_ENTRY = new ThreadLocal<>();
     public static final LongSet droppedChunksSet_new = new LongOpenHashSet();
-    public static void queueUnload113(ServerWorld world, ServerChunkProvider chunkproviderserver, Chunk chunkIn)
+    public static void queueUnload113(ServerWorld world, ServerChunkCache chunkproviderserver, WorldChunk chunkIn)
     {
-        if (world.dimension.canChunkBeUnloaded(chunkIn.chunkX, chunkIn.chunkZ))
+        if (world.dimension.canChunkUnload(chunkIn.chunkX, chunkIn.chunkZ))
         {
-            droppedChunksSet_new.add(Long.valueOf(ChunkPos.getIdFromCoords(chunkIn.chunkX, chunkIn.chunkZ)));
-            chunkIn.field_12912 = true;
+            droppedChunksSet_new.add(Long.valueOf(ChunkPos.toLong(chunkIn.chunkX, chunkIn.chunkZ)));
+            chunkIn.removed = true;
         }
     }
 
     public static List<String> test_save_chunks(ServerWorld server, BlockPos pos, boolean verbose)
     {
 
-        ServerChunkProvider chunkproviderserver = server.getChunkProvider();
+        ServerChunkCache chunkproviderserver = server.getChunkSource();
 
-        if (chunkproviderserver.method_3870())
+        if (chunkproviderserver.canSave())
         {
 
-            chunkproviderserver.method_12776(true);
+            chunkproviderserver.save(true);
 
-            PlayerWorldManager pcm = server.getPlayerWorldManager();
+            ChunkMap pcm = server.getChunkMap();
 
-            for (Chunk chunk : Lists.newArrayList(chunkproviderserver.method_12772()))
+            for (WorldChunk chunk : Lists.newArrayList(chunkproviderserver.getLoadedChunks()))
             {
-                if (chunk != null && !pcm.method_12808(chunk.chunkX, chunk.chunkZ))
+                if (chunk != null && !pcm.isLoaded(chunk.chunkX, chunk.chunkZ))
                 {
-                    chunkproviderserver.unload(chunk);
+                    chunkproviderserver.scheduleUnload(chunk);
                 }
             }
             return ChunkLoading.tick_reportive_no_action(server, pos, verbose);
@@ -73,18 +75,18 @@ public class ChunkLoading
     public static List<String> test_save_chunks_113(ServerWorld server, BlockPos pos, boolean verbose)
     {
 
-        ServerChunkProvider chunkproviderserver = server.getChunkProvider();
+        ServerChunkCache chunkproviderserver = server.getChunkSource();
 
-        if (chunkproviderserver.method_3870())
+        if (chunkproviderserver.canSave())
         {
 
-            chunkproviderserver.method_12776(true);
+            chunkproviderserver.save(true);
 
-            PlayerWorldManager pcm = server.getPlayerWorldManager();
+            ChunkMap pcm = server.getChunkMap();
 
-            for (Chunk chunk : Lists.newArrayList(chunkproviderserver.method_12772()))
+            for (WorldChunk chunk : Lists.newArrayList(chunkproviderserver.getLoadedChunks()))
             {
-                if (chunk != null && !pcm.method_12808(chunk.chunkX, chunk.chunkZ))
+                if (chunk != null && !pcm.isLoaded(chunk.chunkX, chunk.chunkZ))
                 {
                     queueUnload113(server, chunkproviderserver, chunk);
                 }
@@ -103,7 +105,7 @@ public class ChunkLoading
 
     public static int getCurrentHashSize(ServerWorld server)
     {
-        ServerChunkProvider chunkproviderserver = server.getChunkProvider();
+        ServerChunkCache chunkproviderserver = server.getChunkSource();
         try
         {
             Set<Long> droppedChunks = ((ServerChunkProviderAccessor) chunkproviderserver).getDroppedChunks();
@@ -150,7 +152,7 @@ public class ChunkLoading
         {
             Method method = HashMap.class.getDeclaredMethod("hash", Object.class);
             method.setAccessible(true);
-            return (Integer) method.invoke(null, Long.hashCode(ChunkPos.getIdFromCoords(chpos.x, chpos.z))) & (hashsize-1);
+            return (Integer) method.invoke(null, Long.hashCode(ChunkPos.toLong(chpos.x, chpos.z))) & (hashsize-1);
         }
         catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
         {
@@ -160,7 +162,7 @@ public class ChunkLoading
     }
     public static long get_chunk_order_113(ChunkPos chpos, int hashsize)
     {
-        return (HashCommon.mix(ChunkPos.getIdFromCoords(chpos.x, chpos.z))) & (hashsize-1L);
+        return (HashCommon.mix(ChunkPos.toLong(chpos.x, chpos.z))) & (hashsize-1L);
     }
 
     public static List<String> check_unload_order(ServerWorld server, BlockPos pos, BlockPos pos1)
@@ -355,9 +357,9 @@ public class ChunkLoading
     }
 
 
-    public static String stringify_chunk_id(ServerChunkProvider provider, int index, Long olong, int size)
+    public static String stringify_chunk_id(ServerChunkCache provider, int index, Long olong, int size)
     {
-        Chunk chunk = ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().get(olong);
+        WorldChunk chunk = ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().get(olong);
 
         return String.format(" - %4d: (%d, %d) at X %d, Z %d (order: %d / %d)",
                 index+1,
@@ -368,9 +370,9 @@ public class ChunkLoading
         );
     }
 
-    public static String stringify_chunk_id_113(ServerChunkProvider provider, int index, Long olong, int size)
+    public static String stringify_chunk_id_113(ServerChunkCache provider, int index, Long olong, int size)
     {
-        Chunk chunk = ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().get(olong);
+        WorldChunk chunk = ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().get(olong);
 
         return String.format(" - %4d: (%d, %d) at X %d, Z %d (order: %d / %d)",
                 index+1,
@@ -383,7 +385,7 @@ public class ChunkLoading
 
     public static List<String> tick_reportive_no_action(ServerWorld world, BlockPos pos, boolean verbose)
     {
-        ServerChunkProvider provider = world.getChunkProvider();
+        ServerChunkCache provider = world.getChunkSource();
         List<String> rep = new ArrayList<>();
         int test_chunk_xpos = 0;
         int test_chunk_zpos = 0;
@@ -393,7 +395,7 @@ public class ChunkLoading
             test_chunk_zpos = pos.getZ() >> 4;
         }
         int current_size = ChunkLoading.getCurrentHashSize(world);
-        if (!world.savingDisabled)
+        if (!world.isSaving)
         {
             Set<Long> droppedChunks = ((ServerChunkProviderAccessor) provider).getDroppedChunks();
             if (!droppedChunks.isEmpty())
@@ -406,9 +408,9 @@ public class ChunkLoading
                 for (i = 0; iterator.hasNext(); iterator.remove())
                 {
                     Long olong = iterator.next();
-                    Chunk chunk = ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().get(olong);
+                    WorldChunk chunk = ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().get(olong);
 
-                    if (chunk != null && chunk.field_12912)
+                    if (chunk != null && chunk.removed)
                     {
                         if ( pos != null && chunk.chunkX == test_chunk_xpos && chunk.chunkZ == test_chunk_zpos) selected_chunk = i;
                         chunks_ids_order.add(olong);
@@ -489,7 +491,7 @@ public class ChunkLoading
 
     public static List<String> tick_reportive_no_action_113(ServerWorld world, BlockPos pos, boolean verbose)
     {
-        ServerChunkProvider provider = world.getChunkProvider();
+        ServerChunkCache provider = world.getChunkSource();
         List<String> rep = new ArrayList<>();
         int test_chunk_xpos = 0;
         int test_chunk_zpos = 0;
@@ -498,7 +500,7 @@ public class ChunkLoading
             test_chunk_xpos = pos.getX() >> 4;
             test_chunk_zpos = pos.getZ() >> 4;
         }
-        if (!world.savingDisabled)
+        if (!world.isSaving)
         {
             if (!droppedChunksSet_new.isEmpty())
             {
@@ -513,10 +515,10 @@ public class ChunkLoading
                 {
 
                     Long olong = iterator.next();
-                    Chunk chunk = ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().get(olong);
+                    WorldChunk chunk = ((ServerChunkProviderAccessor) provider).getLoadedChunksMap().get(olong);
                     ((ServerChunkProviderAccessor) provider).getDroppedChunks().remove(olong);
 
-                    if (chunk != null && chunk.field_12912)
+                    if (chunk != null && chunk.removed)
                     {
                         if ( pos != null && chunk.chunkX == test_chunk_xpos && chunk.chunkZ == test_chunk_zpos) selected_chunk = i;
                         chunks_ids_order.add(olong);
@@ -597,7 +599,7 @@ public class ChunkLoading
         return rep;
     }
 
-    public static int getSavedChunkSize(Chunk chunk)
+    public static int getSavedChunkSize(WorldChunk chunk)
     {
         NbtCompound chunkTag = new NbtCompound();
         NbtCompound levelTag = new NbtCompound();
@@ -607,7 +609,7 @@ public class ChunkLoading
         CountingOutputStream counter = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM);
         try {
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new DeflaterOutputStream(counter)));
-            NbtIo.write(chunkTag, out);
+            NbtIo.write(chunkTag, (DataOutput) out);
             out.flush();
             out.close();
         }
@@ -615,7 +617,7 @@ public class ChunkLoading
         return counter.getCount();
     }
 
-    public static ThreadedAnvilChunkStorage getChunkLoader(Chunk chunk) {
-        return (ThreadedAnvilChunkStorage) ((ServerChunkProviderAccessor) chunk.getWorld().getChunkProvider()).getChunkLoader();
+    public static AnvilChunkStorage getChunkLoader(WorldChunk chunk) {
+        return (AnvilChunkStorage) ((ServerChunkProviderAccessor) chunk.getWorld().getChunkSource()).getChunkLoader();
     }
 }

@@ -1,10 +1,10 @@
 package carpet.mixin.duplicationFixUpdateSuppression;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.state.BlockState;
+import net.minecraft.block.BlockWithBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShulkerBoxItem;
@@ -16,13 +16,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(BlockWithEntity.class)
+@Mixin(BlockWithBlockEntity.class)
 public class BlockWithEntityMixin {
     @Inject(
-            method = "method_8651",
+            method = "afterMinedByPlayer",
             at = @At(
                     value = "NEW",
-                    target = "net/minecraft/item/ItemStack"
+                    target = "(Lnet/minecraft/item/Item;I)Lnet/minecraft/item/ItemStack;"
             ),
             cancellable = true,
             locals = LocalCapture.CAPTURE_FAILHARD

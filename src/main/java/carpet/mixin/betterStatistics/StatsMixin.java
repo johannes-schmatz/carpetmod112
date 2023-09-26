@@ -2,7 +2,7 @@ package carpet.mixin.betterStatistics;
 
 import carpet.helpers.StatHelper;
 import net.minecraft.item.Item;
-import net.minecraft.stat.CraftingStat;
+import net.minecraft.stat.ItemStat;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,68 +12,68 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(Stats.class)
 public class StatsMixin {
     @Redirect(
-            method = "loadCraftingStats",
+            method = "initItemsCraftedStats",
             at = @At(
                     value = "NEW",
-                    target = "net/minecraft/stat/CraftingStat"
+                    target = "(Ljava/lang/String;Ljava/lang/String;Lnet/minecraft/text/Text;Lnet/minecraft/item/Item;)Lnet/minecraft/stat/ItemStat;"
             )
     )
-    private static CraftingStat createCraftStat(String id1, String id2, Text text, Item item) {
-        CraftingStat baseStat = new CraftingStat(id1, id2, text, item);
+    private static ItemStat createCraftStat(String id1, String id2, Text text, Item item) {
+        ItemStat baseStat = new ItemStat(id1, id2, text, item);
         StatHelper.addCraftStats(baseStat);
         return baseStat;
     }
 
     @Redirect(
-            method = "loadBlockStats",
+            method = "initBlocksMinedStats",
             at = @At(
                     value = "NEW",
-                    target = "net/minecraft/stat/CraftingStat"
+                    target = "(Ljava/lang/String;Ljava/lang/String;Lnet/minecraft/text/Text;Lnet/minecraft/item/Item;)Lnet/minecraft/stat/ItemStat;"
             )
     )
-    private static CraftingStat createMiningStat(String id1, String id2, Text text, Item item) {
-        CraftingStat baseStat = new CraftingStat(id1, id2, text, item);
+    private static ItemStat createMiningStat(String id1, String id2, Text text, Item item) {
+        ItemStat baseStat = new ItemStat(id1, id2, text, item);
         StatHelper.addMineStats(baseStat);
         return baseStat;
     }
 
     @Redirect(
-            method = "loadUseStats",
+            method = "initItemsUsedStats",
             at = @At(
                     value = "NEW",
-                    target = "net/minecraft/stat/CraftingStat"
+                    target = "(Ljava/lang/String;Ljava/lang/String;Lnet/minecraft/text/Text;Lnet/minecraft/item/Item;)Lnet/minecraft/stat/ItemStat;"
             )
     )
-    private static CraftingStat createUseStat(String id1, String id2, Text text, Item item) {
-        CraftingStat baseStat = new CraftingStat(id1, id2, text, item);
+    private static ItemStat createUseStat(String id1, String id2, Text text, Item item) {
+        ItemStat baseStat = new ItemStat(id1, id2, text, item);
         StatHelper.addUseStats(baseStat);
         return baseStat;
     }
 
     @Redirect(
-            method = "method_12851",
+            method = "initItemStats",
             at = @At(
                     value = "NEW",
-                    target = "net/minecraft/stat/CraftingStat",
+                    target = "(Ljava/lang/String;Ljava/lang/String;Lnet/minecraft/text/Text;Lnet/minecraft/item/Item;)Lnet/minecraft/stat/ItemStat;",
                     ordinal = 0
             )
     )
-    private static CraftingStat createPickedUpStat(String id1, String id2, Text text, Item item) {
-        CraftingStat baseStat = new CraftingStat(id1, id2, text, item);
+    private static ItemStat createPickedUpStat(String id1, String id2, Text text, Item item) {
+        ItemStat baseStat = new ItemStat(id1, id2, text, item);
         StatHelper.addPickedUpStats(baseStat);
         return baseStat;
     }
 
     @Redirect(
-            method = "method_12851",
+            method = "initItemStats",
             at = @At(
                     value = "NEW",
-                    target = "net/minecraft/stat/CraftingStat",
+                    target = "(Ljava/lang/String;Ljava/lang/String;Lnet/minecraft/text/Text;Lnet/minecraft/item/Item;)Lnet/minecraft/stat/ItemStat;",
                     ordinal = 1
             )
     )
-    private static CraftingStat createDroppedStat(String id1, String id2, Text text, Item item) {
-        CraftingStat baseStat = new CraftingStat(id1, id2, text, item);
+    private static ItemStat createDroppedStat(String id1, String id2, Text text, Item item) {
+        ItemStat baseStat = new ItemStat(id1, id2, text, item);
         StatHelper.addDroppedStats(baseStat);
         return baseStat;
     }

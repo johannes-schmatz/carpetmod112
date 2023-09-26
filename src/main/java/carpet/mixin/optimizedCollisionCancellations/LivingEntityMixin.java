@@ -1,8 +1,8 @@
 package carpet.mixin.optimizedCollisionCancellations;
 
 import carpet.CarpetSettings;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.living.LivingEntity;
+import net.minecraft.entity.living.mob.hostile.boss.EnderDragonEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,7 +14,7 @@ public abstract class LivingEntityMixin {
     @Shadow public abstract boolean isPushable();
 
     @Inject(
-            method = "tickCramming",
+            method = "pushAwayCollidingEntities",
             at = @At("HEAD"),
             cancellable = true
     )

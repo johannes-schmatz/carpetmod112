@@ -18,7 +18,7 @@ public abstract class ItemEntityMixin {
             method = "onPlayerCollision",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/stat/Stats;picked(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
+                    target = "Lnet/minecraft/stat/Stats;itemPickedUp(Lnet/minecraft/item/Item;)Lnet/minecraft/stat/Stat;"
             )
     )
     private Stat addObjectMeta(Item item) {

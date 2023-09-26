@@ -3,10 +3,11 @@ package carpet.commands;
 import carpet.utils.Messenger;
 import carpet.utils.Waypoint;
 import carpet.utils.extensions.WaypointContainer;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
-import net.minecraft.command.InvalidNumberException;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.InvalidNumberException;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -15,7 +16,7 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.text.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -31,17 +32,17 @@ public class CommandWaypoint extends CommandCarpetBase {
     public static final String USAGE_REMOVE = "/waypoint remove <waypoint>";
 
     @Override
-    public String getCommandName() {
+    public String getName() {
         return "waypoint";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender) {
+    public String getUsage(CommandSource sender) {
         return USAGE;
     }
 
     @Override
-    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
+    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
         if (!command_enabled("commandWaypoint", sender))
             return;
 
@@ -65,9 +66,9 @@ public class CommandWaypoint extends CommandCarpetBase {
     }
 
     public ServerWorld getDimension(CommandSource sender, String[] args, int offset) {
-        if (args.length <= offset) return (ServerWorld) sender.getWorld();
+        if (args.length <= offset) return (ServerWorld) sender.getSourceWorld();
         String id = args[offset];
-        MinecraftServer server = sender.getMinecraftServer();
+        MinecraftServer server = sender.getServer();
         switch (id) {
             case "overworld": return server.getWorld(0);
             case "the_nether": case "nether": return server.getWorld(-1);
@@ -81,51 +82,51 @@ public class CommandWaypoint extends CommandCarpetBase {
             throw new IncorrectUsageException(USAGE_ADD);
         }
         String name = args[1];
-        Vec3d pos = sender.getPos();
+        Vec3d pos = sender.getSourcePos();
         double x = pos.x;
         double y = pos.y;
         double z = pos.z;
         ServerWorld dimension = getDimension(sender, args, 5);
         boolean validDimension = dimension != null;
         if (!validDimension) {
-            dimension = (ServerWorld) sender.getWorld();
+            dimension = (ServerWorld) sender.getSourceWorld();
         }
         if (((WaypointContainer) dimension).getWaypoints().containsKey(name)) {
             throw new CommandException("Waypoint already exists");
         }
         double yaw = 0;
         double pitch = 0;
-        Entity senderEntity = sender.getEntity();
+        Entity senderEntity = sender.asEntity();
         if (senderEntity != null) {
             yaw = senderEntity.yaw;
             pitch = senderEntity.pitch;
         }
         if (args.length > 2) {
             if (args.length < 5) throw new IncorrectUsageException(USAGE_ADD);
-            x = getCoordinate(x, args[2], true).getAmount();
-            y = getCoordinate(y, args[3], 0, dimension.getMaxBuildHeight(), false).getAmount();
-            z = getCoordinate(z, args[4], true).getAmount();
+            x = parseCoordinate(x, args[2], true).getRelative();
+            y = parseCoordinate(y, args[3], 0, dimension.getHeight(), false).getRelative();
+            z = parseCoordinate(z, args[4], true).getRelative();
             if (args.length > 5) {
                 if (!validDimension) {
                     throw new CommandException("Invalid dimension");
                 }
                 if (args.length > 6) {
                     if (args.length < 8) throw new IncorrectUsageException(USAGE_ADD);
-                    yaw = getCoordinate(yaw, args[6], false).getAmount();
-                    pitch = getCoordinate(pitch, args[7], false).getAmount();
+                    yaw = parseCoordinate(yaw, args[6], false).getRelative();
+                    pitch = parseCoordinate(pitch, args[7], false).getRelative();
                 }
             }
         }
-        Waypoint w = new Waypoint(dimension, name, sender.getTranslationKey(), x, y, z, yaw, pitch);
+        Waypoint w = new Waypoint(dimension, name, sender.getName(), x, y, z, yaw, pitch);
         ((WaypointContainer) dimension).getWaypoints().put(name, w);
-        Messenger.m(sender, "w Waypoint ", "w " + w.getDimension().getName(), "g :", "y " + w.name + " ", Messenger.tp("c", w), "w  added");
+        Messenger.m(sender, "w Waypoint ", "w " + w.getDimension().getKey(), "g :", "y " + w.name + " ", Messenger.tp("c", w), "w  added");
     }
 
     private void removeWaypoint(CommandSource sender, String[] args) throws CommandException {
         if (args.length < 2) {
             throw new IncorrectUsageException(USAGE_REMOVE);
         }
-        Waypoint w = Waypoint.find(args[1], (ServerWorld) sender.getWorld(), sender.getMinecraftServer().worlds);
+        Waypoint w = Waypoint.find(args[1], (ServerWorld) sender.getSourceWorld(), sender.getServer().worlds);
         if (w == null) {
             throw new CommandException("Waypoint not found");
         }
@@ -144,9 +145,9 @@ public class CommandWaypoint extends CommandCarpetBase {
         ServerWorld dimension = getDimension(sender, args, 1);
         boolean validDimension = dimension != null;
         if (!validDimension) {
-            dimension = (ServerWorld) sender.getWorld();
+            dimension = (ServerWorld) sender.getSourceWorld();
         }
-        Text header = new LiteralText("Waypoints in the " + dimension.dimension.getDimensionType().getName().replace("the_", ""));
+        Text header = new LiteralText("Waypoints in the " + dimension.dimension.getType().getKey().replace("the_", ""));
         boolean printDimension = true;
         boolean printCreator = true;
         if (args.length > 1) {
@@ -155,13 +156,13 @@ public class CommandWaypoint extends CommandCarpetBase {
                 waypoints.addAll(((WaypointContainer) dimension).getWaypoints().values());
             } else if ("all".equalsIgnoreCase(args[1])) {
                 header = new LiteralText("All waypoints");
-                for (ServerWorld w : sender.getMinecraftServer().worlds) {
+                for (ServerWorld w : sender.getServer().worlds) {
                     waypoints.addAll(((WaypointContainer) w).getWaypoints().values());
                 }
             } else {
                 printCreator = false;
                 header = Messenger.m(null, "w Waypoints by ", "e " + args[1]);
-                for (ServerWorld w : sender.getMinecraftServer().worlds) {
+                for (ServerWorld w : sender.getServer().worlds) {
                     for (Waypoint wp : ((WaypointContainer) w).getWaypoints().values()) {
                         if (args[1].equalsIgnoreCase(wp.creator)) waypoints.add(wp);
                     }
@@ -195,7 +196,7 @@ public class CommandWaypoint extends CommandCarpetBase {
             if (page > 0) {
                 Text prevPage = new LiteralText("[<]");
                 Style s = prevPage.getStyle();
-                s.setFormatting(Formatting.DARK_GRAY);
+                s.setColor(Formatting.DARK_GRAY);
                 s.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Previous page")));
                 s.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/waypoint list " + args[1] + " " + page));
                 header.append(" ").append(prevPage);
@@ -203,7 +204,7 @@ public class CommandWaypoint extends CommandCarpetBase {
             if (page + 1 < pages) {
                 Text nextPage = new LiteralText("[>]");
                 Style s = nextPage.getStyle();
-                s.setFormatting(Formatting.GRAY);
+                s.setColor(Formatting.GRAY);
                 s.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Next page")));
                 s.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/waypoint list " + args[1] + " " + (page + 2)));
                 header.append(" ").append(nextPage);
@@ -215,9 +216,9 @@ public class CommandWaypoint extends CommandCarpetBase {
         for (Waypoint w : waypoints) {
             if (printDimension) {
                 if (printCreator && w.creator != null) {
-                    Messenger.m(sender, "w " + w.getDimension().getName(), "g :", "y " + w.name + " ", Messenger.tp("c", w), "w  by ", "e " + w.creator);
+                    Messenger.m(sender, "w " + w.getDimension().getKey(), "g :", "y " + w.name + " ", Messenger.tp("c", w), "w  by ", "e " + w.creator);
                 } else {
-                    Messenger.m(sender, "w " + w.getDimension().getName(), "g :", "y " + w.name + " ", Messenger.tp("c", w));
+                    Messenger.m(sender, "w " + w.getDimension().getKey(), "g :", "y " + w.name + " ", Messenger.tp("c", w));
                 }
             } else {
                 if (printCreator && w.creator != null) {
@@ -230,9 +231,9 @@ public class CommandWaypoint extends CommandCarpetBase {
     }
 
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
         if (args.length == 0) return Arrays.asList("add", "list", "remove");
-        if (args.length == 1) return method_2894(args, "add", "list", "remove");
+        if (args.length == 1) return suggestMatching(args, "add", "list", "remove");
         switch (args[0]) {
             case "list": {
                 if (args.length == 2) {
@@ -244,24 +245,24 @@ public class CommandWaypoint extends CommandCarpetBase {
                     }
                     List<String> possibleArgs = new ArrayList<>(users);
                     possibleArgs.addAll(0, Arrays.asList("all", "overworld", "nether", "end"));
-                    return method_10708(args, possibleArgs);
+                    return suggestMatching(args, possibleArgs);
                 }
                 break;
             }
             case "add": {
                 switch (args.length) {
-                    case 3: case 4: case 5: return method_10707(args, 2, targetPos);
-                    case 6: return method_2894(args, "overworld", "nether", "end");
+                    case 3: case 4: case 5: return suggestCoordinate(args, 2, targetPos);
+                    case 6: return suggestMatching(args, "overworld", "nether", "end");
                 }
                 break;
             }
             case "remove": {
                 if (args.length == 2) {
-                    Set<String> waypointNames = Waypoint.getAllWaypoints(sender.getMinecraftServer().worlds).stream()
+                    Set<String> waypointNames = Waypoint.getAllWaypoints(sender.getServer().worlds).stream()
                             .filter(w -> w.canManipulate(sender))
                             .flatMap(w -> Stream.of(w.name, w.getFullName()))
                             .collect(Collectors.toCollection(TreeSet::new));
-                    return method_10708(args, waypointNames);
+                    return suggestMatching(args, waypointNames);
                 }
                 break;
             }

@@ -2,7 +2,8 @@ package carpet.mixin.chunkLogger;
 
 import carpet.carpetclient.CarpetClientChunkLogger;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.PortalTeleporter;
+import net.minecraft.server.world.PortalForcer;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,18 +13,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
-    @Shadow public abstract String getTranslationKey();
+    @Shadow public abstract String getName();
 
     @Inject(
-            method = "updateWaterState",
+            method = "checkWaterCollisions",
             at = @At("HEAD")
     )
     private void onWaterMovementStart(CallbackInfoReturnable<Boolean> cir) {
-        CarpetClientChunkLogger.setReason(() -> "Entity checking if pushed by water: " + getTranslationKey());
+        CarpetClientChunkLogger.setReason(() -> "Entity checking if pushed by water: " + getName());
     }
 
     @Inject(
-            method = "updateWaterState",
+            method = "checkWaterCollisions",
             at = @At("RETURN")
     )
     private void onWaterMovementEnd(CallbackInfoReturnable<Boolean> cir) {
@@ -31,16 +32,16 @@ public abstract class EntityMixin {
     }
 
     @Redirect(
-            method = "changeDimension",
+            method = "teleportToDimension",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/PortalTeleporter;method_8584(Lnet/minecraft/entity/Entity;F)Z"
+                    target = "Lnet/minecraft/server/world/PortalForcer;findNetherPortal(Lnet/minecraft/entity/Entity;F)Z"
             )
     )
-    private boolean placeInExistingPortal(PortalTeleporter teleporter, Entity entityIn, float rotationYaw) {
+    private boolean placeInExistingPortal(PortalForcer teleporter, Entity entityIn, float rotationYaw) {
         try {
-            CarpetClientChunkLogger.setReason(() -> "Entity going through nether portal: " + getTranslationKey());
-            return teleporter.method_8584(entityIn, rotationYaw);
+            CarpetClientChunkLogger.setReason(() -> "Entity going through nether portal: " + getName());
+            return teleporter.findNetherPortal(entityIn, rotationYaw);
         } finally {
             CarpetClientChunkLogger.resetReason();
         }

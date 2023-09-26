@@ -2,7 +2,7 @@ package carpet.mixin.chunkLogger;
 
 import carpet.carpetclient.CarpetClientChunkLogger;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,15 +15,15 @@ import java.util.Random;
 @Mixin(Block.class)
 public class BlockMixin {
     @Inject(
-            method = "onRandomTick",
+            method = "randomTick",
             at = @At("HEAD")
     )
     private void preRandomTick(World worldIn, BlockPos pos, BlockState state, Random random, CallbackInfo ci) {
-        CarpetClientChunkLogger.setReason(() -> "Randomtick block: " + state.getBlock().getTranslatedName());
+        CarpetClientChunkLogger.setReason(() -> "Randomtick block: " + state.getBlock().getName());
     }
 
     @Inject(
-            method = "onRandomTick",
+            method = "randomTick",
             at = @At("RETURN")
     )
     private void postRandomTick(World worldIn, BlockPos pos, BlockState state, Random random, CallbackInfo ci) {

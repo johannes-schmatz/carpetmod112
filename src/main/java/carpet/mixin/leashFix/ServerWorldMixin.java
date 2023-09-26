@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin {
     @Inject(
-            method = "onEntitySpawned",
+            method = "onEntityAdded",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/Entity;getParts()[Lnet/minecraft/entity/Entity;"

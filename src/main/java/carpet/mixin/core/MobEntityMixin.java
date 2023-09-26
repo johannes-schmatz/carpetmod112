@@ -1,8 +1,8 @@
 package carpet.mixin.core;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.entity.living.LivingEntity;
+import net.minecraft.entity.living.mob.MobEntity;
+import net.minecraft.text.Formatting;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +21,7 @@ public abstract class MobEntityMixin extends LivingEntity {
             cancellable = true
     )
     private void easterEgg(CallbackInfo ci) {
-        String name = Formatting.strip(getTranslationKey());
+        String name = Formatting.strip(getName());
         if ("Xcom".equalsIgnoreCase(name) || "gnembon".equalsIgnoreCase(name)) ci.cancel();
     }
 }

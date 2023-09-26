@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 @Mixin(EntityStatusEffectS2CPacket.class)
 public class EntityStatusEffectS2CPacketMixin {
     @ModifyConstant(
-            method = "<init>(ILnet/minecraft/entity/effect/StatusEffectInstance;)V",
+            method = "<init>(ILnet/minecraft/entity/living/effect/StatusEffectInstance;)V",
             constant = @Constant(
                     intValue = 32767,
                     ordinal = 0

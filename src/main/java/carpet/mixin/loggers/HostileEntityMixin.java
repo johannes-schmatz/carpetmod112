@@ -2,9 +2,9 @@ package carpet.mixin.loggers;
 
 import carpet.logging.logHelpers.DamageReporter;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.living.mob.hostile.HostileEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,7 +16,7 @@ public class HostileEntityMixin {
     private static final ThreadLocal<Float> attackDamagePre = new ThreadLocal<>();
 
     @Inject(
-            method = "tryAttack",
+            method = "attack",
             at = @At(
                     value = "CONSTANT",
                     args = "intValue=0"
@@ -29,10 +29,10 @@ public class HostileEntityMixin {
     }
 
     @Inject(
-            method = "tryAttack",
+            method = "attack",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/enchantment/EnchantmentHelper;getKnockback(Lnet/minecraft/entity/LivingEntity;)I"
+                    target = "Lnet/minecraft/enchantment/EnchantmentHelper;getKnockbackLevel(Lnet/minecraft/entity/living/LivingEntity;)I"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )

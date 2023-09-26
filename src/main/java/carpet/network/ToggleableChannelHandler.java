@@ -1,7 +1,7 @@
 package carpet.network;
 
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 
 public class ToggleableChannelHandler implements PluginChannelHandler {
     private final PluginChannelManager channelManager;

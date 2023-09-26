@@ -1,7 +1,7 @@
 package carpet.mixin.betterStatistics;
 
 import carpet.helpers.StatSubItem;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.stat.Stat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

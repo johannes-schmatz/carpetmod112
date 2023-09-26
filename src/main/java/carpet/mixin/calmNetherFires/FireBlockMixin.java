@@ -2,7 +2,7 @@ package carpet.mixin.calmNetherFires;
 
 import carpet.CarpetSettings;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.FireBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -19,14 +19,14 @@ import java.util.Random;
 //@NotThreadSafe
 @Mixin(FireBlock.class)
 public class FireBlockMixin {
-    private boolean permanentFireBlock = false; // Thread safety: needs to be thread local for multi-threaded dimensions
+    private boolean permanentFireBlock = false; // TODO: Thread safety: needs to be thread local for multi-threaded dimensions
 
     // @Redirect can't capture locals, so we need this @Inject to get the local
     @Inject(
-            method = "onScheduledTick",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;createAndScheduleBlockTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V"
+                    target = "Lnet/minecraft/world/World;scheduleTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
@@ -35,13 +35,14 @@ public class FireBlockMixin {
     }
 
     @Redirect(
-            method = "onScheduledTick",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;createAndScheduleBlockTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V"
+                    target = "Lnet/minecraft/world/World;scheduleTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V"
             )
     )
     private void scheduleUpdate(World world, BlockPos pos, Block block, int delay) {
-        if (!CarpetSettings.calmNetherFires || !permanentFireBlock) world.createAndScheduleBlockTick(pos, block, delay);
+        if (!CarpetSettings.calmNetherFires || !permanentFireBlock)
+            world.scheduleTick(pos, block, delay);
     }
 }

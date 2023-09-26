@@ -1,7 +1,7 @@
 package carpet.mixin.accurateBlockPlacement;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -14,10 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(DispenserBlock.class)
 public class DispenserBlockMixin {
     @Inject(
-            method = "onCreation",
+            method = "onAdded",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/DispenserBlock;setDirection(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V"
+                    target = "Lnet/minecraft/block/DispenserBlock;updateFacing(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/BlockState;)V"
             ),
             cancellable = true
     )
@@ -30,7 +30,7 @@ public class DispenserBlockMixin {
             method = "onPlaced",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"
+                    target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/BlockState;I)Z"
             )
     )
     private boolean noSetBlockState(World world, BlockPos pos, BlockState newState, int flags) {

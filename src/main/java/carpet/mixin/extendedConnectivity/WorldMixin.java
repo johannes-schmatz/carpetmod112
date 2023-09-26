@@ -13,29 +13,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(World.class)
 public abstract class WorldMixin {
-    @Shadow public abstract void updateNeighbor(BlockPos pos, Block blockIn, BlockPos fromPos);
-    @Shadow public abstract void method_13691(BlockPos pos, Block changedBlock, BlockPos changedBlockPos);
+    @Shadow public abstract void neighborChanged(BlockPos pos, Block blockIn, BlockPos fromPos);
+    @Shadow public abstract void neighborStateChanged(BlockPos pos, Block changedBlock, BlockPos changedBlockPos);
 
     @Inject(
-            method = "method_13692",
+            method = "updateNeighbors",
             at = @At("HEAD")
     )
     private void extendedConnectivityNotify(BlockPos pos, Block blockType, boolean updateObservers, CallbackInfo ci) {
         if (CarpetSettings.extendedConnectivity) {
             BlockPos posd = pos.down();
-            this.updateNeighbor(posd.west(), blockType, pos);
-            this.updateNeighbor(posd.east(), blockType, pos);
-            this.updateNeighbor(posd.down(), blockType, pos);
-            //this.updateNeighbor(pos.up(), blockType);
-            this.updateNeighbor(posd.north(), blockType, pos);
-            this.updateNeighbor(posd.south(), blockType, pos);
+            this.neighborChanged(posd.west(), blockType, pos);
+            this.neighborChanged(posd.east(), blockType, pos);
+            this.neighborChanged(posd.down(), blockType, pos);
+            //this.neighborChanged(pos.up(), blockType);
+            this.neighborChanged(posd.north(), blockType, pos);
+            this.neighborChanged(posd.south(), blockType, pos);
             if (updateObservers) {
-                this.method_13691(posd.west(), blockType, posd);
-                this.method_13691(posd.east(), blockType, posd);
-                this.method_13691(posd.down(), blockType, posd);
-                //this.onBlockChanged(pos.up(), blockType, pos);
-                this.method_13691(posd.north(), blockType, posd);
-                this.method_13691(posd.south(), blockType, posd);
+                this.neighborStateChanged(posd.west(), blockType, posd);
+                this.neighborStateChanged(posd.east(), blockType, posd);
+                this.neighborStateChanged(posd.down(), blockType, posd);
+                //this.neighborStateChanged(pos.up(), blockType, pos);
+                this.neighborStateChanged(posd.north(), blockType, posd);
+                this.neighborStateChanged(posd.south(), blockType, posd);
             }
         }
     }
@@ -47,12 +47,12 @@ public abstract class WorldMixin {
     private void extendedConnectivityExcept(BlockPos pos, Block blockType, Direction skipSide, CallbackInfo ci) {
         if (CarpetSettings.extendedConnectivity) {
             BlockPos posd = pos.down();
-            if (skipSide != Direction.WEST) this.updateNeighbor(posd.west(), blockType, posd);
-            if (skipSide != Direction.EAST) this.updateNeighbor(posd.east(), blockType, posd);
-            if (skipSide != Direction.DOWN) this.updateNeighbor(posd.down(), blockType, posd);
-            //if (skipSide != Direction.UP) this.updateNeighbor(pos.up(), blockType, posd);
-            if (skipSide != Direction.NORTH) this.updateNeighbor(posd.north(), blockType, posd);
-            if (skipSide != Direction.SOUTH) this.updateNeighbor(posd.south(), blockType, posd);
+            if (skipSide != Direction.WEST) this.neighborChanged(posd.west(), blockType, posd);
+            if (skipSide != Direction.EAST) this.neighborChanged(posd.east(), blockType, posd);
+            if (skipSide != Direction.DOWN) this.neighborChanged(posd.down(), blockType, posd);
+            //if (skipSide != Direction.UP) this.neighborChanged(pos.up(), blockType, posd);
+            if (skipSide != Direction.NORTH) this.neighborChanged(posd.north(), blockType, posd);
+            if (skipSide != Direction.SOUTH) this.neighborChanged(posd.south(), blockType, posd);
         }
     }
 }

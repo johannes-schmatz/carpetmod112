@@ -15,14 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.TreeSet;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.ScheduledTick;
+import net.minecraft.server.world.ScheduledTick;
 
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin {
-    @Shadow @Final private TreeSet<ScheduledTick> scheduledTicks;
+    @Shadow @Final private TreeSet<ScheduledTick> scheduledTicksInOrder;
 
     @Inject(
-            method = "method_3644",
+            method = "doScheduledTicks",
             at = @At(
                     value = "CONSTANT",
                     args = "intValue=65536",
@@ -31,7 +31,7 @@ public class ServerWorldMixin {
     )
     private void logTileTickLimit(boolean runAllPending, CallbackInfoReturnable<Boolean> cir) {
         if (LoggerRegistry.__tileTickLimit) {
-            int scheduled = scheduledTicks.size();
+            int scheduled = scheduledTicksInOrder.size();
             LoggerRegistry.getLogger("tileTickLimit").log(() -> new Text[] {
                 Messenger.s(null, String.format("Reached tile tick limit (%d > %d)", scheduled, CarpetSettings.tileTickLimit))
             }, "NUMBER", scheduled, "LIMIT", CarpetSettings.tileTickLimit);
@@ -39,7 +39,7 @@ public class ServerWorldMixin {
     }
 
     @ModifyConstant(
-            method = "method_3644",
+            method = "doScheduledTicks",
             constant = @Constant(intValue = 65536)
     )
     private int tileTickLimit(int origValue) {

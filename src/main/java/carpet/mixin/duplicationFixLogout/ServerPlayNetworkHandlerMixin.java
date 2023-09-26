@@ -1,9 +1,9 @@
 package carpet.mixin.duplicationFixLogout;
 
 import carpet.CarpetSettings;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.packet.c2s.play.PlayerHandActionC2SPacket;
+import net.minecraft.server.network.handler.ServerPlayNetworkHandler;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,12 +15,12 @@ public class ServerPlayNetworkHandlerMixin {
     @Shadow public ServerPlayerEntity player;
 
     @Inject(
-            method = "onPlayerAction",
+            method = "handlePlayerHandAction",
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onDigging(PlayerActionC2SPacket packetIn, CallbackInfo ci) {
+    private void onDigging(PlayerHandActionC2SPacket packet, CallbackInfo ci) {
         // Prevent player preforming actions after disconnecting. CARPET-XCOM
-        if (CarpetSettings.duplicationFixLogout && player.method_14969()) ci.cancel();
+        if (CarpetSettings.duplicationFixLogout && player.m_6230070()) ci.cancel();
     }
 }

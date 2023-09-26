@@ -4,16 +4,16 @@ import carpet.CarpetSettings;
 import carpet.helpers.AutoCraftingDropperHelper;
 import carpet.mixin.accessors.DispenserBlockEntityAccessor;
 import carpet.utils.VoidContainer;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.block.DropperBlock;
 import net.minecraft.block.entity.DispenserBlockEntity;
+import net.minecraft.crafting.CraftingManager;
+import net.minecraft.crafting.recipe.CraftingRecipe;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeDispatcher;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -34,7 +34,7 @@ public class DropperBlockMixin extends DispenserBlock {
     }
 
     @Override
-    public int getComparatorOutput(BlockState blockState, World worldIn, BlockPos pos) {
+    public int getAnalogSignal(BlockState blockState, World worldIn, BlockPos pos) {
         if (CarpetSettings.autoCraftingDropper) {
             BlockPos front = pos.offset(worldIn.getBlockState(pos).get(DispenserBlock.FACING));
             if (worldIn.getBlockState(front).getBlock() == Blocks.CRAFTING_TABLE) {
@@ -48,7 +48,7 @@ public class DropperBlockMixin extends DispenserBlock {
                 }
             }
         }
-        return super.getComparatorOutput(blockState, worldIn, pos);
+        return super.getAnalogSignal(blockState, worldIn, pos);
     }
 
     private boolean autoCraftingDispense(World worldIn, BlockPos pos) {
@@ -62,33 +62,33 @@ public class DropperBlockMixin extends DispenserBlock {
         }
         CraftingInventory craftingInventory = new CraftingInventory(new VoidContainer(), 3, 3);
         for (int i = 0; i < 9; i++) {
-            craftingInventory.setInvStack(i, dispenserTE.getInvStack(i));
+            craftingInventory.setStack(i, dispenserTE.getStack(i));
         }
-        RecipeType recipe = RecipeDispatcher.method_14262(craftingInventory, worldIn);
+        CraftingRecipe recipe = CraftingManager.getRecipe(craftingInventory, worldIn);
         if (recipe == null) {
             return false;
         }
         // crafting it
         Vec3d target = new Vec3d(front).add(0.5, 0.2, 0.5);
-        ItemStack result = recipe.getResult(craftingInventory);
+        ItemStack result = recipe.apply(craftingInventory);
         AutoCraftingDropperHelper.spawnItemStack(worldIn, target.x, target.y, target.z, result);
 
         // copied from CraftingResultSlot.onTakeItem()
-        DefaultedList<ItemStack> nonNullList = recipe.method_13670(craftingInventory);
+        DefaultedList<ItemStack> nonNullList = recipe.getRemainder(craftingInventory);
         for (int i = 0; i < nonNullList.size(); ++i) {
-            ItemStack itemStack_2 = dispenserTE.getInvStack(i);
+            ItemStack itemStack_2 = dispenserTE.getStack(i);
             ItemStack itemStack_3 = nonNullList.get(i);
             if (!itemStack_2.isEmpty()) {
-                dispenserTE.takeInvStack(i, 1);
-                itemStack_2 = dispenserTE.getInvStack(i);
+                dispenserTE.removeStack(i, 1);
+                itemStack_2 = dispenserTE.getStack(i);
             }
 
             if (!itemStack_3.isEmpty()) {
                 if (itemStack_2.isEmpty()) {
-                    dispenserTE.setInvStack(i, itemStack_3);
-                } else if (ItemStack.equals(itemStack_2, itemStack_3) && ItemStack.equalsIgnoreDamage(itemStack_2, itemStack_3)) {
-                    itemStack_3.increment(itemStack_2.getCount());
-                    dispenserTE.setInvStack(i, itemStack_3);
+                    dispenserTE.setStack(i, itemStack_3);
+                } else if (ItemStack.matches(itemStack_2, itemStack_3) && ItemStack.matchesItemIgnoreDamage(itemStack_2, itemStack_3)) {
+                    itemStack_3.increase(itemStack_2.getSize());
+                    dispenserTE.setStack(i, itemStack_3);
                 } else {
                     AutoCraftingDropperHelper.spawnItemStack(worldIn, target.x, target.y, target.z, itemStack_3);
                 }

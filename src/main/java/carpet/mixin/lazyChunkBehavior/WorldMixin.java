@@ -5,7 +5,6 @@ import carpet.helpers.LazyChunkBehaviorHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import redstone.multimeter.helper.WorldHelper;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
@@ -13,7 +12,7 @@ import net.minecraft.world.World;
 @Mixin(World.class)
 public class WorldMixin {
 	@Redirect(
-			method = "checkChunk(Lnet/minecraft/entity/Entity;Z)V",
+			method = "tickEntity(Lnet/minecraft/entity/Entity;Z)V",
 			at = @At(
 					value = "INVOKE",
 					target = "Lnet/minecraft/entity/Entity;tickRiding()V"
@@ -26,7 +25,7 @@ public class WorldMixin {
 	}
 
 	@Redirect(
-			method = "checkChunk(Lnet/minecraft/entity/Entity;Z)V",
+			method = "tickEntity(Lnet/minecraft/entity/Entity;Z)V",
 			at = @At(
 					value = "INVOKE",
 					target = "Lnet/minecraft/entity/Entity;tick()V"
@@ -34,7 +33,6 @@ public class WorldMixin {
 	)
 	public void tickRedirect(Entity entity) {
 		if (!CarpetSettings.commandLazyChunkBehavior || LazyChunkBehaviorHelper.shouldUpdate(entity)) {
-			WorldHelper.onEntityTick((World) ((Object) this), entity);
 			entity.tick();
 		}
 	}

@@ -3,19 +3,19 @@ package carpet.patches;
 import carpet.CarpetSettings;
 import carpet.carpetclient.CarpetClientChunkLogger;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.DyeColor;
+import net.minecraft.item.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldView;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
-public class WoolBlock extends net.minecraft.block.WoolBlock {
+public class WoolBlock extends net.minecraft.block.ColoredBlock {
 
     private Map<DyeColor, Set<Pair<Integer, BlockPos>>> woolBlocks = new EnumMap<>(DyeColor.class);
     private EnumSet<DyeColor> alreadyCheckedColors = EnumSet.noneOf(DyeColor.class);
@@ -33,7 +33,7 @@ public class WoolBlock extends net.minecraft.block.WoolBlock {
     }
 
     @Override
-    public boolean emitsRedstonePower(BlockState state) {
+    public boolean isSignalSource(BlockState state) {
         return CarpetSettings.wirelessRedstone;
     }
 
@@ -58,22 +58,22 @@ public class WoolBlock extends net.minecraft.block.WoolBlock {
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
         if (!CarpetSettings.wirelessRedstone) return;
 
         // Adds this location if absent
-        woolBlocks.get(state.get(COLOR)).add(Pair.of(worldIn.dimension.getDimensionType().getId(), pos));
+        woolBlocks.get(state.get(COLOR)).add(Pair.of(worldIn.dimension.getType().getId(), pos));
 
         boolean updateRoot = !updatingWool;
         updatingWool = true;
 
-        if (!updatedBlocks.add(Pair.of(worldIn.dimension.getDimensionType().getId(), pos)))
+        if (!updatedBlocks.add(Pair.of(worldIn.dimension.getType().getId(), pos)))
             return;
 
         for (Pair<Integer, BlockPos> wool : getAllWoolOfType(worldIn.getServer(), state.get(COLOR))) {
             World world = worldIn.getServer().getWorld(wool.getLeft());
             CarpetClientChunkLogger.setReason("Carpet wireless redstone");
-            world.method_13692(wool.getRight(), this, false);
+            world.updateNeighbors(wool.getRight(), this, false);
             CarpetClientChunkLogger.resetReason();
         }
 
@@ -84,13 +84,13 @@ public class WoolBlock extends net.minecraft.block.WoolBlock {
     }
 
     @Override
-    public int getWeakRedstonePower(BlockState state, BlockView blockAccess, BlockPos pos, Direction side) {
+    public int getSignal(BlockState state, WorldView blockAccess, BlockPos pos, Direction side) {
         if (!CarpetSettings.wirelessRedstone)
             return 0;
 
         World worldIn = (World) blockAccess;
         // Adds this location if absent
-        woolBlocks.get(state.get(COLOR)).add(Pair.of(worldIn.dimension.getDimensionType().getId(), pos));
+        woolBlocks.get(state.get(COLOR)).add(Pair.of(worldIn.dimension.getType().getId(), pos));
 
         if (!alreadyCheckedColors.add(state.get(COLOR)))
             return 0;
@@ -102,7 +102,7 @@ public class WoolBlock extends net.minecraft.block.WoolBlock {
             for (Direction facing : Direction.values()) {
                 BlockPos testPos = location.getRight().offset(facing);
                 if (world.getBlockState(testPos) != state)
-                    power = Math.max(power, world.getEmittedRedstonePower(testPos, facing));
+                    power = Math.max(power, world.getSignal(testPos, facing));
             }
             CarpetClientChunkLogger.resetReason();
         }
@@ -113,16 +113,16 @@ public class WoolBlock extends net.minecraft.block.WoolBlock {
     }
 
     @Override
-    public void onCreation(World worldIn, BlockPos pos, BlockState state) {
+    public void onAdded(World worldIn, BlockPos pos, BlockState state) {
         if (CarpetSettings.wirelessRedstone) {
-            woolBlocks.get(state.get(COLOR)).add(Pair.of(worldIn.dimension.getDimensionType().getId(), pos));
+            woolBlocks.get(state.get(COLOR)).add(Pair.of(worldIn.dimension.getType().getId(), pos));
         }
     }
 
     @Override
-    public void onBreaking(World worldIn, BlockPos pos, BlockState state) {
+    public void onRemoved(World worldIn, BlockPos pos, BlockState state) {
         if (CarpetSettings.wirelessRedstone) {
-            woolBlocks.get(state.get(COLOR)).remove(Pair.of(worldIn.dimension.getDimensionType().getId(), pos));
+            woolBlocks.get(state.get(COLOR)).remove(Pair.of(worldIn.dimension.getType().getId(), pos));
         }
     }
 }

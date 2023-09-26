@@ -10,11 +10,11 @@ import org.jetbrains.annotations.Nullable;
 import carpet.CarpetSettings;
 import carpet.helpers.HopperCounter;
 import carpet.utils.Messenger;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.IncorrectUsageException;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.DyeColor;
+import net.minecraft.item.DyeColor;
 import net.minecraft.util.math.BlockPos;
 
 public class CommandCounter extends CommandCarpetBase
@@ -23,13 +23,13 @@ public class CommandCounter extends CommandCarpetBase
      * Gets the name of the command
      */
     @Override
-    public String getUsageTranslationKey(CommandSource sender)
+    public String getUsage(CommandSource sender)
     {
         return "Usage: counter <color> <reset/realtime>";
     }
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "counter";
     }
@@ -38,7 +38,7 @@ public class CommandCounter extends CommandCarpetBase
      * Callback for when the command is executed
      */
     @Override
-    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (CarpetSettings.hopperCounters == CarpetSettings.HopperCounters.off && !CarpetSettings.cactusCounter){
             msg(sender, Messenger.m(null, "Need cactusCounter or hopperCounters to be enabled to use this command."));
@@ -54,7 +54,7 @@ public class CommandCounter extends CommandCarpetBase
                 return;
             case "reset":
                 HopperCounter.resetAll(server);
-                run(sender, this, "All counters restarted.");
+                sendSuccess(sender, this, "All counters restarted.");
                 return;
         }
         HopperCounter counter = HopperCounter.getCounter(args[0]);
@@ -69,15 +69,15 @@ public class CommandCounter extends CommandCarpetBase
                 return;
             case "reset":
                 counter.reset(server);
-                run(sender, this, String.format("%s counters restarted.", args[0]));
+                sendSuccess(sender, this, String.format("%s counters restarted.", args[0]));
                 return;
         }
-        throw new IncorrectUsageException(getUsageTranslationKey(sender));
+        throw new IncorrectUsageException(getUsage(sender));
 
     }
 
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos)
     {
         if (CarpetSettings.hopperCounters == CarpetSettings.HopperCounters.off && !CarpetSettings.cactusCounter)
         {
@@ -97,11 +97,11 @@ public class CommandCounter extends CommandCarpetBase
             lst.add("realtime");
             String[] stockArr = new String[lst.size()];
             stockArr = lst.toArray(stockArr);
-            return method_2894(args, stockArr);
+            return suggestMatching(args, stockArr);
         }
         if (args.length == 2)
         {
-            return method_2894(args, "reset", "realtime");
+            return suggestMatching(args, "reset", "realtime");
         }
         return Collections.<String>emptyList();
     }

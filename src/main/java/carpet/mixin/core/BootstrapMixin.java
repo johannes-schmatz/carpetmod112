@@ -42,16 +42,16 @@ public class BootstrapMixin {
 	 * <a href="https://discord.com/channels/961702940102504518/961702940102504521/1078400009961226331">See this message in the Threadstone Archive for more information </a>
 	 */
 	@Inject(
-			method = "initialize",
+			method = "init",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/Bootstrap;setOutputStreams()V",
+					target = "Lnet/minecraft/Bootstrap;wrapPrintStreams()V",
 					shift = At.Shift.BEFORE
 			)
 	)
 	private static void onInitialize(CallbackInfo ci) {
 		// Fix the crash report without carpet rule. DON'T PUT A GOD-DAMN CARPET RULE FOR THIS OR I WILL GET MAD!
 		// Mojang even added this in 16. CARPET-XCOM
-		CrashReport.create(new Throwable("Dummy"), "Dummy");
+		CrashReport.of(new Throwable("Dummy"), "Dummy");
 	}
 }

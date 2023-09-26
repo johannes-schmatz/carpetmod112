@@ -2,35 +2,36 @@ package carpet.mixin.entityTrackerFix;
 
 import carpet.CarpetSettings;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.TrackedEntityInstance;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.entity.vehicle.MinecartEntity;
+import net.minecraft.server.entity.EntityTrackerEntry;
+import net.minecraft.entity.living.player.PlayerEntity;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(TrackedEntityInstance.class)
+@Mixin(EntityTrackerEntry.class)
 public class EntityTrackerEntryMixin {
-    @Shadow @Final private int trackingDistance;
-    @Shadow @Final private Entity trackedEntity;
+    @Shadow @Final private int trackedDistance;
+    @Shadow @Final private Entity currentTrackedEntity;
 
     @Redirect(
-            method = "method_10770",
+            method = "m_1373828",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/TrackedEntityInstance;trackingDistance:I"
+                    target = "Lnet/minecraft/server/entity/EntityTrackerEntry;trackedDistance:I"
             )
     )
-    private int entityTrackerFix(TrackedEntityInstance entry) {
-        if (!CarpetSettings.entityTrackerFix) return trackingDistance;
-        if (trackedEntity instanceof AbstractMinecartEntity || trackedEntity instanceof BoatEntity) {
-            for (Entity e : trackedEntity.getPassengerList()) {
+    private int entityTrackerFix(EntityTrackerEntry entry) {
+        if (!CarpetSettings.entityTrackerFix) return trackedDistance;
+        if (currentTrackedEntity instanceof MinecartEntity || currentTrackedEntity instanceof BoatEntity) {
+            for (Entity e : currentTrackedEntity.getPassengers()) {
                 if (e instanceof PlayerEntity) return 512;
             }
         }
-        return trackingDistance;
+        return trackedDistance;
     }
 }

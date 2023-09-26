@@ -14,16 +14,16 @@ import net.minecraft.world.World;
 @Mixin(DragonEggBlock.class)
 public class DragonEggBlockMixin {
 	@Redirect(
-			method = "scheduledTick",
+			method = "tryFall",
 			at = @At(
 					value = "FIELD",
-					target = "Lnet/minecraft/block/FallingBlock;instantFall:Z"
+					target = "Lnet/minecraft/block/FallingBlock;fallImmediately:Z"
 			)
 	)
 	public boolean redirectInstantFall(World world, BlockPos pos) {
 		if (CarpetSettings.commandLazyChunkBehavior) {
-			return (!LazyChunkBehaviorHelper.shouldUpdate(world, pos)) || FallingBlock.instantFall;
+			return (!LazyChunkBehaviorHelper.shouldUpdate(world, pos)) || FallingBlock.fallImmediately;
 		}
-		return FallingBlock.instantFall;
+		return FallingBlock.fallImmediately;
 	}
 }

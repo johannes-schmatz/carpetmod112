@@ -15,10 +15,10 @@ import static carpet.helpers.LagSpikeHelper.TickPhase.*;
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
     @Inject(
-            method = "setupWorld()V",
+            method = "tick()V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/PlayerManager;saveAllPlayerData()V"
+                    target = "Lnet/minecraft/server/PlayerManager;saveAll()V"
             )
     )
     private void onAutosaveStart(CallbackInfo ci) {
@@ -27,7 +27,7 @@ public class MinecraftServerMixin {
     }
 
     @Inject(
-            method = "setupWorld()V",
+            method = "tick()V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/MinecraftServer;saveWorlds(Z)V",
@@ -40,7 +40,7 @@ public class MinecraftServerMixin {
     }
 
     @Inject(
-            method = "tick",
+            method = "tickWorlds",
             at = @At(
                     value = "CONSTANT",
                     args = "stringValue=connection"
@@ -51,7 +51,7 @@ public class MinecraftServerMixin {
     }
 
     @Inject(
-            method = "tick",
+            method = "tickWorlds",
             at = @At(
                     value = "CONSTANT",
                     args = "stringValue=commandFunctions"
@@ -62,7 +62,7 @@ public class MinecraftServerMixin {
     }
 
     @Inject(
-            method = "tick",
+            method = "tickWorlds",
             at = @At("HEAD")
     )
     private void preTick(CallbackInfo ci) {
@@ -70,7 +70,7 @@ public class MinecraftServerMixin {
     }
 
     @Inject(
-            method = "tick",
+            method = "tickWorlds",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/profiler/Profiler;push(Ljava/lang/String;)V",
@@ -83,7 +83,7 @@ public class MinecraftServerMixin {
     }
 
     @Inject(
-            method = "tick",
+            method = "tickWorlds",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V",
@@ -95,7 +95,7 @@ public class MinecraftServerMixin {
     }
 
     @Inject(
-            method = "tick",
+            method = "tickWorlds",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/profiler/Profiler;push(Ljava/util/function/Supplier;)V",
@@ -107,10 +107,10 @@ public class MinecraftServerMixin {
     }
 
     @Inject(
-            method = "tick",
+            method = "tickWorlds",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/EntityTracker;method_2095()V",
+                    target = "Lnet/minecraft/server/entity/EntityTracker;tick()V",
                     shift = At.Shift.AFTER
             )
     )

@@ -1,7 +1,7 @@
 package carpet.carpetclient;
 
 import carpet.CarpetSettings;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 
 public class CarpetClientRuleTips {
 

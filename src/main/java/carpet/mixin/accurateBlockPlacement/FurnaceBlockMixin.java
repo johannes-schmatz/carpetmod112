@@ -1,7 +1,7 @@
 package carpet.mixin.accurateBlockPlacement;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.FurnaceBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(FurnaceBlock.class)
 public class FurnaceBlockMixin {
     @Inject(
-            method = "onCreation",
+            method = "onAdded",
             at = @At("HEAD"),
             cancellable = true
     )

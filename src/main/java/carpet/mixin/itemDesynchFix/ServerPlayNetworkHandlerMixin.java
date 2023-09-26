@@ -1,9 +1,10 @@
 package carpet.mixin.itemDesynchFix;
 
 import carpet.CarpetSettings;
-import net.minecraft.network.packet.c2s.play.ClickWindowC2SPacket;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.entity.player.ServerPlayerEntity;
+
+import net.minecraft.network.packet.c2s.play.MenuClickSlotC2SPacket;
+import net.minecraft.server.network.handler.ServerPlayNetworkHandler;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,17 +16,17 @@ public class ServerPlayNetworkHandlerMixin {
     @Shadow public ServerPlayerEntity player;
 
     @Inject(
-            method = "onClickWindow",
+            method = "handleMenuClickSlot",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/player/ServerPlayerEntity;skipPacketSlotUpdates:Z",
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;useItemCooldown:Z",
                     ordinal = 0
             )
     )
-    private void itemDesynchFix(ClickWindowC2SPacket packetIn, CallbackInfo ci) {
+    private void itemDesynchFix(MenuClickSlotC2SPacket packetIn, CallbackInfo ci) {
         // Update item changes before setting boolean true given it can cause desynchs. CARPET-XCOM
         if (CarpetSettings.itemDesynchFix) {
-            this.player.openScreenHandler.sendContentUpdates();
+            this.player.menu.updateListeners();
         }
     }
 }

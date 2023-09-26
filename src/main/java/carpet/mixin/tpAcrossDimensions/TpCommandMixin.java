@@ -8,16 +8,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import net.minecraft.command.CommandSource;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.TpCommand;
 
 @Mixin(TpCommand.class)
 public class TpCommandMixin {
 	@Inject(
-			method = "method_3279",
+			method = "run",
 			at = @At(
 					value = "FIELD",
 					target = "Lnet/minecraft/entity/Entity;world:Lnet/minecraft/world/World;",

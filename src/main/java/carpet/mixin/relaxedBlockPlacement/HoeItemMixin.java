@@ -1,7 +1,7 @@
 package carpet.mixin.relaxedBlockPlacement;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.HoeItem;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +14,7 @@ public class HoeItemMixin {
             method = "use",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/BlockState;getMaterial()Lnet/minecraft/block/material/Material;"
+                    target = "Lnet/minecraft/block/state/BlockState;getMaterial()Lnet/minecraft/block/material/Material;"
             )
     )
     private Material allowWater(BlockState state) {

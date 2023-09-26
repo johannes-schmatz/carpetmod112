@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(World.class)
 public class WorldMixin {
     @Redirect(
-            method = "checkChunk(Lnet/minecraft/entity/Entity;Z)V",
+            method = "tickEntity(Lnet/minecraft/entity/Entity;Z)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/Entity;stopRiding()V"

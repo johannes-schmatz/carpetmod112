@@ -2,12 +2,13 @@ package carpet.mixin.structureBlockLimit;
 
 import carpet.CarpetSettings;
 
-import net.minecraft.class_2765;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.handler.ServerPlayNetworkHandler;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Identifier;
+import net.minecraft.resource.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.gen.structure.template.StructureTemplate;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,7 +19,7 @@ public class ServerPlayNetworkHandlerMixin {
     @Shadow @Final private MinecraftServer server;
 
     @ModifyConstant(
-            method = "onCustomPayload",
+            method = "handleCustomPayload",
             constant = {
                     @Constant(intValue = -32),
                     @Constant(intValue = 32)
@@ -26,11 +27,11 @@ public class ServerPlayNetworkHandlerMixin {
             slice = @Slice(
                     from = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/block/entity/StructureBlockEntity;method_11673(Ljava/lang/String;)V"
+                            target = "Lnet/minecraft/block/entity/StructureBlockEntity;setStructureName(Ljava/lang/String;)V"
                     ),
                     to = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/block/entity/StructureBlockEntity;method_11679(Lnet/minecraft/util/math/BlockPos;)V"
+                            target = "Lnet/minecraft/block/entity/StructureBlockEntity;setSize(Lnet/minecraft/util/math/BlockPos;)V"
                     )
             )
     )
@@ -40,7 +41,7 @@ public class ServerPlayNetworkHandlerMixin {
 
     // structure_block.load_prepare
     @Redirect(
-            method = "onCustomPayload",
+            method = "handleCustomPayload",
             at = @At(
                     value = "NEW",
                     target = "net/minecraft/text/TranslatableText",
@@ -49,10 +50,10 @@ public class ServerPlayNetworkHandlerMixin {
     )
     private TranslatableText errorMessage(String message, Object[] args) {
         String structureName = (String) args[0];
-        class_2765 template = server.worlds[0].method_12783().method_13384(server, new Identifier(structureName));
+        StructureTemplate template = server.worlds[0].getStructureManager().get(server, new Identifier(structureName));
         if (template != null) {
             int sbl = CarpetSettings.structureBlockLimit;
-            BlockPos size = template.method_11880();
+            BlockPos size = template.getSize();
             if (size.getX() > sbl || size.getY() > sbl || size.getZ() > sbl) {
                 return new TranslatableText("Structure is too big for structure limit");
             }

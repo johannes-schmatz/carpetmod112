@@ -1,6 +1,6 @@
 package carpet.mixin.accessors;
 
-import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.living.mob.passive.VillagerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface VillagerEntityAccessor {
     @Accessor int getRiches();
     @Accessor void setRiches(int riches);
-    @Accessor int getCareer();
-    @Accessor void setCareer(int id);
-    @Accessor int getCareerLevel();
-    @Accessor void setCareerLevel(int level);
+    @Accessor("f_3381958") int getCareer();
+    @Accessor("f_3381958") void setCareer(int id);
+    @Accessor("f_4282224") int getCareerLevel();
+    @Accessor("f_4282224") void setCareerLevel(int level);
 }

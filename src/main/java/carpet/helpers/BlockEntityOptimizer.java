@@ -4,7 +4,7 @@ import carpet.mixin.optimizedTileEntities.WorldMixin;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.HopperBlock;
 import net.minecraft.block.entity.BlockEntity;
@@ -25,7 +25,7 @@ public class BlockEntityOptimizer
     {
         /**
          * CARPET-optimizedTileEntities: Wakes up the tile entity so it updates again. Called upon receiving a comparator update in
-         * {@linkplain net.minecraft.world.World#updateHorizontalAdjacent(net.minecraft.util.math.BlockPos, net.minecraft.block.Block)}
+         * {@linkplain net.minecraft.world.World#updateNeighborComparators(net.minecraft.util.math.BlockPos, net.minecraft.block.Block)}
          * {@linkplain WorldMixin#onComparatorUpdate(BlockPos, Block, CallbackInfo)}
          */
         public void wakeUp();
@@ -52,23 +52,23 @@ public class BlockEntityOptimizer
             BlockPos blockpos = pos.offset(enumfacing);
             boolean horizontal = enumfacing.getAxis() != Axis.Y;
 
-            if (worldIn.blockExists(blockpos))
+            if (worldIn.isChunkLoaded(blockpos))
             {
                 BlockState iblockstate = worldIn.getBlockState(blockpos);
                 
                 // Check for comparators like in vanilla. This check is only performed horizontally, as comparators are only horizontal
-                if (horizontal && Blocks.UNPOWERED_COMPARATOR.method_11603(iblockstate))
+                if (horizontal && Blocks.COMPARATOR.isSameDiode(iblockstate))
                 {
-                    iblockstate.neighbourUpdate(worldIn, blockpos, blockIn, pos);
+                    iblockstate.neighborChanged(worldIn, blockpos, blockIn, pos);
                 }
-                else if (horizontal && iblockstate.method_11734())
+                else if (horizontal && iblockstate.isConductor())
                 {
                     blockpos = blockpos.offset(enumfacing);
                     BlockState iblockstate1 = worldIn.getBlockState(blockpos);
 
-                    if (Blocks.UNPOWERED_COMPARATOR.method_11603(iblockstate1))
+                    if (Blocks.COMPARATOR.isSameDiode(iblockstate1))
                     {
-                        iblockstate1.neighbourUpdate(worldIn, blockpos, blockIn, pos);
+                        iblockstate1.neighborChanged(worldIn, blockpos, blockIn, pos);
                     }
                 }
                 
@@ -76,7 +76,7 @@ public class BlockEntityOptimizer
                 else if (iblockstate.getBlock() == Blocks.HOPPER)
                 {
                     BlockEntity blockEntity = worldIn.getBlockEntity(blockpos);
-                    if((enumfacing == Direction.DOWN || enumfacing == HopperBlock.getDirection(blockEntity.getDataValue()).getOpposite())
+                    if((enumfacing == Direction.DOWN || enumfacing == HopperBlock.getFacingFromMetadata(blockEntity.getBlockMetadata()).getOpposite())
                             && blockEntity instanceof LazyBlockEntity)
                     {
                         ((LazyBlockEntity) blockEntity).wakeUp();

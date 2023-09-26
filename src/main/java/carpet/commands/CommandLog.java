@@ -17,10 +17,11 @@ import carpet.logging.LogHandler;
 import carpet.logging.Logger;
 import carpet.logging.LoggerRegistry;
 import carpet.utils.Messenger;
-import net.minecraft.command.IncorrectUsageException;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.PlayerEntity;
+
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -28,17 +29,17 @@ public class CommandLog extends CommandCarpetBase {
     private final String USAGE = "/log (interactive menu) OR /log <logName> [?option] [player] [handler ...] OR /log <logName> clear [player] OR /log defaults (interactive menu) OR /log setDefault <logName> [?option] [handler ...] OR /log removeDefault <logName>";
 
     @Override
-    public String getCommandName() {
+    public String getName() {
         return "log";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender) {
+    public String getUsage(CommandSource sender) {
         return USAGE;
     }
 
     @Override
-    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (!command_enabled("commandLog", sender)) return;
         PlayerEntity player = null;
@@ -53,7 +54,7 @@ public class CommandLog extends CommandCarpetBase {
             {
                 return;
             }
-            Map<String, LoggerOptions> subs = LoggerRegistry.getPlayerSubscriptions(player.getTranslationKey());
+            Map<String, LoggerOptions> subs = LoggerRegistry.getPlayerSubscriptions(player.getName());
             if (subs == null)
             {
                 subs = new HashMap<>();
@@ -114,14 +115,14 @@ public class CommandLog extends CommandCarpetBase {
         {
             if (args.length > 1)
             {
-                player = server.getPlayerManager().getPlayer(args[1]);
+                player = server.getPlayerManager().get(args[1]);
             }
             if (player == null)
             {
                 throw new IncorrectUsageException("No player specified");
             }
-            LoggerRegistry.resetSubscriptions(server, player.getTranslationKey());
-            run(sender, this, "Unsubscribed from all logs and restored default subscriptions");
+            LoggerRegistry.resetSubscriptions(server, player.getName());
+            sendSuccess(sender, this, "Unsubscribed from all logs and restored default subscriptions");
             return;
         }
 
@@ -237,7 +238,7 @@ public class CommandLog extends CommandCarpetBase {
             }
             if (args.length >= 3)
             {
-                player = server.getPlayerManager().getPlayer(args[2]);
+                player = server.getPlayerManager().get(args[2]);
             }
             if (player == null)
             {
@@ -255,16 +256,16 @@ public class CommandLog extends CommandCarpetBase {
             boolean subscribed = true;
             if (args.length >= 2 && "clear".equalsIgnoreCase(args[1]))
             {
-                LoggerRegistry.unsubscribePlayer(server, player.getTranslationKey(), logger.getLogName());
+                LoggerRegistry.unsubscribePlayer(server, player.getName(), logger.getLogName());
                 subscribed = false;
             }
             else if (option == null)
             {
-                subscribed = LoggerRegistry.togglePlayerSubscription(server, player.getTranslationKey(), logger.getLogName(), handler);
+                subscribed = LoggerRegistry.togglePlayerSubscription(server, player.getName(), logger.getLogName(), handler);
             }
             else
             {
-                LoggerRegistry.subscribePlayer(server, player.getTranslationKey(), logger.getLogName(), option, handler);
+                LoggerRegistry.subscribePlayer(server, player.getName(), logger.getLogName(), option, handler);
             }
             if (subscribed)
             {
@@ -282,7 +283,7 @@ public class CommandLog extends CommandCarpetBase {
     }
 
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, BlockPos targetPos)
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, BlockPos targetPos)
     {
         if (!CarpetSettings.commandLog)
         {
@@ -295,20 +296,20 @@ public class CommandLog extends CommandCarpetBase {
             options.add("defaults");
             options.add("setDefault");
             options.add("removeDefault");
-            return method_10708(args, options);
+            return suggestMatching(args, options);
         }
         else if (args.length == 2)
         {
             if ("clear".equalsIgnoreCase(args[0]))
             {
                 List<String> players = Arrays.asList(server.getPlayerNames());
-                return method_2894(args, players.toArray(new String[0]));
+                return suggestMatching(args, players.toArray(new String[0]));
             }
 
             if ("setDefault".equalsIgnoreCase(args[0]) || "removeDefault".equalsIgnoreCase(args[0]))
             {
                 Set<String> options = new HashSet<String>(Arrays.asList(LoggerRegistry.getLoggerNames(classType())));
-                return method_10708(args, options);
+                return suggestMatching(args, options);
             }
 
             Logger logger = LoggerRegistry.getLogger(args[0]);
@@ -321,7 +322,7 @@ public class CommandLog extends CommandCarpetBase {
                     options.addAll(Arrays.asList(opts));
                 else
                     options.add("on");
-                return method_2894(args, options.toArray(new String[0]));
+                return suggestMatching(args, options.toArray(new String[0]));
             }
         }
         else if (args.length == 3)
@@ -336,16 +337,16 @@ public class CommandLog extends CommandCarpetBase {
                     if (opts != null)
                         options.addAll(Arrays.asList(opts));
 
-                    return method_2894(args, options.toArray(new String[0]));
+                    return suggestMatching(args, options.toArray(new String[0]));
                 }
             }
 
             List<String> players = Arrays.asList(server.getPlayerNames());
-            return method_2894(args, players.toArray(new String[0]));
+            return suggestMatching(args, players.toArray(new String[0]));
         }
         else if (args.length == 4)
         {
-            return method_10708(args, LogHandler.getHandlerNames());
+            return suggestMatching(args, LogHandler.getHandlerNames());
         }
 
         return Collections.<String>emptyList();

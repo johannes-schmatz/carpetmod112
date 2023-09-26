@@ -3,21 +3,22 @@ package carpet.mixin.pistonGhostBlockFix;
 import carpet.CarpetSettings;
 import carpet.utils.extensions.ExtendedPistonBlockEntityGhostBlockFix;
 import carpet.utils.extensions.ExtendedServerWorldPistonGhostBlockFix;
-import net.minecraft.block.BlockState;
+
+import net.minecraft.block.PistonBaseBlock;
+import net.minecraft.block.entity.MovingBlockEntity;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.PistonBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.PistonBlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 
-@Mixin(PistonBlock.class)
+@Mixin(PistonBaseBlock.class)
 public class PistonBlockMixin {
     @Redirect(
-            method = "tryMove",
+            method = "checkExtended",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/math/Direction;getId()I"
@@ -29,17 +30,17 @@ public class PistonBlockMixin {
             BlockPos blockpos = new BlockPos(pos).offset(facing, 2);
             BlockState iblockstate = world.getBlockState(blockpos);
 
-            if (iblockstate.getBlock() == Blocks.PISTON_EXTENSION) {
+            if (iblockstate.getBlock() == Blocks.MOVING_BLOCK) {
                 final BlockEntity tileentity = world.getBlockEntity(blockpos);
 
-                if (tileentity instanceof PistonBlockEntity) {
-                    PistonBlockEntity te = (PistonBlockEntity) tileentity;
+                if (tileentity instanceof MovingBlockEntity) {
+                    MovingBlockEntity te = (MovingBlockEntity) tileentity;
                     ExtendedPistonBlockEntityGhostBlockFix ext = (ExtendedPistonBlockEntityGhostBlockFix) te;
                     boolean facingMatch = te.getFacing() == facing;
                     boolean extending = te.isExtending();
                     boolean progressMatch = ext.getLastProgress() < 0.5F;
                     if (facingMatch && extending && progressMatch
-                            && te.getEntityWorld().getLastUpdateTime() == ext.getLastTicked()
+                            && te.getWorld().getTime() == ext.getLastTicked()
                             && !((ExtendedServerWorldPistonGhostBlockFix) world).haveBlockActionsProcessed()) {
                         suppressMove = true;
                     }
@@ -50,7 +51,7 @@ public class PistonBlockMixin {
     }
 
     @ModifyConstant(
-            method = "onSyncedBlockEvent",
+            method = "doEvent",
             constant = @Constant(
                     intValue = 0,
                     ordinal = 0
@@ -58,7 +59,7 @@ public class PistonBlockMixin {
             slice = @Slice(
                     from = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/block/BlockState;getBlock()Lnet/minecraft/block/Block;"
+                            target = "Lnet/minecraft/block/state/BlockState;getBlock()Lnet/minecraft/block/Block;"
                     )
             )
     )

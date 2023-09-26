@@ -13,19 +13,19 @@ import net.minecraft.world.World;
 
 @Mixin(FallingBlock.class)
 public class FallingBlockMixin {
-	@Shadow public static boolean instantFall;
+	@Shadow public static boolean fallImmediately;
 
 	@Redirect(
-			method = "scheduledTick",
+			method = "tryFall",
 			at = @At(
 					value = "FIELD",
-					target = "Lnet/minecraft/block/FallingBlock;instantFall:Z"
+					target = "Lnet/minecraft/block/FallingBlock;fallImmediately:Z"
 			)
 	)
 	public boolean redirectInstantFall(World world, BlockPos pos) {
 		if (CarpetSettings.commandLazyChunkBehavior) {
-			return (!LazyChunkBehaviorHelper.shouldUpdate(world, pos)) || instantFall;
+			return (!LazyChunkBehaviorHelper.shouldUpdate(world, pos)) || fallImmediately;
 		}
-		return instantFall;
+		return fallImmediately;
 	}
 }

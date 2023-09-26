@@ -1,8 +1,9 @@
 package carpet.mixin.villageMarkers;
 
 import carpet.utils.extensions.ExtendedVillageCollection;
-import net.minecraft.village.Village;
 import net.minecraft.world.World;
+import net.minecraft.world.village.Village;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,7 +15,7 @@ public class VillageMixin {
     @Shadow private World world;
 
     @Inject(
-            method = "method_2833",
+            method = "cleanUpDoors",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/Iterator;remove()V",
@@ -22,6 +23,6 @@ public class VillageMixin {
             )
     )
     private void updateOldDoors(CallbackInfo ci) {
-        ((ExtendedVillageCollection) world.getVillageState()).markVillageMarkersDirty();
+        ((ExtendedVillageCollection) world.getVillages()).markVillageMarkersDirty();
     }
 }

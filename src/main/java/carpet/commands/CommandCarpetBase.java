@@ -2,23 +2,23 @@ package carpet.commands;
 
 import carpet.CarpetSettings;
 import carpet.utils.Messenger;
-import net.minecraft.command.AbstractCommand;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.InvalidNumberException;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.InvalidNumberException;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import java.util.List;
 
-public abstract class CommandCarpetBase extends AbstractCommand
+public abstract class CommandCarpetBase extends Command
 {
     @Override
-    public boolean method_3278(MinecraftServer server, CommandSource sender) {
+    public boolean canUse(MinecraftServer server, CommandSource sender) {
         return true;
     }
 
     @Override
-    public int getPermissionLevel() {
+    public int getRequiredPermissionLevel() {
         return 0;
     }
 
@@ -31,7 +31,7 @@ public abstract class CommandCarpetBase extends AbstractCommand
         }
         else
         {
-            for (Text t: texts) run(sender, this, t.asUnformattedString());
+            for (Text t: texts) sendSuccess(sender, this, t.buildString());
         }
     }
     public boolean command_enabled(String command_name, CommandSource sender)

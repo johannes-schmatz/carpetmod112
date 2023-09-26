@@ -1,6 +1,6 @@
 package carpet.helpers;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 
 public final class CarefulBreakHelper {
     private CarefulBreakHelper() {}

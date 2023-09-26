@@ -2,7 +2,7 @@ package carpet.mixin.sendDuplicateEntitiesToClients;
 
 import carpet.CarpetSettings;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityTracker;
+import net.minecraft.server.entity.EntityTracker;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +16,7 @@ public class ServerWorldMixin {
     @Shadow @Final private EntityTracker entityTracker;
 
     @Inject(
-            method = "method_12781",
+            method = "canAddEntity",
             at = @At(
                     value = "INVOKE",
                     target = "Lorg/apache/logging/log4j/Logger;warn(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V",
@@ -26,7 +26,7 @@ public class ServerWorldMixin {
     )
     private void sendDuplicateEntitiesToClients(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if (CarpetSettings.sendDuplicateEntitiesToClients) {
-            entityTracker.method_2101(entity);
+            entityTracker.onEntityRemoved(entity);
         }
     }
 }

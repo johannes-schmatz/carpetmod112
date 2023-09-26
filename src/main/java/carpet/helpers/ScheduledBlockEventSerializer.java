@@ -6,17 +6,18 @@ import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.server.world.BlockAction;
+import net.minecraft.server.world.BlockEvent;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.PersistentState;
+import net.minecraft.world.saved.SavedData;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
-public class ScheduledBlockEventSerializer extends PersistentState {
-    private final ArrayList<BlockAction> list = new ArrayList<>();
+public class ScheduledBlockEventSerializer extends SavedData {
+    private final ArrayList<BlockEvent> list = new ArrayList<>();
     private ServerWorld world;
 
     public ScheduledBlockEventSerializer() {
@@ -27,25 +28,27 @@ public class ScheduledBlockEventSerializer extends PersistentState {
         super(name);
     }
 
-    public void fromNbt(NbtCompound nbt) {
+    @Override
+    public void readNbt(NbtCompound nbt) {
         NbtList nbttaglist = nbt.getList("blockEvents", 10);
         for (int i = 0; i < nbttaglist.size(); ++i) {
             NbtCompound nbttagcompound = nbttaglist.getCompound(i);
-            BlockAction blockeventdata = new BlockAction(new BlockPos(nbttagcompound.getInt("X"), nbttagcompound.getInt("Y"), nbttagcompound.getInt("Z")),
-                    Block.getById(nbttagcompound.getInt("B") & 4095), nbttagcompound.getInt("ID"), nbttagcompound.getInt("P"));
+            BlockEvent blockeventdata = new BlockEvent(new BlockPos(nbttagcompound.getInt("X"), nbttagcompound.getInt("Y"), nbttagcompound.getInt("Z")),
+                    Block.byId(nbttagcompound.getInt("B") & 4095), nbttagcompound.getInt("ID"), nbttagcompound.getInt("P"));
             list.add(blockeventdata);
         }
     }
 
-    public NbtCompound toNbt(NbtCompound compound) {
+    @Override
+    public NbtCompound writeNbt(NbtCompound compound) {
         NbtList nbttaglist = new NbtList();
         if(CarpetSettings.blockEventSerializer) {
-            for (BlockAction blockeventdata : getBlockEventQueue(world)) {
+            for (BlockEvent blockeventdata : getBlockEventQueue(world)) {
                 NbtCompound nbttagcompound = new NbtCompound();
                 nbttagcompound.putInt("X", blockeventdata.getPos().getX());
                 nbttagcompound.putInt("Y", blockeventdata.getPos().getY());
                 nbttagcompound.putInt("Z", blockeventdata.getPos().getZ());
-                nbttagcompound.putInt("B", Block.getIdByBlock(blockeventdata.getBlock()) & 4095);
+                nbttagcompound.putInt("B", Block.getId(blockeventdata.getBlock()) & 4095);
                 nbttagcompound.putInt("ID", blockeventdata.getType());
                 nbttagcompound.putInt("P", blockeventdata.getData());
                 nbttaglist.add(nbttagcompound);
@@ -60,7 +63,7 @@ public class ScheduledBlockEventSerializer extends PersistentState {
         getBlockEventQueue(world).addAll(list);
     }
 
-    private static ArrayList<BlockAction> getBlockEventQueue(ServerWorld world) {
+    private static ArrayList<BlockEvent> getBlockEventQueue(ServerWorld world) {
         return BlockEventQueueGetter.getBlockEventQueue(world)[((ServerWorldAccessor) world).getBlockEventCacheIndex()];
     }
 
@@ -71,10 +74,10 @@ public class ScheduledBlockEventSerializer extends PersistentState {
     private static final class BlockEventQueueGetter {
         static MethodHandle handle = getMethodHandle();
 
-        static ArrayList<BlockAction>[] getBlockEventQueue(ServerWorld world) {
+        static ArrayList<BlockEvent>[] getBlockEventQueue(ServerWorld world) {
             try {
                 //noinspection unchecked
-                return (ArrayList<BlockAction>[]) handle.invoke(world);
+                return (ArrayList<BlockEvent>[]) handle.invoke(world);
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }
@@ -85,6 +88,7 @@ public class ScheduledBlockEventSerializer extends PersistentState {
          * @return a {@link MethodHandle} of type {@code ()[Lnet/minecraft/world/ServerWorld$BlockActionList;}
          */
         private static MethodHandle getMethodHandle() {
+            // TODO: just use mixin?
             MethodHandles.Lookup lookup = MethodHandles.lookup();
             Class<?> worldServerCls = ServerWorld.class;
             for (Field f : worldServerCls.getDeclaredFields()) {

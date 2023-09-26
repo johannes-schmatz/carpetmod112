@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class EntityMixin {
     // Fix to entitys losing speed when reloaded CARPET-XCOM
     @Redirect(
-            method = "fromNbt",
+            method = "readEntityNbt",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/lang/Math;abs(D)D",

@@ -13,7 +13,7 @@ public class ItemWithMeta {
 
     public ItemWithMeta(Item item, int metadata) {
         this.item = item;
-        this.metadata = item.hasSubTypes() ? metadata : 0;
+        this.metadata = item.canAlwaysUse() ? metadata : 0;
     }
 
     public String getDisplayName() {

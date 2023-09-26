@@ -4,8 +4,8 @@ import carpet.CarpetSettings;
 import carpet.helpers.EntityAICrafter;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.living.mob.passive.PassiveEntity;
+import net.minecraft.entity.living.mob.passive.VillagerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -19,9 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class VillagerEntityMixin extends PassiveEntity {
     private EntityAICrafter craftingAI;
 
-    @Shadow public abstract int profession();
+    @Shadow public abstract int getProfession();
 
-    @Shadow @Final private SimpleInventory villagerInventory;
+    @Shadow @Final private SimpleInventory f_0078634;
 
     public VillagerEntityMixin(World worldIn) {
         super(worldIn);
@@ -37,18 +37,18 @@ public abstract class VillagerEntityMixin extends PassiveEntity {
 
     @Inject(
             method = {
-                    "method_11225",
-                    "method_10926"
+                    "m_4674327",
+                    "m_7338286"
             },
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/passive/VillagerEntity;profession()I"
+                    target = "Lnet/minecraft/entity/living/mob/passive/VillagerEntity;getProfession()I"
             )
     )
     private void addCraftTask(CallbackInfo ci) {
-        if (CarpetSettings.nitwitCrafter && profession() == 5) {
+        if (CarpetSettings.nitwitCrafter && getProfession() == 5) {
             craftingAI.updateNitwit();
-            goals.add(6, craftingAI);
+            goalSelector.addGoal(6, craftingAI);
         }
     }
 
@@ -56,34 +56,34 @@ public abstract class VillagerEntityMixin extends PassiveEntity {
             method = "onKilled",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/passive/PassiveEntity;onKilled(Lnet/minecraft/entity/damage/DamageSource;)V"
+                    target = "Lnet/minecraft/entity/living/mob/passive/PassiveEntity;onKilled(Lnet/minecraft/entity/damage/DamageSource;)V"
             )
     )
     private void onDeath(DamageSource cause, CallbackInfo ci) {
-        if (CarpetSettings.nitwitCrafter && profession() == 5 || CarpetSettings.villagerInventoryDropFix) {
+        if (CarpetSettings.nitwitCrafter && getProfession() == 5 || CarpetSettings.villagerInventoryDropFix) {
             craftingAI.dropInventory();
         }
     }
 
     @Inject(
-            method = "getOffers()V",
+            method = "m_5773335",
             at = @At("HEAD"),
             cancellable = true
     )
     private void emptyNitwitBuyingList(CallbackInfo ci) {
-        if (CarpetSettings.nitwitCrafter && profession() == 5) {
+        if (CarpetSettings.nitwitCrafter && getProfession() == 5) {
             ci.cancel();
         }
     }
 
     @Inject(
-            method = "loot",
+            method = "m_3739998",
             at = @At("HEAD"),
             cancellable = true
     )
     private void updateCraftingEquipment(ItemEntity itemEntity, CallbackInfo ci) {
         if (CarpetSettings.nitwitCrafter && craftingAI != null) {
-            if (craftingAI.updateEquipment(itemEntity, villagerInventory)) ci.cancel();
+            if (craftingAI.updateEquipment(itemEntity, f_0078634)) ci.cancel();
         }
     }
 }

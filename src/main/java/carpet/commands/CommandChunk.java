@@ -9,25 +9,25 @@ import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
-import net.minecraft.client.util.NetworkUtils;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.packet.s2c.play.ChunkUnloadS2CPacket;
-import net.minecraft.server.ChunkPlayerManager;
+import net.minecraft.network.packet.s2c.play.ForgetWorldChunkS2CPacket;
+import net.minecraft.server.ChunkHolder;
+import net.minecraft.server.ChunkMap;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerWorldManager;
-import net.minecraft.server.world.ChunkGenerator;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.world.chunk.ServerChunkCache;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.HttpUtil;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkStorage;
-import net.minecraft.world.chunk.ServerChunkProvider;
-import net.minecraft.world.chunk.ThreadedAnvilChunkStorage;
+import net.minecraft.world.chunk.ChunkGenerator;
+import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.chunk.storage.AnvilChunkStorage;
+import net.minecraft.world.chunk.storage.ChunkStorage;
 
 import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
@@ -39,34 +39,34 @@ public class CommandChunk extends CommandCarpetBase
 	 * Gets the name of the command
 	 */
 
-	public String getUsageTranslationKey(CommandSource sender)
+	public String getUsage(CommandSource sender)
 	{
 		return "Usage: chunk <load | info | unload | regen | repop | asyncrepop | delete> <X> <Z>";
 	}
 
-	public String getCommandName()
+	public String getName()
 	{
 		return "chunk";
 	}
 	/**
 	 * Callback for when the command is executed
 	 */
-	public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
 	{
 		if (!command_enabled("commandChunk", sender)) return;
 
 		if (args.length != 3) {
-			throw new IncorrectUsageException(getUsageTranslationKey(sender));
+			throw new IncorrectUsageException(getUsage(sender));
 		}
 
-		World world = sender.getWorld();
+		World world = sender.getSourceWorld();
 		try {
-			int chunkX = parseChunkPosition(args[1], sender.getBlockPos().getX());
-			int chunkZ = parseChunkPosition(args[2], sender.getBlockPos().getZ());
+			int chunkX = parseChunkPosition(args[1], sender.getSourceBlockPos().getX());
+			int chunkZ = parseChunkPosition(args[2], sender.getSourceBlockPos().getZ());
 
 			switch (args[0]){
 				case "load":
-					world.getChunk(chunkX, chunkZ);
+					world.getChunkAt(chunkX, chunkZ);
 					sender.sendMessage(new LiteralText("Chunk " + chunkX + ", " + chunkZ + " loaded"));
 					return;
 				case "unload":
@@ -90,7 +90,7 @@ public class CommandChunk extends CommandCarpetBase
 
 			}
 		}catch (Exception e){
-			throw new IncorrectUsageException(getUsageTranslationKey(sender));
+			throw new IncorrectUsageException(getUsage(sender));
 		}
 	}
 
@@ -106,22 +106,22 @@ public class CommandChunk extends CommandCarpetBase
 			sender.sendMessage(new LiteralText(("Area not loaded for re-population")));
 		}
 
-		ServerChunkProvider chunkProvider = (ServerChunkProvider) world.getChunkProvider();
-		long i = ChunkPos.getIdFromCoords(x, z);
-		Long2ObjectMap<Chunk> map = ((ServerChunkProviderAccessor) chunkProvider).getLoadedChunksMap();
+		ServerChunkCache chunkProvider = (ServerChunkCache) world.getChunkSource();
+		long i = ChunkPos.toLong(x, z);
+		Long2ObjectMap<WorldChunk> map = ((ServerChunkProviderAccessor) chunkProvider).getLoadedChunksMap();
 		map.remove(i);
 		ChunkGenerator chunkGenerator = ((ServerChunkProviderAccessor) chunkProvider).getChunkGenerator();
-		Chunk chunk = chunkGenerator.generate(x, z);
+		WorldChunk chunk = chunkGenerator.getChunk(x, z);
 		map.put(i, chunk);
-		chunk.loadToWorld();
+		chunk.load();
 		chunk.setTerrainPopulated(true);
-		chunk.populateBlockEntities(false);
-		ChunkPlayerManager entry = ((ServerWorld)world).getPlayerWorldManager().method_12811(x, z);
+		chunk.tick(false);
+		ChunkHolder entry = ((ServerWorld)world).getChunkMap().getLoadedChunk(x, z);
 		if (entry != null && entry.getChunk() != null) {
 			((PlayerChunkMapEntryAccessor) entry).setChunk(chunk);
 			((PlayerChunkMapEntryAccessor) entry).setSentToPlayers(false);
 
-			entry.method_12801();
+			entry.populate();
 		}
 	}
 
@@ -130,11 +130,11 @@ public class CommandChunk extends CommandCarpetBase
 			sender.sendMessage(new LiteralText(("Area not loaded for re-population")));
 		}
 
-		ServerChunkProvider chunkProvider = (ServerChunkProvider) world.getChunkProvider();
+		ServerChunkCache chunkProvider = (ServerChunkCache) world.getChunkSource();
 		ChunkGenerator chunkGenerator = ((ServerChunkProviderAccessor) chunkProvider).getChunkGenerator();
-		Chunk chunk = ((ServerChunkProviderAccessor) chunkProvider).invokeLoadChunk(x, z);
+		WorldChunk chunk = ((ServerChunkProviderAccessor) chunkProvider).invokeLoadChunk(x, z);
 		chunk.setTerrainPopulated(false);
-		chunk.populateIfMissing(chunkProvider, chunkGenerator);
+		chunk.populate(chunkProvider, chunkGenerator);
 	}
 
 	private void asyncrepop(World world, CommandSource sender, int x, int z) {
@@ -142,13 +142,13 @@ public class CommandChunk extends CommandCarpetBase
 			sender.sendMessage(new LiteralText(("Area not loaded for re-population")));
 		}
 
-		NetworkUtils.downloadExcecutor.submit(() -> {
+		HttpUtil.DOWNLOAD_THREAD_FACTORY.submit(() -> {
 			try {
-				ServerChunkProvider chunkProvider = (ServerChunkProvider) world.getChunkProvider();
+				ServerChunkCache chunkProvider = (ServerChunkCache) world.getChunkSource();
 				ChunkGenerator chunkGenerator = ((ServerChunkProviderAccessor) chunkProvider).getChunkGenerator();
-				Chunk chunk = ((ServerChunkProviderAccessor) chunkProvider).invokeLoadChunk(x, z);
+				WorldChunk chunk = ((ServerChunkProviderAccessor) chunkProvider).invokeLoadChunk(x, z);
 				chunk.setTerrainPopulated(false);
-				chunk.populateIfMissing(chunkProvider, chunkGenerator);
+				chunk.populate(chunkProvider, chunkGenerator);
 				System.out.println("Chunk async repop end.");
 			} catch(Throwable e) {
 				e.printStackTrace();
@@ -161,12 +161,12 @@ public class CommandChunk extends CommandCarpetBase
 			sender.sendMessage(new LiteralText(("Chunk is not loaded")));
 		}
 
-		long i = ChunkPos.getIdFromCoords(x, z);
-		ServerChunkProvider provider = (ServerChunkProvider) world.getChunkProvider();
-		int mask = CommandLoadedChunks.getMask((Long2ObjectOpenHashMap<Chunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap());
+		long i = ChunkPos.toLong(x, z);
+		ServerChunkCache provider = (ServerChunkCache) world.getChunkSource();
+		int mask = CommandLoadedChunks.getMask((Long2ObjectOpenHashMap<WorldChunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap());
 		long key = HashCommon.mix(i) & mask;
 		sender.sendMessage(new LiteralText(("Chunk ideal key is " + key)));
-		if (world.isChunkInsideSpawnChunks(x, z))
+		if (world.isSpawnChunk(x, z))
 			sender.sendMessage(new LiteralText(("Spawn Chunk")));
 	}
 
@@ -175,16 +175,16 @@ public class CommandChunk extends CommandCarpetBase
 			sender.sendMessage(new LiteralText(("Chunk is not loaded")));
 			return;
 		}
-		Chunk chunk = world.getChunk(x, z);
-		ServerChunkProvider provider = (ServerChunkProvider) world.getChunkProvider();
-		provider.unload(chunk);
+		WorldChunk chunk = world.getChunkAt(x, z);
+		ServerChunkCache provider = (ServerChunkCache) world.getChunkSource();
+		provider.scheduleUnload(chunk);
 		sender.sendMessage(new LiteralText(("Chunk is queue to unload")));
 	}
 
 	protected void delete(World world, CommandSource sender, int x, int z) {
 		{ // delete chunk from memory
-			ServerChunkProvider provider = (ServerChunkProvider) world.getChunkProvider();
-			long id = ChunkPos.getIdFromCoords(x, z);
+			ServerChunkCache provider = (ServerChunkCache) world.getChunkSource();
+			long id = ChunkPos.toLong(x, z);
 
 			// loadedChunkMap
 			((ServerChunkProviderAccessor) provider).getLoadedChunksMap().remove(id);
@@ -194,8 +194,8 @@ public class CommandChunk extends CommandCarpetBase
 		}
 
 		{ // delete chunk from PlayerWorldManager
-			PlayerWorldManager playerWorldManager = ((ServerWorld) world).getPlayerWorldManager();
-			ChunkPlayerManager chunkPlayerManager = playerWorldManager.method_12811(x, z);
+			ChunkMap playerWorldManager = ((ServerWorld) world).getChunkMap();
+			ChunkHolder chunkPlayerManager = playerWorldManager.getLoadedChunk(x, z);
 			if (chunkPlayerManager != null) { // the ChunkPlayerManager might not exist
 				((PlayerChunkMapEntryAccessor) chunkPlayerManager).setChunk(null);
 
@@ -204,7 +204,7 @@ public class CommandChunk extends CommandCarpetBase
 				((PlayerChunkMapAccessor) playerWorldManager).getEntriesWithoutChunks().add(chunkPlayerManager);
 
 				// send unload packet
-				ChunkUnloadS2CPacket packet = new ChunkUnloadS2CPacket(x, z);
+				ForgetWorldChunkS2CPacket packet = new ForgetWorldChunkS2CPacket(x, z);
 				for (ServerPlayerEntity e : ((PlayerChunkMapEntryAccessor) chunkPlayerManager).getPlayers()) {
 					e.networkHandler.sendPacket(packet);
 				}
@@ -216,9 +216,9 @@ public class CommandChunk extends CommandCarpetBase
 
 
 		{ // delete chunk on disk
-			ChunkStorage storage = ((ServerChunkProviderAccessor) world.getChunkProvider()).getChunkLoader();
-			if (storage instanceof ThreadedAnvilChunkStorage) {
-				ThreadedAnvilChunkStorage anvilChunkStorage = (ThreadedAnvilChunkStorage) storage;
+			ChunkStorage storage = ((ServerChunkProviderAccessor) world.getChunkSource()).getChunkLoader();
+			if (storage instanceof AnvilChunkStorage) {
+				AnvilChunkStorage anvilChunkStorage = (AnvilChunkStorage) storage;
 
 				((ExtendedThreadedAnvilChunkStorage) anvilChunkStorage).deleteChunk(x, z);
 			} else {
@@ -227,16 +227,16 @@ public class CommandChunk extends CommandCarpetBase
 		}
 	}
 
-	public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
-		int chunkX = sender.getBlockPos().getX() >> 4;
-		int chunkZ = sender.getBlockPos().getZ() >> 4;
+	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
+		int chunkX = sender.getSourceBlockPos().getX() >> 4;
+		int chunkZ = sender.getSourceBlockPos().getZ() >> 4;
 
 		if (args.length == 1) {
-			return method_2894(args, "info", "load", "unload", "regen", "repop", "asyncrepop", "delete");
+			return suggestMatching(args, "info", "load", "unload", "regen", "repop", "asyncrepop", "delete");
 		} else if (args.length == 2) {
-			return method_2894(args, Integer.toString(chunkX), "~");
+			return suggestMatching(args, Integer.toString(chunkX), "~");
 		} else if (args.length == 3) {
-			return method_2894(args, Integer.toString(chunkZ), "~");
+			return suggestMatching(args, Integer.toString(chunkZ), "~");
 		} else {
 			return Collections.emptyList();
 		}

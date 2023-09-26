@@ -3,9 +3,9 @@ package carpet.mixin.doubleTileTickSchedulingFix;
 import carpet.CarpetSettings;
 import carpet.helpers.ScheduledTickFix;
 import net.minecraft.block.Block;
+import net.minecraft.server.world.ScheduledTick;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.ScheduledTick;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -14,14 +14,14 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class ServerWorldMixin {
     @Redirect(
             method =  {
+                    "willTickThisTick",
                     "hasScheduledTick",
-                    "method_11489",
-                    "createAndScheduleBlockTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V",
-                    "scheduleTick"
+                    "scheduleTick(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;II)V",
+                    "loadScheduledTick"
             },
             at = @At(
                     value = "NEW",
-                    target = "net/minecraft/util/ScheduledTick"
+                    target = "(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;)Lnet/minecraft/server/world/ScheduledTick;"
             )
     )
     private ScheduledTick newNextTickListEntry(BlockPos pos, Block block) {

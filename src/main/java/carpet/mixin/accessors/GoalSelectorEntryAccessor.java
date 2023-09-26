@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Shadow;
 public class GoalSelectorEntryAccessor implements AccessibleGoalSelectorEntry {
     @Shadow @Final public Goal goal;
     @Shadow @Final public int priority;
-    @Shadow public boolean field_14580;
+    @Shadow public boolean f_3327432;
 
     @Override
     public Goal getAction() {
@@ -25,6 +25,6 @@ public class GoalSelectorEntryAccessor implements AccessibleGoalSelectorEntry {
 
     @Override
     public boolean isUsing() {
-        return field_14580;
+        return f_3327432;
     }
 }

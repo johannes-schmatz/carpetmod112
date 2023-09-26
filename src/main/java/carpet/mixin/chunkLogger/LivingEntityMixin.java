@@ -2,7 +2,7 @@ package carpet.mixin.chunkLogger;
 
 import carpet.carpetclient.CarpetClientChunkLogger;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +16,7 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Inject(
-            method = "method_2657",
+            method = "moveEntityWithVelocity",
             at = @At("HEAD")
     )
     private void onTravelStart(float strafe, float vertical, float forward, CallbackInfo ci) {
@@ -24,7 +24,7 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Inject(
-            method = "method_2657",
+            method = "moveEntityWithVelocity",
             at = @At("RETURN")
     )
     private void onTravelEnd(float strafe, float vertical, float forward, CallbackInfo ci) {

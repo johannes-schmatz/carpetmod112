@@ -1,7 +1,7 @@
 package carpet.mixin.flippinCactus;
 
 import carpet.helpers.BlockRotator;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Direction.class)
 public class DirectionMixin {
     @Inject(
-            method = "getLookingDirection",
+            method = "m_3280464",
             at = @At(
                     value = "RETURN",
                     ordinal = 0
@@ -24,7 +24,7 @@ public class DirectionMixin {
     }
 
     @Inject(
-            method = "getLookingDirection",
+            method = "m_3280464",
             at = @At(
                     value = "RETURN",
                     ordinal = 1

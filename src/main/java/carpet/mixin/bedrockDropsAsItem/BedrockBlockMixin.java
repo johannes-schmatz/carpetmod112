@@ -3,7 +3,7 @@ package carpet.mixin.bedrockDropsAsItem;
 import carpet.CarpetSettings;
 import net.minecraft.block.BedrockBlock;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.item.Item;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,6 +20,6 @@ public class BedrockBlockMixin {
             cancellable = true
     )
     private void dropAsItem(BlockState state, Random rand, int fortune, CallbackInfoReturnable<Item> cir) {
-        if (CarpetSettings.bedrockDropsAsItem) cir.setReturnValue(Item.fromBlock((Block) (Object) this));
+        if (CarpetSettings.bedrockDropsAsItem) cir.setReturnValue(Item.byBlock((Block) (Object) this));
     }
 }

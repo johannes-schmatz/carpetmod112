@@ -28,7 +28,7 @@ public class ChestBlockEntityMixin implements BlockEntityOptimizer.LazyBlockEnti
             method = "tick",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/block/entity/ChestBlockEntity;animationAnglePrev:F"
+                    target = "Lnet/minecraft/block/entity/ChestBlockEntity;lastAnimationProgress:F"
             )
     )
     private void checkSleepPlayers(CallbackInfo ci) {
@@ -39,7 +39,7 @@ public class ChestBlockEntityMixin implements BlockEntityOptimizer.LazyBlockEnti
             method = "tick",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/block/entity/ChestBlockEntity;animationAngle:F",
+                    target = "Lnet/minecraft/block/entity/ChestBlockEntity;animationProgress:F",
                     ordinal = 4
             )
     )
@@ -50,7 +50,7 @@ public class ChestBlockEntityMixin implements BlockEntityOptimizer.LazyBlockEnti
     }
 
     @Inject(
-            method = "onBlockAction",
+            method = "doEvent",
             at = @At("HEAD")
     )
     private void wakeUpFromClientEvent(int id, int type, CallbackInfoReturnable<Boolean> cir) {

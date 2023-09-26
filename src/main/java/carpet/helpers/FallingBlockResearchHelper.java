@@ -1,6 +1,6 @@
 package carpet.helpers;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 
@@ -64,7 +64,7 @@ public class FallingBlockResearchHelper {
 	}
 
 	public static int toId(ServerWorld world) {
-		int i = world.dimension.getDimensionType().getId();
+		int i = world.dimension.getType().getId();
 		if (i == -1) return 1;
 		if (i == 1) return 2;
 		return i;

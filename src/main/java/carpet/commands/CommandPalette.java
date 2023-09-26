@@ -7,22 +7,20 @@ import carpet.mixin.accessors.class_2743Accessor;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.WoolBlock;
+import net.minecraft.block.ColoredBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.class_2743;
-import net.minecraft.command.AbstractCommand;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
+import net.minecraft.block.state.BlockState;
+import net.minecraft.item.DyeColor;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.LiteralText;
-import net.minecraft.util.DyeColor;
+import net.minecraft.util.BitStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.*;
-import net.minecraft.world.chunk.palette.*;
 
 import java.util.*;
 
@@ -31,35 +29,35 @@ public class CommandPalette extends CommandCarpetBase {
 	 * Gets the name of the command
 	 */
 
-	public String getUsageTranslationKey(CommandSource sender) {
+	public String getUsage(CommandSource sender) {
 		return "Usage: palette <bits | fill | size | posInfo> <X> <Y> <Z> <full | normal> <4-8 | 13>";
 	}
 
-	public String getCommandName() {
+	public String getName() {
 		return "palette";
 	}
 
 	/**
 	 * Callback for when the command is executed
 	 */
-	public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandChunk", sender)) return;
 
 		try {
-			BlockPos pos = new BlockPos(sender.getBlockPos().getX(), sender.getBlockPos().getY(), sender.getBlockPos().getZ());
+			BlockPos pos = new BlockPos(sender.getSourceBlockPos().getX(), sender.getSourceBlockPos().getY(), sender.getSourceBlockPos().getZ());
 			if (args.length < 4 && args[0].equals("posInfo")) {
-				throw new IncorrectUsageException(getUsageTranslationKey(sender));
+				throw new IncorrectUsageException(getUsage(sender));
 			} else if (args.length >= 4) {
-				pos = getBlockPos(sender, args, 1, false);
+				pos = parseBlockPos(sender, args, 1, false);
 			}
-			World world = sender.getWorld();
-			Chunk chunk = world.getChunk(pos);
-			ChunkSection[] list = chunk.getBlockStorage();
+			World world = sender.getSourceWorld();
+			WorldChunk chunk = world.getChunk(pos);
+			WorldChunkSection[] list = chunk.getSections();
 			int h = pos.getY() >> 4;
 			if (h < 0) h = 0;
 			if (h > 15) h = 15;
-			ChunkSection ebs = list[h];
-			class_2743 bsc = ebs.method_11774();
+			WorldChunkSection ebs = list[h];
+			PalettedContainer bsc = ebs.getBlockStateStorage();
 			int bits = ((class_2743Accessor) bsc).getBitsPerBlock();
 
 			switch (args[0]) {
@@ -73,12 +71,12 @@ public class CommandPalette extends CommandCarpetBase {
 					boolean isFull = false;
 					if (args.length >= 5) isFull = args[4].equals("full");
 					Block block = null;
-					if (args.length >= 6) block = AbstractCommand.getBlock(sender, args[5]);
+					if (args.length >= 6) block = parseBlock(sender, args[5]);
 					BlockState iblockstate = null;
 					if (args.length >= 7 && block != null) {
-						iblockstate = method_13901(block, args[6]);
+						iblockstate = parseBlockState(block, args[6]);
 					} else if (block != null) {
-						iblockstate = block.getDefaultState();
+						iblockstate = block.defaultState();
 					}
 					infoPalette(sender, bsc, pos, isFull, iblockstate);
 					return;
@@ -90,19 +88,19 @@ public class CommandPalette extends CommandCarpetBase {
 					fill(sender, bsc, pos, type, bitSize);
 					return;
 				default:
-					throw new IncorrectUsageException(getUsageTranslationKey(sender));
+					throw new IncorrectUsageException(getUsage(sender));
 
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new IncorrectUsageException(getUsageTranslationKey(sender));
+			throw new IncorrectUsageException(getUsage(sender));
 		}
 	}
 
 	private static BlockState[] backup = null;
 	private static HashMap<BlockPos, BlockEntity> tileEntityList = new HashMap<>();
 
-	private static void fill(CommandSource sender, class_2743 bsc, BlockPos pos, int type, int bitSize) {
+	private static void fill(CommandSource sender, PalettedContainer bsc, BlockPos pos, int type, int bitSize) {
 		if (type != 3 && backup != null) type = 3;
 
 		if (bitSize < 1 || bitSize > 64) bitSize = ((PaletteDataAccessor) ((class_2743Accessor) bsc).getPaletteData()).getBitsPerBlock();
@@ -121,20 +119,20 @@ public class CommandPalette extends CommandCarpetBase {
 				int k = ((i + 1) * bitSize - 1) / 64;
 
 				if (j != k) {
-					backup[i] = sender.getWorld().getBlockState(set);
-					BlockEntity te = sender.getWorld().getBlockEntity(set);
+					backup[i] = sender.getSourceWorld().getBlockState(set);
+					BlockEntity te = sender.getSourceWorld().getBlockEntity(set);
 					if (te != null) {
 						tileEntityList.put(set, te);
-						sender.getWorld().removeBlockEntity(set);
+						sender.getSourceWorld().removeBlockEntity(set);
 					}
-					sender.getWorld().setBlockState(set, Blocks.GLASS.getDefaultState(), 128);
+					sender.getSourceWorld().setBlockState(set, Blocks.GLASS.defaultState(), 128);
 				}
 			} else if (type == 2) {
-				backup[i] = sender.getWorld().getBlockState(set);
-				BlockEntity te = sender.getWorld().getBlockEntity(set);
+				backup[i] = sender.getSourceWorld().getBlockState(set);
+				BlockEntity te = sender.getSourceWorld().getBlockEntity(set);
 				if (te != null) {
 					tileEntityList.put(set, te);
-					sender.getWorld().removeBlockEntity(set);
+					sender.getSourceWorld().removeBlockEntity(set);
 				}
 				set = getBlockIndex(i, basePos);
 				int j = i * bitSize / 64;
@@ -146,20 +144,20 @@ public class CommandPalette extends CommandCarpetBase {
 				}
 
 				if (j != k) {
-					sender.getWorld().setBlockState(set, Blocks.GLASS.getDefaultState(), 128);
+					sender.getSourceWorld().setBlockState(set, Blocks.GLASS.defaultState(), 128);
 				} else {
-					sender.getWorld().setBlockState(set, Blocks.STAINED_GLASS.getDefaultState().with(WoolBlock.COLOR, DyeColor.byId(color)),
+					sender.getSourceWorld().setBlockState(set, Blocks.STAINED_GLASS.defaultState().set(ColoredBlock.COLOR, DyeColor.byId(color)),
 							128);
 				}
 			} else if (type == 3) {
 				if (backup[i] != null && !backupSet.contains(set)) {
 					backupSet.add(set);
-					sender.getWorld().setBlockState(set, backup[i], 128);
+					sender.getSourceWorld().setBlockState(set, backup[i], 128);
 					BlockEntity te = tileEntityList.get(set);
 					if (te != null) {
-						sender.getWorld().removeBlockEntity(set);
+						sender.getSourceWorld().removeBlockEntity(set);
 						te.cancelRemoval();
-						sender.getWorld().setBlockEntity(set, te);
+						sender.getSourceWorld().setBlockEntity(set, te);
 					}
 				}
 			}
@@ -170,15 +168,15 @@ public class CommandPalette extends CommandCarpetBase {
 		}
 	}
 
-	private void infoPalette(CommandSource sender, class_2743 bsc, BlockPos pos, boolean full, BlockState blockState) {
-		PaletteData bArray = ((class_2743Accessor) bsc).getPaletteData();
+	private void infoPalette(CommandSource sender, PalettedContainer bsc, BlockPos pos, boolean full, BlockState blockState) {
+		BitStorage bArray = ((class_2743Accessor) bsc).getPaletteData();
 		int bits = ((PaletteDataAccessor) bArray).getBitsPerBlock();
 		int index = getIndex(pos);
 		int i = index * bits;
 		int j = i / 64;
 		int k = ((index + 1) * bits - 1) / 64;
 		int l = i % 64;
-		long[] longArray = bArray.getBlockStateIds();
+		long[] longArray = bArray.getRaw();
 
 		if (j == k) {
 			displayJKBits(sender, longArray[j], l, l + bits - 1, "");
@@ -196,8 +194,8 @@ public class CommandPalette extends CommandCarpetBase {
 				}
 			}
 		}
-		if (blockState != null && ((class_2743Accessor) bsc).getPalette() instanceof RegistryPalette && j != k) {
-			int blockStateBits = Block.BLOCK_STATES.getId(blockState);
+		if (blockState != null && ((class_2743Accessor) bsc).getPalette() instanceof GlobalPalette && j != k) {
+			int blockStateBits = Block.STATE_REGISTRY.getId(blockState);
 			int leftBits = 64 - l;
 			int rightBits = bits - leftBits;
 			int leftMask = (1 << leftBits) - 1;
@@ -205,8 +203,8 @@ public class CommandPalette extends CommandCarpetBase {
 			int blockStateMaskL = blockStateBits & leftMask;
 			int blockStateMaskR = blockStateBits & rightMask;
 			sender.sendMessage(new LiteralText("Left bit match:"));
-			for (int itr = 0; itr < Block.BLOCK_STATES.size(); itr++) {
-				BlockState ibs = Block.BLOCK_STATES.fromId(itr);
+			for (int itr = 0; itr < Block.STATE_REGISTRY.size(); itr++) {
+				BlockState ibs = Block.STATE_REGISTRY.get(itr);
 				if (ibs != null) {
 					int left = itr & leftMask;
 					if (left == blockStateMaskL) {
@@ -216,8 +214,8 @@ public class CommandPalette extends CommandCarpetBase {
 				}
 			}
 			sender.sendMessage(new LiteralText("Right bit match:"));
-			for (int itr = 0; itr < Block.BLOCK_STATES.size(); itr++) {
-				BlockState ibs = Block.BLOCK_STATES.fromId(itr);
+			for (int itr = 0; itr < Block.STATE_REGISTRY.size(); itr++) {
+				BlockState ibs = Block.STATE_REGISTRY.get(itr);
 				if (ibs != null) {
 					int right = itr & rightMask;
 					if (right == blockStateMaskR) {
@@ -228,7 +226,7 @@ public class CommandPalette extends CommandCarpetBase {
 			}
 		} else if (blockState != null && j != k) {
 			sender.sendMessage(new LiteralText("This location doesn't share two bit arrays."));
-		} else if (blockState != null && ((class_2743Accessor) bsc).getPalette() instanceof RegistryPalette) {
+		} else if (blockState != null && ((class_2743Accessor) bsc).getPalette() instanceof GlobalPalette) {
 			sender.sendMessage(new LiteralText("This subchunk doesn't have enough palettes, add more palettes."));
 		}
 	}
@@ -277,7 +275,7 @@ public class CommandPalette extends CommandCarpetBase {
 		return new BlockPos(x, y, z);
 	}
 
-	private void getSize(CommandSource sender, class_2743 bsc, int bits) {
+	private void getSize(CommandSource sender, PalettedContainer bsc, int bits) {
 		Palette ibsp = ((class_2743Accessor) bsc).getPalette();
 		if (ibsp instanceof LinearPalette) {
 			// We can't have a local variable of type *Accessor here... mixin then says "Illegal class load request"
@@ -290,23 +288,24 @@ public class CommandPalette extends CommandCarpetBase {
 			int size = ((HashMapPaletteAccessor) p).getMap().size();
 			int bitsPerBlock = ((HashMapPaletteAccessor) p).getBitsPerBlock();
 			sender.sendMessage(new LiteralText("Palette size: " + size + " bits: " + bitsPerBlock + " (" + bits + ")"));
-		} else if (ibsp instanceof RegistryPalette) {
-			int size = Block.BLOCK_STATES.size();
+		} else if (ibsp instanceof GlobalPalette) {
+			int size = Block.STATE_REGISTRY.size();
 			sender.sendMessage(new LiteralText("Palette size MAX aka " + size + " bits: " + bits));
 		}
 	}
 
-	public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
+	@Override
+	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
 		if (args.length == 1) {
-			return method_2894(args, "bits", "size", "posInfo", "fill");
+			return suggestMatching(args, "bits", "size", "posInfo", "fill");
 		} else if (args.length >= 2 && args.length <= 4) {
-			return method_10707(args, 1, targetPos);
+			return suggestCoordinate(args, 1, targetPos);
 		} else if (args.length == 5 && (args[0].equals("posInfo") || args[0].equals("fill"))) {
-			return method_2894(args, "full", "normal");
+			return suggestMatching(args, "full", "normal");
 		} else if (args.length == 6 && args[0].equals("fill")) {
-			return method_2894(args, "4", "5", "6", "7", "8", "13");
+			return suggestMatching(args, "4", "5", "6", "7", "8", "13");
 		} else if (args.length == 6 && args[0].equals("posInfo")) {
-			return method_10708(args, Block.REGISTRY.getKeySet());
+			return suggestMatching(args, Block.REGISTRY.keySet());
 		} else {
 			return Collections.emptyList();
 		}

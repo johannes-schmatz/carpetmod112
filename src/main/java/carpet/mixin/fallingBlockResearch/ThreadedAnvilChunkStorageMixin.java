@@ -7,20 +7,20 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import net.minecraft.util.FileIoThread;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.RegionFileFormat;
-import net.minecraft.world.chunk.RegionIo;
-import net.minecraft.world.chunk.ThreadedAnvilChunkStorage;
+import net.minecraft.world.chunk.storage.AnvilChunkStorage;
+import net.minecraft.world.chunk.storage.RegionFile;
+import net.minecraft.world.chunk.storage.RegionIo;
+import net.minecraft.world.chunk.storage.io.FileIoThread;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(AnvilChunkStorage.class)
 public class ThreadedAnvilChunkStorageMixin implements ExtendedThreadedAnvilChunkStorage {
-	@Shadow @Final private File saveLocation;
+	@Shadow @Final private File dir;
 	private final Set<ChunkPos> chunksToDelete = Collections.synchronizedSet(new HashSet<>());
 
 	@Override
@@ -36,7 +36,7 @@ public class ThreadedAnvilChunkStorageMixin implements ExtendedThreadedAnvilChun
 	public void deleteScheduled() { // runs on other thread
 		if (!chunksToDelete.isEmpty()) {
 			for (ChunkPos pos : chunksToDelete) {
-				RegionFileFormat format = RegionIo.create(this.saveLocation, pos.x, pos.z);
+				RegionFile format = RegionIo.getRegionFile(this.dir, pos.x, pos.z);
 
 				((ExtendedRegionFileFormat) format).deleteChunk(pos.x & 31, pos.z & 31);
 			}

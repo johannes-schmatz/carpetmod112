@@ -1,15 +1,15 @@
 package carpet.mixin.worldEdit;
 
 import carpet.worldedit.WorldEditBridge;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.server.ServerPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,7 +24,7 @@ public class ServerPlayerInteractionManagerMixin {
     @Shadow public World world;
 
     @Inject(
-            method = "processBlockBreakingAction",
+            method = "startMiningBlock",
             at = @At("HEAD"),
             cancellable = true
     )
@@ -36,17 +36,17 @@ public class ServerPlayerInteractionManagerMixin {
     }
 
     @Inject(
-            method = "method_12792",
+            method = "useBlock",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;isSneaking()Z"
+                    target = "Lnet/minecraft/entity/living/player/PlayerEntity;isSneaking()Z"
             ),
             cancellable = true
     )
-    private void onWorldEditRightClick(PlayerEntity player, World worldIn, ItemStack stack, Hand hand, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, CallbackInfoReturnable<ActionResult> cir) {
+    private void onWorldEditRightClick(PlayerEntity player, World worldIn, ItemStack stack, InteractionHand hand, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, CallbackInfoReturnable<InteractionResult> cir) {
         if (!WorldEditBridge.onRightClickBlock(world, pos, this.player)) {
             this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(world, pos));
-            cir.setReturnValue(ActionResult.FAIL);
+            cir.setReturnValue(InteractionResult.FAIL);
         }
     }
 }

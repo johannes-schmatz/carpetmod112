@@ -11,13 +11,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(World.class)
 public class WorldMixin {
     @Redirect(
-            method = "method_8493",
+            method = "canPlaceBlock",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;hasEntityIn(Lnet/minecraft/util/math/Box;Lnet/minecraft/entity/Entity;)Z"
+                    target = "Lnet/minecraft/world/World;canBuildIn(Lnet/minecraft/util/math/Box;Lnet/minecraft/entity/Entity;)Z"
             )
     )
     private boolean ignoreEntityWhenPlacing(World world, Box box, Entity entity) {
-        return CarpetSettings.ignoreEntityWhenPlacing || world.hasEntityIn(box, entity);
+        return CarpetSettings.ignoreEntityWhenPlacing || world.canBuildIn(box, entity);
     }
 }

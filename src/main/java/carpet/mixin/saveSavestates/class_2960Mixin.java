@@ -7,15 +7,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import net.minecraft.class_2960;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.DefaultedList;
 
-@Mixin(class_2960.class)
+@Mixin(InventoryHelper.class)
 public class class_2960Mixin {
 	@Inject(
-			method = "method_13924",
+			method = "toNbt(Lnet/minecraft/nbt/NbtCompound;Lnet/minecraft/util/DefaultedList;Z)Lnet/minecraft/nbt/NbtCompound;",
 			at = @At("HEAD"),
 			cancellable = true
 	)

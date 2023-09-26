@@ -1,7 +1,7 @@
 package carpet.mixin.craftingWindowDuplication;
 
 import carpet.utils.extensions.DupingPlayer;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +16,7 @@ public class PlayerInventoryMixin {
     @Shadow public PlayerEntity player;
 
     @Inject(
-            method = "method_3140",
+            method = "putStackInInventory",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/player/PlayerInventory;getEmptySlot()I",
@@ -29,7 +29,7 @@ public class PlayerInventoryMixin {
     }
 
     @Inject(
-            method = "method_14150",
+            method = "insertStack",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/player/PlayerInventory;getEmptySlot()I"

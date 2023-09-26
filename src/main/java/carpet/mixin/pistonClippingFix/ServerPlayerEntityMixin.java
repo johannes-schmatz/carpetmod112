@@ -3,9 +3,9 @@ package carpet.mixin.pistonClippingFix;
 import carpet.CarpetSettings;
 import carpet.utils.extensions.ExtendedPlayerPistonClipping;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.entity.MoverType;
+import net.minecraft.entity.living.player.PlayerEntity;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 
@@ -28,7 +28,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Ex
     }
 
     @Override
-    public void move(MovementType type, double x, double y, double z) {
+    public void move(MoverType type, double x, double y, double z) {
         if (CarpetSettings.pistonClippingFix > 0) {
             this.pistonClippingCounter = CarpetSettings.pistonClippingFix;
         }

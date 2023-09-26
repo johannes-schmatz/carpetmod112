@@ -1,7 +1,7 @@
 package carpet.mixin.accessors;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -22,8 +22,8 @@ public interface ExplosionAccessor {
     @Accessor("x") double getX();
     @Accessor("y") double getY();
     @Accessor("z") double getZ();
-    @Accessor("causingEntity") Entity getEntity();
+    @Accessor("source") Entity getEntity();
     @Accessor float getPower();
-    @Accessor List<BlockPos> getAffectedBlocks();
-    @Accessor Map<PlayerEntity, Vec3d> getAffectedPlayers();
+    @Accessor("damagedBlocks") List<BlockPos> getAffectedBlocks();
+    @Accessor("damagedPlayers") Map<PlayerEntity, Vec3d> getAffectedPlayers();
 }

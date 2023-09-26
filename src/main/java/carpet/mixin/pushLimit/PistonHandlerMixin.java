@@ -1,15 +1,16 @@
 package carpet.mixin.pushLimit;
 
 import carpet.CarpetSettings;
-import net.minecraft.block.piston.PistonHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-@Mixin(PistonHandler.class)
+import net.minecraft.block.piston.PistonMoveStructureResolver;
+
+@Mixin(PistonMoveStructureResolver.class)
 public class PistonHandlerMixin {
     @ModifyConstant(
-            method = "method_9017",
+            method = "addColumn",
             constant = @Constant(intValue = 12)
     )
     private int pushLimit(int original) {

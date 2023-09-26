@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(Entity.class)
 public interface EntityAccessor {
     @Accessor("mount") void setVehicle(Entity entity);
-    @Accessor boolean isFirstUpdate();
-    @Accessor int getFireTicks();
-    @Invoker void invokeSetRotation(float yaw, float pitch);
-    @Invoker void invokeRemovePassenger(Entity passenger);
+    @Accessor("inFirstTick") boolean isFirstUpdate();
+    @Accessor("onFireTimer") int getFireTicks();
+    @Invoker("setRotation") void invokeSetRotation(float yaw, float pitch);
+    @Invoker("removePassenger") void invokeRemovePassenger(Entity passenger);
 }

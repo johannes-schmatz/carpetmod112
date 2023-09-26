@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 @Mixin(SizePrepender.class)
 public class SizePrependerMixin {
     @ModifyConstant(
-            method = "encode",
+            method = "encode(Lio/netty/channel/ChannelHandlerContext;Lio/netty/buffer/ByteBuf;Lio/netty/buffer/ByteBuf;)V",
             constant = @Constant(
                     intValue = 3,
                     ordinal = 0

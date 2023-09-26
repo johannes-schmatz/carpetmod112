@@ -41,14 +41,14 @@ public class WorldMixin {
     )
     private void postWeather(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes((World) (Object) this, LagSpikeHelper.TickPhase.ENTITY, LagSpikeHelper.EntitySubPhase.POST_WEATHER);
-        CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "entities");
+        CarpetProfiler.start_section(this.dimension.getType().getKey(), "entities");
     }
 
     @Inject(
             method = "tickEntities",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;method_11491()V",
+                    target = "Lnet/minecraft/world/World;tickPlayers()V",
                     shift = At.Shift.AFTER
             )
     )
@@ -67,7 +67,7 @@ public class WorldMixin {
     )
     private Object onStartEntity(List<Entity> list, int index) {
         Entity entity = list.get(index);
-        CarpetProfiler.start_entity_section(this.dimension.getDimensionType().getName(), entity);
+        CarpetProfiler.start_entity_section(this.dimension.getType().getKey(), entity);
         return entity;
     }
 
@@ -81,7 +81,7 @@ public class WorldMixin {
     )
     private Object onStartTileEntity(Iterator<BlockEntity> iterator) {
         BlockEntity te = iterator.next();
-        CarpetProfiler.start_tileentity_section(this.dimension.getDimensionType().getName(), te);
+        CarpetProfiler.start_tileentity_section(this.dimension.getType().getKey(), te);
         inTileEntitySection = true;
         return te;
     }
@@ -133,7 +133,7 @@ public class WorldMixin {
     private void postEntity(CallbackInfo ci) {
         LagSpikeHelper.processLagSpikes((World) (Object) this, LagSpikeHelper.TickPhase.ENTITY, LagSpikeHelper.EntitySubPhase.POST_NORMAL);
         CarpetProfiler.end_current_section();
-        CarpetProfiler.start_section(this.dimension.getDimensionType().getName(), "tileentities");
+        CarpetProfiler.start_section(this.dimension.getType().getKey(), "tileentities");
     }
 
     @Inject(

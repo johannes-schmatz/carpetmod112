@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
     @Inject(
-            method = "setupWorld()V",
+            method = "tick()V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/MinecraftServer;saveWorlds(Z)V",
@@ -22,7 +22,7 @@ public class MinecraftServerMixin {
     }
 
     @Inject(
-            method = "setupWorld()V",
+            method = "tick()V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/MinecraftServer;saveWorlds(Z)V",

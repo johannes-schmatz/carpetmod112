@@ -4,14 +4,16 @@ import carpet.network.PacketSplitter;
 import carpet.network.PluginChannelHandler;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
+
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 
 public class PubSubMessenger implements PluginChannelHandler {
     public static final String CHANNEL_NAME = "carpet:pubsub";
@@ -104,7 +106,7 @@ public class PubSubMessenger implements PluginChannelHandler {
                 buf.writeVarInt(TYPE_NBT);
                 ByteBufOutputStream out = new ByteBufOutputStream(buf);
                 try {
-                    NbtIo.write(tag, out);
+                    NbtIo.write(tag, (DataOutput) out);
                 } catch (IOException ignored) {} // ByteBufOutputStream doesn't throw IOExceptions
             } else if (value instanceof String) {
                 buf.writeVarInt(TYPE_STRING);

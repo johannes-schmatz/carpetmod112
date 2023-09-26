@@ -1,7 +1,7 @@
 package carpet.helpers;
 
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 
 public class PortalHelper

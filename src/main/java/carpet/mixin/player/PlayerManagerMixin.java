@@ -4,11 +4,11 @@ import carpet.CarpetServer;
 import carpet.CarpetSettings;
 import carpet.patches.FakeServerPlayerEntity;
 import carpet.patches.FakeServerPlayNetworkHandler;
-import net.minecraft.network.ClientConnection;
+import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.network.handler.ServerPlayNetworkHandler;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,13 +26,13 @@ public class PlayerManagerMixin {
     @Shadow @Final private List<ServerPlayerEntity> players;
 
     @Inject(
-            method = "method_12827",
+            method = "onLogin",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;setWorld(Lnet/minecraft/server/world/ServerWorld;)V"
+                    target = "Lnet/minecraft/server/ServerPlayerInteractionManager;setWorld(Lnet/minecraft/server/world/ServerWorld;)V"
             )
     )
-    private void resetToSetPosition(ClientConnection netManager, ServerPlayerEntity player, CallbackInfo ci) {
+    private void resetToSetPosition(Connection netManager, ServerPlayerEntity player, CallbackInfo ci) {
         if (player instanceof FakeServerPlayerEntity) {
             // Ignore position from NBT and use the one specified in the command
             ((FakeServerPlayerEntity) player).resetToSetPosition();
@@ -40,13 +40,13 @@ public class PlayerManagerMixin {
     }
 
     @Redirect(
-            method = "method_12827",
+            method = "onLogin",
             at = @At(
                     value = "NEW",
-                    target = "net/minecraft/server/network/ServerPlayNetworkHandler"
+                    target = "net/minecraft/server/network/handler/ServerPlayNetworkHandler"
             )
     )
-    private ServerPlayNetworkHandler createNetHandler(MinecraftServer server, ClientConnection netManager, ServerPlayerEntity player) {
+    private ServerPlayNetworkHandler createNetHandler(MinecraftServer server, Connection netManager, ServerPlayerEntity player) {
         if (player instanceof FakeServerPlayerEntity) {
             return new FakeServerPlayNetworkHandler(server, netManager, player);
         }
@@ -54,7 +54,7 @@ public class PlayerManagerMixin {
     }
 
     @Inject(
-            method = "saveAllPlayerData",
+            method = "saveAll",
             at = @At("HEAD")
     )
     private void storeFakePlayerData(CallbackInfo ci) {

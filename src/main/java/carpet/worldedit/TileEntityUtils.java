@@ -61,7 +61,7 @@ final class TileEntityUtils {
         if (tag != null) {
             // Set X, Y, Z
             updateForSet(tag, position);
-            tileEntity.fromNbt(tag);
+            tileEntity.readNbt(tag);
         }
 
         world.setBlockEntity(new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()), tileEntity);
@@ -78,7 +78,7 @@ final class TileEntityUtils {
     static void setTileEntity(World world, Vector position, @Nullable NbtCompound tag) {
         if (tag != null) {
             updateForSet(tag, position);
-            BlockEntity tileEntity = BlockEntity.create(world, tag);
+            BlockEntity tileEntity = BlockEntity.fromNbt(world, tag);
             if (tileEntity != null) {
                 world.setBlockEntity(new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()), tileEntity);
             }

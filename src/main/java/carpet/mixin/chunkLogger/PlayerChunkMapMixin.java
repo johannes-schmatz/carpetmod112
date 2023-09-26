@@ -1,43 +1,44 @@
 package carpet.mixin.chunkLogger;
 
 import carpet.carpetclient.CarpetClientChunkLogger;
-import net.minecraft.server.PlayerWorldManager;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ServerChunkProvider;
+
+import net.minecraft.server.ChunkMap;
+import net.minecraft.server.world.chunk.ServerChunkCache;
+import net.minecraft.world.chunk.WorldChunk;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(PlayerWorldManager.class)
+@Mixin(ChunkMap.class)
 public class PlayerChunkMapMixin {
     @Redirect(
-            method = "method_2111",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/chunk/ServerChunkProvider;unloadAll()V"
+                    target = "Lnet/minecraft/server/world/chunk/ServerChunkCache;scheduleUnloadAll()V"
             )
     )
-    private void queueUnloadAll(ServerChunkProvider provider) {
+    private void queueUnloadAll(ServerChunkCache provider) {
         try {
             CarpetClientChunkLogger.setReason("Dimensional unloading due to no players");
-            provider.unloadAll();
+            provider.scheduleUnloadAll();
         } finally {
             CarpetClientChunkLogger.resetReason();
         }
     }
 
     @Redirect(
-            method = "method_12812",
+            method = "unload",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/chunk/ServerChunkProvider;unload(Lnet/minecraft/world/chunk/Chunk;)V"
+                    target = "Lnet/minecraft/server/world/chunk/ServerChunkCache;scheduleUnload(Lnet/minecraft/world/chunk/WorldChunk;)V"
             )
     )
-    private void queueUnload(ServerChunkProvider provider, Chunk chunk) {
+    private void queueUnload(ServerChunkCache provider, WorldChunk chunk) {
         try {
             CarpetClientChunkLogger.setReason("Player leaving chunk, queuing unload");
-            provider.unload(chunk);
+            provider.scheduleUnload(chunk);
         } finally {
             CarpetClientChunkLogger.resetReason();
         }

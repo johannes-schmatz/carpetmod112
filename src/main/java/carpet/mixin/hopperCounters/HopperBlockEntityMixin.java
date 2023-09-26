@@ -6,9 +6,9 @@ import carpet.helpers.HopperCounter;
 import carpet.utils.WoolTool;
 import net.minecraft.block.HopperBlock;
 import net.minecraft.block.entity.HopperBlockEntity;
-import net.minecraft.block.entity.class_2737;
+import net.minecraft.block.entity.LootInventoryBlockEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.DyeColor;
+import net.minecraft.item.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,11 +18,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(HopperBlockEntity.class)
-public abstract class HopperBlockEntityMixin extends class_2737 {
-    @Shadow public abstract int getInvSize();
+public abstract class HopperBlockEntityMixin extends LootInventoryBlockEntity {
+    @Shadow public abstract int getSize();
 
     @Inject(
-            method = "insert",
+            method = "pushItems()Z",
             at = @At("HEAD"),
             cancellable = true
     )
@@ -30,11 +30,11 @@ public abstract class HopperBlockEntityMixin extends class_2737 {
         if (CarpetSettings.hopperCounters != CarpetSettings.HopperCounters.off) {
             String counter = getCounterName();
             if (counter != null) {
-                for (int i = 0; i < this.getInvSize(); ++i) {
-                    if (!this.getInvStack(i).isEmpty()) {
-                        ItemStack itemstack = this.getInvStack(i);//.copy();
-                        HopperCounter.COUNTERS.get(counter).add(this.getEntityWorld().getServer(), itemstack);
-                        this.setInvStack(i, ItemStack.EMPTY);
+                for (int i = 0; i < this.getSize(); ++i) {
+                    if (!this.getStack(i).isEmpty()) {
+                        ItemStack itemstack = this.getStack(i);//.copy();
+                        HopperCounter.COUNTERS.get(counter).add(this.getWorld().getServer(), itemstack);
+                        this.setStack(i, ItemStack.EMPTY);
                     }
                 }
                 cir.setReturnValue(true);
@@ -45,10 +45,10 @@ public abstract class HopperBlockEntityMixin extends class_2737 {
     @Unique
     private String getCounterName() {
         if (CarpetSettings.hopperCounters == CarpetSettings.HopperCounters.all) return "all";
-        BlockPos woolPos = getPos().offset(HopperBlock.getDirection(this.getDataValue()));
+        BlockPos woolPos = getPos().offset(HopperBlock.getFacingFromMetadata(this.getBlockMetadata()));
         CarpetClientChunkLogger.setReason("Hopper loading");
-        DyeColor wool_color = WoolTool.getWoolColorAtPosition(getEntityWorld(), woolPos);
+        DyeColor wool_color = WoolTool.getWoolColorAtPosition(getWorld(), woolPos);
         CarpetClientChunkLogger.resetToOldReason();
-        return wool_color.asString();
+        return wool_color.getName();
     }
 }

@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(SetBlockCommand.class)
 public class SetBlockCommandMixin {
     @ModifyConstant(
-            method = "method_3279",
+            method = "run",
             constant = @Constant(intValue = 2)
     )
     private int changeFlags(int flags) {
@@ -22,14 +22,14 @@ public class SetBlockCommandMixin {
     }
 
     @Redirect(
-            method = "method_3279",
+            method = "run",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/World;method_8531(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Z)V"
+                    target = "Lnet/minecraft/world/World;onBlockChanged(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;Z)V"
             )
     )
     private void notifyNeighbors(World world, BlockPos pos, Block blockType, boolean updateObservers) {
         if (!CarpetSettings.fillUpdates) return;
-        world.method_8531(pos, blockType, updateObservers);
+        world.onBlockChanged(pos, blockType, updateObservers);
     }
 }

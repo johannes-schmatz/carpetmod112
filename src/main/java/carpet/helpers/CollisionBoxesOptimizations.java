@@ -6,7 +6,7 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import carpet.mixin.accessors.WorldAccessor;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -14,7 +14,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 
 public class CollisionBoxesOptimizations
 {
@@ -27,10 +27,10 @@ public class CollisionBoxesOptimizations
         final int startZ = MathHelper.floor(aabb.minZ) - 1;
         final int endZ = MathHelper.ceil(aabb.maxZ) + 1;
         WorldBorder worldborder = world.getWorldBorder();
-        boolean flag = entityIn != null && entityIn.isOutsideWorldborder();
-        boolean flag1 = entityIn != null && world.method_13694(entityIn);
-        BlockState stateStone = Blocks.STONE.getDefaultState();
-        BlockPos.Pooled posMutable = BlockPos.Pooled.get();
+        boolean flag = entityIn != null && entityIn.m_0400073();
+        boolean flag1 = entityIn != null && world.isWithinBorder(entityIn);
+        BlockState stateStone = Blocks.STONE.defaultState();
+        BlockPos.PooledMutable posMutable = BlockPos.PooledMutable.origin();
 
         try
         {
@@ -46,12 +46,12 @@ public class CollisionBoxesOptimizations
                 {
                     if (((WorldAccessor) world).invokeIsChunkLoaded(cx, cz, false))
                     {
-                        Chunk chunk = world.getChunk(cx, cz);
+                        WorldChunk chunk = world.getChunkAt(cx, cz);
                         final int xMin = Math.max(cx << 4, startX);
                         final int zMin = Math.max(cz << 4, startZ);
                         final int xMax = Math.min((cx << 4) + 15, endX - 1);
                         final int zMax = Math.min((cz << 4) + 15, endZ - 1);
-                        final int yMax = Math.min(chunk.getHighestNonEmptySectionYOffset() + 15, endY - 1);
+                        final int yMax = Math.min(chunk.getHighestSectionOffset() + 15, endY - 1);
 
                         for (int x = xMin; x <= xMax; ++x)
                         {
@@ -75,7 +75,7 @@ public class CollisionBoxesOptimizations
                                             }
                                             else if (entityIn != null && flag == flag1)
                                             {
-                                                entityIn.setOutsideWorldborder(! flag1);
+                                                entityIn.m_6370463(! flag1);
                                             }
 
                                             posMutable.set(x, y, z);
@@ -90,7 +90,7 @@ public class CollisionBoxesOptimizations
                                                 state = chunk.getBlockState(posMutable);
                                             }
 
-                                            state.appendCollisionBoxes(world, posMutable.toImmutable(), aabb, outList, entityIn, false);
+                                            state.getCollisions(world, posMutable.immutable(), aabb, outList, entityIn, false);
 
                                             if (p_191504_3_ && ! outList.isEmpty())
                                             {
@@ -107,7 +107,7 @@ public class CollisionBoxesOptimizations
         }
         finally
         {
-            posMutable.method_12576();
+            posMutable.release();
         }
 
         return !outList.isEmpty();

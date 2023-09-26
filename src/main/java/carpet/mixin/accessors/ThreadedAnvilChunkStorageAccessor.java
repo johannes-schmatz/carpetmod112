@@ -1,17 +1,18 @@
 package carpet.mixin.accessors;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.chunk.ThreadedAnvilChunkStorage;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.chunk.storage.AnvilChunkStorage;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 import java.io.File;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(AnvilChunkStorage.class)
 public interface ThreadedAnvilChunkStorageAccessor {
-    @Accessor("saveLocation") File getChunkSaveLocation();
-    @Invoker("putChunk") void invokeWriteChunkToNBT(Chunk chunk, World world, NbtCompound tag);
+    @Accessor("dir") File getChunkSaveLocation();
+    @Invoker("writeChunkToNbt") void invokeWriteChunkToNBT(WorldChunk chunk, World world, NbtCompound tag);
 }

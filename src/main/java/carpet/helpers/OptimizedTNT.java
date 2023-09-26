@@ -10,25 +10,25 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.particle.ParticleType;
-import net.minecraft.client.sound.SoundCategory;
 import net.minecraft.enchantment.ProtectionEnchantment;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.TntEntity;
+import net.minecraft.entity.PrimedTntEntity;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
+import net.minecraft.entity.particle.ParticleType;
 import net.minecraft.entity.vehicle.TntMinecartEntity;
-import net.minecraft.sound.Sounds;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.explosion.Explosion;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -85,10 +85,10 @@ public class OptimizedTNT
         int j1 = MathHelper.floor(e.getZ() + (double) f3 + 1.0D);
         Vec3d vec3d = new Vec3d(e.getX(), e.getY(), e.getZ());
 
-        if (vec3dmem == null || !vec3dmem.equals(vec3d) || tickmem != e.getWorld().getLastUpdateTime()) {
+        if (vec3dmem == null || !vec3dmem.equals(vec3d) || tickmem != e.getWorld().getTime()) {
             vec3dmem = vec3d;
-            tickmem = e.getWorld().getLastUpdateTime();
-            entitylist = e.getWorld().getEntitiesIn(null, new Box(k1, i2, j2, l1, i1, j1));
+            tickmem = e.getWorld().getTime();
+            entitylist = e.getWorld().getEntities((Entity) null, new Box(k1, i2, j2, l1, i1, j1));
             explosionSound = 0;
         }
 
@@ -109,15 +109,15 @@ public class OptimizedTNT
                 continue;
             }
 
-            if (entity instanceof TntEntity &&
+            if (entity instanceof PrimedTntEntity &&
                 entity.x == e.getEntity().x &&
                 entity.y == e.getEntity().y &&
                 entity.z == e.getEntity().z) {
                 continue;
             }
 
-            if (!entity.isImmuneToExplosion()) {
-                double d12 = entity.distanceTo(e.getX(), e.getY(), e.getZ()) / (double) f3;
+            if (!entity.isImmuneToExplosions()) {
+                double d12 = entity.getDistanceTo(e.getX(), e.getY(), e.getZ()) / (double) f3;
 
                 if (d12 <= 1.0D) {
                     double d5 = entity.x - e.getX();
@@ -132,13 +132,13 @@ public class OptimizedTNT
                         double density;
 
 						pairMutable.setLeft(vec3d);
-						pairMutable.setRight(entity.getBoundingBox());
+						pairMutable.setRight(entity.getShape());
 						density = densityCache.getOrDefault(pairMutable, Double.MAX_VALUE);
 
 						if (density == Double.MAX_VALUE)
 						{
-							Pair<Vec3d, Box> pair = Pair.of(vec3d, entity.getBoundingBox());
-							density = e.getWorld().method_3612(vec3d, entity.getBoundingBox());
+							Pair<Vec3d, Box> pair = Pair.of(vec3d, entity.getShape());
+							density = e.getWorld().getBlockDensity(vec3d, entity.getShape());
 							densityCache.put(pair, density);
 						}
 
@@ -148,7 +148,7 @@ public class OptimizedTNT
                         double d11 = d10;
 
                         if (entity instanceof LivingEntity) {
-                            d11 = ProtectionEnchantment.method_11465((LivingEntity) entity, d10);
+                            d11 = ProtectionEnchantment.modifyExplosionDamage((LivingEntity) entity, d10);
                         }
 
                         entity.velocityX += d5 * d11;
@@ -181,16 +181,16 @@ public class OptimizedTNT
         // explosionSound incremented till disabling the explosion particles and sound
         if (explosionSound < 100 || explosionSound % 100 == 0)
         {
-            world.playSound(null, posX, posY, posZ, Sounds.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F,
+            world.playSound(null, posX, posY, posZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F,
                     (1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.2F) * 0.7F);
 
             if (e.getPower() >= 2.0F && e.getDamagesTerrain())
             {
-                world.addParticle(ParticleType.HUGE_EXPLOSION, posX, posY, posZ, 1.0D, 0.0D, 0.0D);
+                world.addParticle(ParticleType.EXPLOSION_HUGE, posX, posY, posZ, 1.0D, 0.0D, 0.0D);
             }
             else
             {
-                world.addParticle(ParticleType.LARGE_EXPLOSION, posX, posY, posZ, 1.0D, 0.0D, 0.0D);
+                world.addParticle(ParticleType.EXPLOSION_LARGE, posX, posY, posZ, 1.0D, 0.0D, 0.0D);
             }
         }
 
@@ -218,9 +218,9 @@ public class OptimizedTNT
                     d3 = d3 * d7;
                     d4 = d4 * d7;
                     d5 = d5 * d7;
-                    world.addParticle(ParticleType.EXPLOSION,
+                    world.addParticle(ParticleType.EXPLOSION_NORMAL,
                             (d0 + posX) / 2.0D, (d1 + posY) / 2.0D, (d2 + posZ) / 2.0D, d3, d4, d5);
-                    world.addParticle(ParticleType.SMOKE, d0, d1, d2, d3, d4, d5);
+                    world.addParticle(ParticleType.SMOKE_NORMAL, d0, d1, d2, d3, d4, d5);
                 }
 
                 if (iblockstate.getMaterial() != Material.AIR)
@@ -228,11 +228,11 @@ public class OptimizedTNT
                     if (block.shouldDropItemsOnExplosion((Explosion) e))
                     {
                         // CARPET-MASA: use the state from above instead of getting it again from the world
-                        block.randomDropAsItem(world, blockpos, iblockstate, 1.0F / e.getPower(), 0);
+                        block.dropItems(world, blockpos, iblockstate, 1.0F / e.getPower(), 0);
                     }
 
-                    world.setBlockState(blockpos, Blocks.AIR.getDefaultState(), 3);
-                    block.onDestroyedByExplosion(world, blockpos, (Explosion) e);
+                    world.setBlockState(blockpos, Blocks.AIR.defaultState(), 3);
+                    block.onExploded(world, blockpos, (Explosion) e);
                 }
             }
         }
@@ -242,19 +242,19 @@ public class OptimizedTNT
             for (BlockPos blockpos1 : e.getAffectedBlocks())
             {
                 // Use the same Chunk reference because the positions are in the same xz-column
-                Chunk chunk = world.getChunk(blockpos1.getX() >> 4, blockpos1.getZ() >> 4);
+                WorldChunk chunk = world.getChunkAt(blockpos1.getX() >> 4, blockpos1.getZ() >> 4);
 
                 if (chunk.getBlockState(blockpos1).getMaterial() == Material.AIR &&
                     chunk.getBlockState(blockpos1.down()).isFullBlock() &&
                     e.getRandom().nextInt(3) == 0)
                 {
-                    world.setBlockState(blockpos1, Blocks.FIRE.getDefaultState());
+                    world.setBlockState(blockpos1, Blocks.FIRE.defaultState());
                 }
             }
         }
 
         if (LoggerRegistry.__explosions) {
-            e1.getLogHelper().onExplosionDone(e.getWorld().getLastUpdateTime());
+            e1.getLogHelper().onExplosionDone(e.getWorld().getTime());
         }
     }
 
@@ -299,7 +299,7 @@ public class OptimizedTNT
                             }
 
                             if (f > 0.0F && (e.getEntity() == null ||
-                                e.getEntity().canExplosionDestroyBlock((Explosion) e, e.getWorld(), blockpos, iblockstate, f)))
+                                e.getEntity().canExplodeBlock((Explosion) e, e.getWorld(), blockpos, iblockstate, f)))
                             {
                                 affectedBlockPositionsSet.add(blockpos);
                             }
@@ -411,7 +411,7 @@ public class OptimizedTNT
 
             if (state == null)
             {
-                posImmutable = posMutable.toImmutable();
+                posImmutable = posMutable.immutable();
                 state = e.getWorld().getBlockState(posImmutable);
                 stateCache.put(posImmutable, state);
             }
@@ -432,9 +432,9 @@ public class OptimizedTNT
                 size -= (resistance + 0.3F) * 0.3F;
             }
 
-            if (size > 0.0F && (e.getEntity() == null || e.getEntity().canExplosionDestroyBlock((Explosion) e, e.getWorld(), posMutable, state, size)))
+            if (size > 0.0F && (e.getEntity() == null || e.getEntity().canExplodeBlock((Explosion) e, e.getWorld(), posMutable, state, size)))
             {
-                affectedBlockPositionsSet.add(posImmutable != null ? posImmutable : posMutable.toImmutable());
+                affectedBlockPositionsSet.add(posImmutable != null ? posImmutable : posMutable.immutable());
             }
             else if (firstRay && !minecartTNT)
             {
@@ -488,7 +488,7 @@ public class OptimizedTNT
                             }
 
                             if (f > 0.0F && (e.getEntity() == null ||
-                                    e.getEntity().canExplosionDestroyBlock((Explosion) e, e.getWorld(), blockpos, iblockstate, f))) {
+                                    e.getEntity().canExplodeBlock((Explosion) e, e.getWorld(), blockpos, iblockstate, f))) {
                                 if(!found && blockpos.equals(blastChanceLocation)){
                                     chances.add(f);
                                     found = true;
@@ -532,7 +532,7 @@ public class OptimizedTNT
         NumberFormat nf = NumberFormat.getNumberInstance();
         nf.setRoundingMode (RoundingMode.DOWN);
         nf.setMaximumFractionDigits(2);
-        for(PlayerEntity player : e.getWorld().playerEntities){
+        for(PlayerEntity player : e.getWorld().players){
             Messenger.m(player,"w Pop: ",
                     "c " + nf.format(chance) + " ",
                     "^w Chance for the block to be destroyed by the blast: " + chance,

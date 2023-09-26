@@ -2,7 +2,7 @@ package carpet.mixin.oreUpdateSuppressor;
 
 import carpet.CarpetSettings;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
@@ -18,10 +18,10 @@ public class OreBlockMixin extends Block {
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
         if (CarpetSettings.oreUpdateSuppressor && this == Blocks.EMERALD_ORE){
             throw new StackOverflowError("Carpet-triggered update suppression");
         }
-        super.neighborUpdate(state, worldIn, pos, blockIn, fromPos);
+        super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
     }
 }

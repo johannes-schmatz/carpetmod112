@@ -13,10 +13,10 @@ public class BabyGrowingUp {
         float f = entity.width;
         entity.width = width;
         entity.height = height;
-        Box oldAABB = entity.getBoundingBox();
+        Box oldAABB = entity.getShape();
 
         double d0 = (double) width / 2.0D;
-        entity.setBoundingBox(new Box(entity.x - d0, entity.y, entity.z - d0, entity.x + d0,
+        entity.setShape(new Box(entity.x - d0, entity.y, entity.z - d0, entity.x + d0,
                 entity.y + (double) entity.height, entity.z + d0));
 
         if (entity.width > f && !((EntityAccessor) entity).isFirstUpdate() && !entity.world.isClient) {
@@ -26,8 +26,8 @@ public class BabyGrowingUp {
 
     private static void pushEntityOutOfBlocks(Entity entity, Box oldHitbox) {
         // Pass "null" in first argument to only get _possible_ block collisions
-        List<Box> list1 = entity.world.doesBoxCollide(null, entity.getBoundingBox());
-        Box axisalignedbb = entity.getBoundingBox();
+        List<Box> list1 = entity.world.getCollisions(null, entity.getShape());
+        Box axisalignedbb = entity.getShape();
 
         for (Box aabb : list1) {
             if (!oldHitbox.intersects(aabb) && axisalignedbb.intersects(aabb)) {
@@ -63,9 +63,10 @@ public class BabyGrowingUp {
             }
         }
 
-        entity.setBoundingBox(axisalignedbb);
+        entity.setShape(axisalignedbb);
     }
 
+    // TODO: delete?
     // public static void pushEntityOutOfBlocks(Entity entity, AxisAlignedBB
     // oldHitbox) {
     // List<AxisAlignedBB> list1 = entity.world.getCollisionBoxes(entity,

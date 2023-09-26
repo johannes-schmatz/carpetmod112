@@ -2,7 +2,7 @@ package carpet.mixin.silverFishDropGravel;
 
 import carpet.CarpetSettings;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.InfestedBlock;
 import net.minecraft.block.material.Material;
@@ -21,15 +21,15 @@ public class InfestedBlockMixin extends Block {
     }
 
     @Inject(
-            method = "randomDropAsItem",
+            method = "dropItems",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/mob/SilverfishEntity;playSpawnEffects()V",
+                    target = "Lnet/minecraft/entity/living/mob/hostile/SilverfishEntity;doSpawnEffects()V",
                     shift = At.Shift.AFTER
             )
     )
     private void silverFishDropGravel(World world, BlockPos pos, BlockState state, float chance, int fortune, CallbackInfo ci) {
         // Silver fish will drop gravel when breaking out of a block. CARPET-XCOM
-        if (CarpetSettings.silverFishDropGravel) onBlockBreak(world, pos, new ItemStack(Blocks.GRAVEL));
+        if (CarpetSettings.silverFishDropGravel) dropItems(world, pos, new ItemStack(Blocks.GRAVEL));
     }
 }

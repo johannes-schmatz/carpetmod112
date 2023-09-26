@@ -2,8 +2,8 @@ package carpet.mixin.potions;
 
 import carpet.CarpetSettings;
 import carpet.utils.extensions.ExtendedStatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.living.effect.StatusEffect;
+import net.minecraft.entity.living.effect.StatusEffectInstance;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,19 +11,19 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(StatusEffectInstance.class)
 public class StatusEffectInstanceMixin implements ExtendedStatusEffectInstance {
-    @Shadow @Final private StatusEffect statusEffect;
+    @Shadow @Final private StatusEffect id;
     @Shadow @Final private static Logger LOGGER;
     @Shadow private boolean ambient;
     @Shadow private int amplifier;
     @Shadow private int duration;
-    @Shadow private boolean showParticles;
+    @Shadow private boolean particles;
 
     private StatusEffectInstance previous;
 
     @Override
     @SuppressWarnings("ConstantConditions")
     public StatusEffectInstance combine(StatusEffectInstance other) {
-        if (this.statusEffect != other.getStatusEffect()) LOGGER.warn("This method should only be called for matching effects!");
+        if (this.id != other.getEffect()) LOGGER.warn("This method should only be called for matching effects!");
         if (other == (Object) this) return other;
         boolean combine = CarpetSettings.combinePotionDuration > 0 && ItemPotionHolder.itemPotion && other.getAmplifier() == this.amplifier;
         if (!combine && CarpetSettings.effectsFix && !this.ambient && other.getAmplifier() >= this.amplifier && other.getDuration() < this.duration) {
@@ -59,7 +59,7 @@ public class StatusEffectInstanceMixin implements ExtendedStatusEffectInstance {
             this.ambient = other.isAmbient();
         }
 
-        this.showParticles = other.shouldShowParticles();
+        this.particles = other.hasParticles();
         return (StatusEffectInstance) (Object) this;
     }
 

@@ -3,7 +3,7 @@ package carpet.mixin.duplicationFixRidingEntitys;
 import carpet.CarpetSettings;
 import carpet.patches.FakeServerPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 
 import org.spongepowered.asm.mixin.Final;
@@ -17,10 +17,10 @@ import java.util.List;
 
 @Mixin(Entity.class)
 public class EntityMixin {
-    @Shadow @Final private List<Entity> passengerList;
+    @Shadow @Final private List<Entity> passengers;
 
     @Inject(
-            method = "toNbt",
+            method = "writeNbt",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/nbt/NbtCompound;putString(Ljava/lang/String;Ljava/lang/String;)V"
@@ -36,7 +36,7 @@ public class EntityMixin {
 
     // Method for fixing duplication caused by riding entitys into unloaded chunks CARPET-XCOM
     private boolean hasPlayerPassenger() {
-        for (Entity passenger : passengerList) {
+        for (Entity passenger : passengers) {
             if (passenger instanceof PlayerEntity && !(passenger instanceof FakeServerPlayerEntity)) {
                 return true;
             }

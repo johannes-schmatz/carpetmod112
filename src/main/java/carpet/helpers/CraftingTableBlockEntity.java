@@ -4,20 +4,19 @@ package carpet.helpers;
 import carpet.mixin.accessors.CraftingInventoryAccessor;
 import carpet.mixin.accessors.HopperBlockEntityAccessor;
 import com.google.common.collect.Lists;
-import net.minecraft.block.entity.LockableContainerBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
+
+import net.minecraft.block.entity.InventoryBlockEntity;
+import net.minecraft.crafting.CraftingManager;
+import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
+import net.minecraft.inventory.menu.InventoryMenu;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.recipe.RecipeDispatcher;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.screen.ScreenHandler;
+import net.minecraft.crafting.recipe.CraftingRecipe;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.class_2960;
+import net.minecraft.util.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -32,7 +31,7 @@ import java.util.Optional;
  * Auto crafting table tile entity class enabling autocrafting. When carpet rule enabled that tile
  * crafting table turns into a automatic crafting table where it can be used to automatically craft items.
  */
-public class CraftingTableBlockEntity extends LockableContainerBlockEntity implements SidedInventory
+public class CraftingTableBlockEntity extends InventoryBlockEntity implements SidedInventory
 {
     private static final int[] OUTPUT_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     private static final int[] INPUT_SLOTS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -59,12 +58,12 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
 
     public static boolean checkIfCanCraft(Inventory source, Inventory destination, ItemStack itemstack) {
         if (destination instanceof CraftingTableBlockEntity && !itemstack.isEmpty()) {
-            int i = source.getInvSize();
+            int i = source.getSize();
             for (int j = 0; j < i; ++j) {
-                if(source.getInvStack(j).isEmpty()){
+                if(source.getStack(j).isEmpty()){
                     return false;
                 }
-                if(HopperBlockEntityAccessor.invokeCanMergeItems(itemstack, source.getInvStack(j))) {
+                if(HopperBlockEntityAccessor.invokeCanMergeItems(itemstack, source.getStack(j))) {
                     return false;
                 }
             }
@@ -74,24 +73,24 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
     }
 
     @Override
-    public NbtCompound toNbt(NbtCompound tag)
+    public NbtCompound writeNbt(NbtCompound tag)
     {
-        super.toNbt(tag);
-        class_2960.method_13923(tag, ((CraftingInventoryAccessor) inventory).getStacks());
-        tag.put("Output", output.toNbt(new NbtCompound()));
+        super.writeNbt(tag);
+        InventoryHelper.toNbt(tag, ((CraftingInventoryAccessor) inventory).getStacks());
+        tag.put("Output", output.writeNbt(new NbtCompound()));
         return tag;
     }
 
     @Override
-    public void fromNbt(NbtCompound tag)
+    public void readNbt(NbtCompound tag)
     {
-        super.fromNbt(tag);
-        class_2960.method_13927(tag, ((CraftingInventoryAccessor) inventory).getStacks());
+        super.readNbt(tag);
+        InventoryHelper.fromNbt(tag, ((CraftingInventoryAccessor) inventory).getStacks());
         this.output = new ItemStack(tag.getCompound("Output"));
     }
 
     @Override
-    public String getTranslationKey() {
+    public String getName() {
         return null;
     }
 
@@ -101,14 +100,14 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
     }
 
     @Override
-    public Text getName()
+    public Text getDisplayName()
     {
         return new TranslatableText("container.crafting");
     }
 
     // Not sure about this one so left it commented
     @Override
-    public ScreenHandler createScreenHandler(PlayerInventory playerInventory, PlayerEntity playerIn)
+    public InventoryMenu createMenu(PlayerInventory playerInventory, PlayerEntity playerIn)
     {
         ContainerAutoCraftingTable container = new ContainerAutoCraftingTable(playerInventory, this, this.world, this.pos);
         ((CraftingInventoryAccessor) inventory).setContainer(container);
@@ -117,13 +116,13 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
     }
 
     @Override
-    public String getId()
+    public String getMenuType()
     {
         return "minecraft:crafting_table";
     }
 
     @Override
-    public int[] getAvailableSlots(Direction dir)
+    public int[] getSlots(Direction dir)
     {
         if (dir == Direction.DOWN && (!output.isEmpty() || getCurrentRecipe().isPresent()))
             return OUTPUT_SLOTS;
@@ -131,13 +130,13 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
     }
 
     @Override
-    public boolean canInsertInvStack(int slot, ItemStack stack, Direction dir)
+    public boolean canHopperAddStack(int slot, ItemStack stack, Direction dir)
     {
-        return slot > 0 && getInvStack(slot).isEmpty();
+        return slot > 0 && getStack(slot).isEmpty();
     }
 
     @Override
-    public boolean canExtractInvStack(int slot, ItemStack stack, Direction dir)
+    public boolean canHopperRemoveStack(int slot, ItemStack stack, Direction dir)
     {
         if (slot == 0)
             return !output.isEmpty() || getCurrentRecipe().isPresent();
@@ -145,28 +144,28 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
     }
 
     @Override
-    public boolean isValidInvStack(int slot, ItemStack stack)
+    public boolean canSetStack(int slot, ItemStack stack)
     {
         return slot != 0;
     }
 
     @Override
-    public int getProperty(int id) {
+    public int getData(int id) {
         return 0;
     }
 
     @Override
-    public void setProperty(int id, int value) {
+    public void setData(int id, int value) {
 
     }
 
     @Override
-    public int getProperties() {
+    public int getDataCount() {
         return 0;
     }
 
     @Override
-    public int getInvSize()
+    public int getSize()
     {
         return 10;
     }
@@ -178,18 +177,18 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
     }
 
     @Override
-    public ItemStack getInvStack(int slot)
+    public ItemStack getStack(int slot)
     {
         if (slot > 0)
-            return this.inventory.getInvStack(slot - 1);
+            return this.inventory.getStack(slot - 1);
         if (!output.isEmpty())
             return output;
-        Optional<RecipeType> recipe = getCurrentRecipe();
-        return recipe.map(r -> r.getResult(inventory)).orElse(ItemStack.EMPTY);
+        Optional<CraftingRecipe> recipe = getCurrentRecipe();
+        return recipe.map(r -> r.apply(inventory)).orElse(ItemStack.EMPTY);
     }
 
     @Override
-    public ItemStack takeInvStack(int slot, int amount)
+    public ItemStack removeStack(int slot, int amount)
     {
         if (slot == 0)
         {
@@ -200,11 +199,11 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
             }
             return output.split(amount);
         }
-        return class_2960.method_13926(((CraftingInventoryAccessor) inventory).getStacks(), slot - 1, amount);
+        return InventoryHelper.split(((CraftingInventoryAccessor) inventory).getStacks(), slot - 1, amount);
     }
 
     @Override
-    public ItemStack removeInvStack(int slot)
+    public ItemStack removeStackQuietly(int slot)
     {
         if (slot == 0)
         {
@@ -213,11 +212,11 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
             this.output = ItemStack.EMPTY;
             return output;
         }
-        return this.inventory.removeInvStack(slot - 1);
+        return this.inventory.removeStackQuietly(slot - 1);
     }
 
     @Override
-    public void setInvStack(int slot, ItemStack stack)
+    public void setStack(int slot, ItemStack stack)
     {
         if (slot == 0)
         {
@@ -228,7 +227,7 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
     }
 
     @Override
-    public int getInvMaxStackAmount() {
+    public int getMaxStackSize() {
         return 64;
     }
 
@@ -242,18 +241,18 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
     }
 
     @Override
-    public boolean canPlayerUseInv(PlayerEntity var1)
+    public boolean isValid(PlayerEntity var1)
     {
         return true;
     }
 
     @Override
-    public void onInvOpen(PlayerEntity player) {
+    public void onOpen(PlayerEntity player) {
 
     }
 
     @Override
-    public void onInvClose(PlayerEntity player) {
+    public void onClose(PlayerEntity player) {
 
     }
 
@@ -263,64 +262,64 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
         this.inventory.clear();
     }
 
-    private Optional<RecipeType> getCurrentRecipe()
+    private Optional<CraftingRecipe> getCurrentRecipe()
     {
         if (this.world == null)
             return Optional.empty();
-        return Optional.ofNullable(RecipeDispatcher.method_14262(inventory, this.world));
+        return Optional.ofNullable(CraftingManager.getRecipe(inventory, this.world));
     }
 
-    protected void onCrafting(PlayerEntity player, RecipeType irecipe, ItemStack stack)
+    protected void onCrafting(PlayerEntity player, CraftingRecipe irecipe, ItemStack stack)
     {
         if(player == null){
             return;
         }
         if (this.amountCrafted > 0)
         {
-            stack.onCraft(player.world, player, this.amountCrafted);
+            stack.onResult(player.world, player, this.amountCrafted);
         }
 
         this.amountCrafted = 0;
 
-        if (irecipe != null && !irecipe.method_14251())
+        if (irecipe != null && !irecipe.isSpecial())
         {
-            player.method_14154(Lists.newArrayList(irecipe));
+            player.m_5474670(Lists.newArrayList(irecipe));
         }
     }
 
     public ItemStack craft(PlayerEntity player)
     {
         if (this.world == null) return ItemStack.EMPTY;
-        Optional<RecipeType> optionalRecipe = getCurrentRecipe();
+        Optional<CraftingRecipe> optionalRecipe = getCurrentRecipe();
         if (!optionalRecipe.isPresent()) return ItemStack.EMPTY;
-        RecipeType recipe = optionalRecipe.get();
-        ItemStack stack = recipe.getResult(this.inventory);
+        CraftingRecipe recipe = optionalRecipe.get();
+        ItemStack stack = recipe.apply(this.inventory);
         onCrafting(player, recipe, stack);
-        DefaultedList<ItemStack> remaining = recipe.method_13670(this.inventory);
+        DefaultedList<ItemStack> remaining = recipe.getRemainder(this.inventory);
 
         for (int i = 0; i < remaining.size(); ++i)
         {
-            ItemStack itemstack = this.inventory.getInvStack(i);
+            ItemStack itemstack = this.inventory.getStack(i);
             ItemStack itemstack1 = remaining.get(i);
 
             if (!itemstack.isEmpty())
             {
-                this.takeInvStack(i + 1, 1);
-                itemstack = this.inventory.getInvStack(i);
+                this.removeStack(i + 1, 1);
+                itemstack = this.inventory.getStack(i);
             }
 
             if (!itemstack1.isEmpty())
             {
                 if (itemstack.isEmpty())
                 {
-                    this.setInvStack(i + 1, itemstack1);
+                    this.setStack(i + 1, itemstack1);
                 }
-                else if (ItemStack.equalsIgnoreDamage(itemstack, stack) && ItemStack.equalsAll(itemstack, itemstack1))
+                else if (ItemStack.matchesNbt(itemstack, stack) && ItemStack.matches(itemstack, itemstack1))
                 {
-                    itemstack1.increment(itemstack.getCount());
-                    this.setInvStack(i + 1, itemstack1);
+                    itemstack1.increase(itemstack.getSize());
+                    this.setStack(i + 1, itemstack1);
                 }else{
-                    ItemScatterer.spawnItemStack(this.world, this.pos.getX(), this.pos.getY(), this.pos.getZ(), itemstack1);
+                    InventoryUtils.dropStack(this.world, this.pos.getX(), this.pos.getY(), this.pos.getZ(), itemstack1);
                 }
             }
         }
@@ -333,8 +332,8 @@ public class CraftingTableBlockEntity extends LockableContainerBlockEntity imple
     }
 
     public void dropContent(World worldIn, BlockPos pos){
-        ItemScatterer.spawn(worldIn, pos, inventory);
-        ItemScatterer.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), output);
+        InventoryUtils.dropContents(worldIn, pos, inventory);
+        InventoryUtils.dropStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), output);
     }
 
     public void setPlayer(PlayerEntity player) {

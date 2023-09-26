@@ -1,8 +1,8 @@
 package carpet.mixin.core;
 
-import net.minecraft.command.AbstractCommand;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.CommandStats;
+import net.minecraft.server.command.Command;
+import net.minecraft.server.command.source.CommandResults;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.TimeCommand;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,35 +15,35 @@ import java.util.Arrays;
 import java.util.List;
 
 @Mixin(TimeCommand.class)
-public abstract class TimeCommandMixin extends AbstractCommand {
+public abstract class TimeCommandMixin extends Command {
     @Inject(
-            method = "method_3279",
+            method = "run",
             at = @At(
                     value = "NEW",
-                    target = "net/minecraft/command/IncorrectUsageException"
+                    target = "(Ljava/lang/String;[Ljava/lang/Object;)Lnet/minecraft/server/command/exception/IncorrectUsageException;"
             ),
             cancellable = true
     )
     private void queryServerTime(MinecraftServer server, CommandSource sender, String[] args, CallbackInfo ci) {
         if (args.length >= 2 && "query".equals(args[0]) && "servertime".equals(args[1])) {
-            int time = (int) (sender.getWorld().getLastUpdateTime() % Integer.MAX_VALUE);
-            sender.setStat(CommandStats.Type.QUERY_RESULT, time);
-            run(sender, this, "commands.time.query", time);
+            int time = (int) (sender.getSourceWorld().getTime() % Integer.MAX_VALUE);
+            sender.addResult(CommandResults.Type.QUERY_RESULT, time);
+            sendSuccess(sender, this, "commands.time.query", time);
             ci.cancel();
         }
     }
 
     @Redirect(
-            method = "method_10738",
+            method = "getSuggestions",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/command/TimeCommand;method_2894([Ljava/lang/String;[Ljava/lang/String;)Ljava/util/List;",
+                    target = "Lnet/minecraft/server/command/TimeCommand;suggestMatching([Ljava/lang/String;[Ljava/lang/String;)Ljava/util/List;",
                     ordinal = 2
             )
     )
     private List<String> tabCompleteServerTime(String[] args, String... possibilities) {
         String[] poss = Arrays.copyOfRange(possibilities, 0, possibilities.length + 1);
         poss[poss.length - 1] = "servertime";
-        return method_2894(args, poss);
+        return suggestMatching(args, poss);
     }
 }

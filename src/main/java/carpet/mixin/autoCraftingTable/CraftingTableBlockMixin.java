@@ -4,14 +4,14 @@ import carpet.CarpetSettings;
 import carpet.helpers.CraftingTableBlockEntity;
 import carpet.mixin.accessors.CraftingInventoryAccessor;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntityProvider;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.CraftingTableBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.living.player.PlayerEntity;
+import net.minecraft.inventory.menu.MenuProvider;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,12 +30,12 @@ public class CraftingTableBlockMixin extends Block implements BlockEntityProvide
             method = "use",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerEntity;openHandledScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)V"
+                    target = "Lnet/minecraft/entity/living/player/PlayerEntity;openMenu(Lnet/minecraft/inventory/menu/MenuProvider;)V"
             )
     )
-    private void displayGui(PlayerEntity player, NamedScreenHandlerFactory gui, World world, BlockPos pos) {
+    private void displayGui(PlayerEntity player, MenuProvider gui, World world, BlockPos pos) {
         CraftingTableBlockEntity te = getTileEntity(world, pos);
-        player.openHandledScreen(te != null ? te : gui);
+        player.openMenu(te != null ? te : gui);
     }
 
     @Override
@@ -50,12 +50,12 @@ public class CraftingTableBlockMixin extends Block implements BlockEntityProvide
     }
 
     @Override
-    public boolean method_11577(BlockState state) {
+    public boolean isAnalogSignalSource(BlockState state) {
         return true;
     }
 
     @Override
-    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+    public int getAnalogSignal(BlockState state, World world, BlockPos pos) {
         CraftingTableBlockEntity te = getTileEntity(world, pos);
         if (te == null) return 0;
         int count = 0;
@@ -66,17 +66,17 @@ public class CraftingTableBlockMixin extends Block implements BlockEntityProvide
     }
 
     @Override
-    public void onBreaking(World world, BlockPos pos, BlockState state) {
+    public void onRemoved(World world, BlockPos pos, BlockState state) {
         // Maybe also check for some carpet rule
         if (hasBlockEntity()) {
             CraftingTableBlockEntity tileEntity = getTileEntity(world, pos);
             if (tileEntity != null) {
                 tileEntity.dropContent(world, pos);
-                world.updateHorizontalAdjacent(pos, this);
+                world.updateNeighborComparators(pos, this);
             }
         }
         world.removeBlockEntity(pos);
-        super.onBreaking(world, pos, state);
+        super.onRemoved(world, pos, state);
     }
 
     /**

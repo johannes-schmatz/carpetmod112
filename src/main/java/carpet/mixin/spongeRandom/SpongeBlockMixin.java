@@ -2,11 +2,11 @@ package carpet.mixin.spongeRandom;
 
 import carpet.CarpetSettings;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.SpongeBlock;
-import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.block.state.property.BooleanProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -25,8 +25,8 @@ public class SpongeBlockMixin extends Block {
     }
 
     @Override
-    public void onRandomTick(World world, BlockPos pos, BlockState state, Random random) {
-        super.onRandomTick(world, pos, state, random);
+    public void randomTick(World world, BlockPos pos, BlockState state, Random random) {
+        super.randomTick(world, pos, state, random);
         if (!CarpetSettings.spongeRandom) {
             return;
         }
@@ -41,10 +41,10 @@ public class SpongeBlockMixin extends Block {
                 touchesWet = true;
             }
         }
-        if (state.get(WET) && !touchesWater && world.hasDirectSunlight(pos.up()) && world.isDay() && !world.hasRain(pos.up())) {
-            world.setBlockState(pos, state.with(WET, Boolean.FALSE), 2);
-        } else if (!state.get(WET) && (touchesWet || touchesWater || world.hasRain(pos.up())) && random.nextInt(3) == 0) {
-            world.setBlockState(pos, state.with(WET, Boolean.TRUE), 2);
+        if (state.get(WET) && !touchesWater && world.hasSkyAccess(pos.up()) && world.isSunny() && !world.isRaining(pos.up())) {
+            world.setBlockState(pos, state.set(WET, Boolean.FALSE), 2);
+        } else if (!state.get(WET) && (touchesWet || touchesWater || world.isRaining(pos.up())) && random.nextInt(3) == 0) {
+            world.setBlockState(pos, state.set(WET, Boolean.TRUE), 2);
         }
     }
 }

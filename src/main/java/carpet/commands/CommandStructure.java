@@ -21,23 +21,23 @@ import java.util.zip.ZipFile;
 import carpet.mixin.accessors.StructureManagerAccessor;
 import org.apache.logging.log4j.LogManager;
 
-import net.minecraft.class_2765;
-import net.minecraft.util.SharedConstants;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.command.exception.CommandException;
 import net.minecraft.block.Blocks;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.IncorrectUsageException;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.text.LiteralText;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockBox;
+import net.minecraft.block.BlockMirror;
+import net.minecraft.block.BlockRotation;
+import net.minecraft.text.Formatting;
+import net.minecraft.resource.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.class_2763;
+import net.minecraft.world.gen.structure.StructureBox;
+import net.minecraft.world.gen.structure.template.StructureManager;
+import net.minecraft.world.gen.structure.template.StructurePlaceSettings;
+import net.minecraft.world.gen.structure.template.StructureTemplate;
 
 public class CommandStructure extends CommandCarpetBase
 {
@@ -47,19 +47,19 @@ public class CommandStructure extends CommandCarpetBase
     private static final String USAGE_SAVE = "/structure save <name> <from: x y z> <to: x y z> [ignoreEntities]";
     
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "structure";
     }
 
     @Override
-    public String getUsageTranslationKey(CommandSource sender)
+    public String getUsage(CommandSource sender)
     {
         return USAGE;
     }
 
     @Override
-    public void method_3279(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
+    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
         if (!command_enabled("commandStructure", sender))
             return;
@@ -92,17 +92,17 @@ public class CommandStructure extends CommandCarpetBase
         
         String structureName = args[1];
 
-        for (char illegal : SharedConstants.field_14996)
+        for (char illegal : SharedConstants.INVALID_STRUCTURE_FILE_CHARS)
             structureName = structureName.replace(illegal, '_');
-        class_2763 manager = server.worlds[0].method_12783();
-        class_2765 template = manager.method_11861(server, new Identifier(structureName));
+        StructureManager manager = server.worlds[0].getStructureManager();
+        StructureTemplate template = manager.getOrCreate(server, new Identifier(structureName));
         if (template == null)
             throw new CommandException("Template \"" + args[1] + "\" doesn't exist");
         
-        BlockPos origin = sender.getBlockPos();
+        BlockPos origin = sender.getSourceBlockPos();
         if (args.length >= 5)
         {
-            origin = getBlockPos(sender, args, 2, false);
+            origin = parseBlockPos(sender, args, 2, false);
         }
         
         BlockMirror mirror = BlockMirror.NONE;
@@ -155,7 +155,7 @@ public class CommandStructure extends CommandCarpetBase
         float integrity = 1;
         if (args.length >= 9)
         {
-            integrity = (float) parseClampedDouble(args[8], 0, 1);
+            integrity = (float) parseDouble(args[8], 0, 1);
         }
         
         long seed;
@@ -167,16 +167,23 @@ public class CommandStructure extends CommandCarpetBase
         {
             seed = new Random().nextLong();
         }
-        
-        StructurePlacementData settings = new StructurePlacementData().method_11867(mirror).method_11868(rotation).method_11870(ignoreEntities).method_11866(null).method_11865(null).method_11873(false);
+
+        StructurePlaceSettings settings = new StructurePlaceSettings()
+                .setMirror(mirror)
+                .setRotation(rotation)
+                .setIgnoreEntities(ignoreEntities)
+                .setIgnoredBlock(null)
+                .setPos(null)
+                .setKeepLiquids(false);
+
         if (integrity < 1)
         {
-            settings.method_13385(integrity).method_13387(seed);
+            settings.setIntegrity(integrity).setSeed(seed);
         }
         
-        template.method_11882(sender.getWorld(), origin, settings);
-        
-        run(sender, this, "Successfully loaded structure " + args[1]);
+        template.placeInChunk(sender.getSourceWorld(), origin, settings);
+
+        sendSuccess(sender, this, "Successfully loaded structure " + args[1]);
     }
     
     private void saveStructure(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
@@ -186,12 +193,12 @@ public class CommandStructure extends CommandCarpetBase
         
         args = replaceQuotes(args);
         
-        BlockPos pos1 = getBlockPos(sender, args, 2, false);
-        BlockPos pos2 = getBlockPos(sender, args, 5, false);
+        BlockPos pos1 = parseBlockPos(sender, args, 2, false);
+        BlockPos pos2 = parseBlockPos(sender, args, 5, false);
         
-        BlockBox bb = new BlockBox(pos1, pos2);
+        StructureBox bb = new StructureBox(pos1, pos2);
         BlockPos origin = new BlockPos(bb.minX, bb.minY, bb.minZ);
-        BlockPos size = new BlockPos(bb.getBlockCountX(), bb.getBlockCountY(), bb.getBlockCountZ());
+        BlockPos size = new BlockPos(bb.getSpanX(), bb.getSpanY(), bb.getSpanZ());
         
         boolean ignoreEntities = true;
         if (args.length >= 9)
@@ -200,20 +207,20 @@ public class CommandStructure extends CommandCarpetBase
         }
         
         String structureName = args[1];
-        for (char illegal : SharedConstants.field_14996)
+        for (char illegal : SharedConstants.INVALID_STRUCTURE_FILE_CHARS)
             structureName = structureName.replace(illegal, '_');
-        class_2763 manager = server.worlds[0].method_12783();
-        class_2765 template = manager.method_11861(server, new Identifier(structureName));
-        template.method_11884(sender.getWorld(), origin, size, !ignoreEntities, Blocks.STRUCTURE_VOID);
-        template.method_11892(sender.getTranslationKey());
-        manager.method_11863(server, new Identifier(structureName));
-        
-        run(sender, this, "Successfully saved structure " + structureName);
+        StructureManager manager = server.worlds[0].getStructureManager();
+        StructureTemplate template = manager.getOrCreate(server, new Identifier(structureName));
+        template.fill(sender.getSourceWorld(), origin, size, !ignoreEntities, Blocks.STRUCTURE_VOID);
+        template.setAuthor(sender.getName());
+        manager.save(server, new Identifier(structureName));
+
+        sendSuccess(sender, this, "Successfully saved structure " + structureName);
     }
     
     private void listStructure(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
     {
-        class_2763 manager = server.worlds[0].method_12783();
+        StructureManager manager = server.worlds[0].getStructureManager();
         List<String> templates = listStructures(manager);
         
         if (templates.isEmpty())
@@ -231,12 +238,12 @@ public class CommandStructure extends CommandCarpetBase
             for (int offset = 0; offset < PAGE_SIZE && page * PAGE_SIZE + offset < templates.size(); offset++)
             {
                 String template = templates.get(page * PAGE_SIZE + offset);
-                sender.sendMessage(new LiteralText("- " + template + " by " + manager.method_11861(server, new Identifier(template)).method_11895()));
+                sender.sendMessage(new LiteralText("- " + template + " by " + manager.getOrCreate(server, new Identifier(template)).getAuthor()));
             }
         }
     }
     
-    private static List<String> listStructures(class_2763 manager)
+    private static List<String> listStructures(StructureManager manager)
     {
         List<String> templates = new ArrayList<>();
         
@@ -298,7 +305,7 @@ public class CommandStructure extends CommandCarpetBase
     }
     
     @Override
-    public List<String> method_10738(MinecraftServer server, CommandSource sender, String[] args, BlockPos targetPos)
+    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, BlockPos targetPos)
     {
         if (args.length == 0)
         {
@@ -306,7 +313,7 @@ public class CommandStructure extends CommandCarpetBase
         }
         else if (args.length == 1)
         {
-            return method_2894(args, "load", "save", "list");
+            return suggestMatching(args, "load", "save", "list");
         }
         else if ("load".equals(args[0]) || "save".equals(args[0]))
         {
@@ -327,36 +334,36 @@ public class CommandStructure extends CommandCarpetBase
                 if (!replaced)
                 {
                     String commonPrefix = Arrays.stream(args).skip(1).limit(args.length - 2).collect(Collectors.joining(" "));
-                    List<String> structs = listStructures(server.worlds[0].method_12783());
+                    List<String> structs = listStructures(server.worlds[0].getStructureManager());
                     structs = structs.stream().map(s -> "\"" + s + "\"").collect(Collectors.toList());
                     if (!commonPrefix.isEmpty())
                         structs = structs.stream().filter(s -> s.startsWith(commonPrefix + " ")).map(s -> s.substring(commonPrefix.length() + 1)).collect(Collectors.toList());
                     structs = structs.stream().map(s -> s.split(" ")[0]).collect(Collectors.toList());
-                    return method_10708(args, structs);
+                    return suggestMatching(args, structs);
                 }
             }
             else if (args.length == 2)
             {
-                return method_10708(args, listStructures(server.worlds[0].method_12783()).stream().filter(s -> !s.contains(" ")).collect(Collectors.toList()));
+                return suggestMatching(args, listStructures(server.worlds[0].getStructureManager()).stream().filter(s -> !s.contains(" ")).collect(Collectors.toList()));
             }
             
             if (args.length >= 3 && args.length <= 5)
             {
-                return method_10707(args, 2, targetPos);
+                return suggestCoordinate(args, 2, targetPos);
             }
             else if ("load".equals(args[0]))
             {
                 if (args.length == 6)
                 {
-                    return method_2894(args, "no_mirror", "mirror_left_right", "mirror_front_back");
+                    return suggestMatching(args, "no_mirror", "mirror_left_right", "mirror_front_back");
                 }
                 else if (args.length == 7)
                 {
-                    return method_2894(args, "rotate_0", "rotate_90", "rotate_180", "rotate_270");
+                    return suggestMatching(args, "rotate_0", "rotate_90", "rotate_180", "rotate_270");
                 }
                 else if (args.length == 8)
                 {
-                    return method_2894(args, "true", "false");
+                    return suggestMatching(args, "true", "false");
                 }
                 else
                 {
@@ -367,11 +374,11 @@ public class CommandStructure extends CommandCarpetBase
             {
                 if (args.length >= 6 && args.length <= 8)
                 {
-                    return method_10707(args, 5, targetPos);
+                    return suggestCoordinate(args, 5, targetPos);
                 }
                 else if (args.length == 9)
                 {
-                    return method_2894(args, "true", "false");
+                    return suggestMatching(args, "true", "false");
                 }
                 else
                 {

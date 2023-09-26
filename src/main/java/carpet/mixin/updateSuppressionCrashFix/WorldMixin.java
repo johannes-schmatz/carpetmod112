@@ -3,7 +3,7 @@ package carpet.mixin.updateSuppressionCrashFix;
 import carpet.CarpetSettings;
 import carpet.helpers.ThrowableSuppression;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,10 +15,10 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(World.class)
 public class WorldMixin {
     @Inject(
-            method = "updateNeighbor",
+            method = "neighborChanged",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/util/crash/CrashReport;create(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/util/crash/CrashReport;"
+                    target = "Lnet/minecraft/util/crash/CrashReport;of(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/util/crash/CrashReport;"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
@@ -28,10 +28,10 @@ public class WorldMixin {
         }
     }
     @Inject(
-            method = "method_13691",
+            method = "neighborStateChanged",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/util/crash/CrashReport;create(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/util/crash/CrashReport;"
+                    target = "Lnet/minecraft/util/crash/CrashReport;of(Ljava/lang/Throwable;Ljava/lang/String;)Lnet/minecraft/util/crash/CrashReport;"
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )

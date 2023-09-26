@@ -2,7 +2,7 @@ package carpet.mixin.observerPoweredTerracotta;
 
 import carpet.CarpetSettings;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FacingBlock;
 import net.minecraft.block.material.Material;
@@ -21,7 +21,7 @@ public class ObserverBlockMixin extends FacingBlock {
     }
 
     @ModifyConstant(
-            method = "method_13712",
+            method = "update",
             constant = @Constant(intValue = 2)
     )
     private int adjustDelay(int delay, BlockState state, World world, BlockPos pos) {
@@ -30,8 +30,8 @@ public class ObserverBlockMixin extends FacingBlock {
             BlockPos blockpos = pos.offset(enumfacing.getOpposite());
             BlockState iblockstate = world.getBlockState(blockpos);
             Block block = iblockstate.getBlock();
-            if (block == Blocks.STAINED_TERRACOTTA){
-                delay = block.getMeta(iblockstate);
+            if (block == Blocks.STAINED_HARDENED_CLAY){
+                delay = block.getDropItemMetadata(iblockstate);
                 if (delay == 0) delay = 100;
             }
         }
