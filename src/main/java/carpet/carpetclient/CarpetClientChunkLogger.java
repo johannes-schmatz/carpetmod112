@@ -7,9 +7,7 @@ package carpet.carpetclient;
  *
  */
 
-import carpet.CarpetMod;
 import carpet.CarpetSettings;
-import carpet.helpers.StackTraceDeobfuscator;
 import carpet.mixin.accessors.ServerChunkProviderAccessor;
 import carpet.mixin.accessors.PlayerChunkMapAccessor;
 import carpet.utils.LRUCache;
@@ -236,13 +234,11 @@ public class CarpetClientChunkLogger {
 
     private static class InternedString {
         public final String obfuscated;
-        public final String deobfuscated;
         public final int id;
 
-        public InternedString(int id, String obfuscated, String deobfuscated) {
+        public InternedString(int id, String obfuscated) {
             this.id = id;
             this.obfuscated = obfuscated;
-            this.deobfuscated = deobfuscated;
         }
 
         @Override
@@ -250,7 +246,7 @@ public class CarpetClientChunkLogger {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             InternedString that = (InternedString) o;
-            return id == that.id && Objects.equals(obfuscated, that.obfuscated) && Objects.equals(deobfuscated, that.deobfuscated);
+            return id == that.id && Objects.equals(obfuscated, that.obfuscated);
         }
 
         @Override
@@ -263,40 +259,34 @@ public class CarpetClientChunkLogger {
         private final Map<String, InternedString> internedStrings = new LRUCache<>(128); // 64 ~ 98%, 128+ > 99%
         private int nextId = 1;
 
-        private InternedString internString(String obfuscated, String deobfuscated) {
-            if (obfuscated == null) return null;
-            InternedString internedString = internedStrings.get(obfuscated);
+        private InternedString internString(String s) {
+            if (s == null) return null;
+            InternedString internedString = internedStrings.get(s);
             if (internedString == null) {
-                internedString = new InternedString(nextId++, obfuscated, deobfuscated);
-                internedStrings.put(obfuscated, internedString);
+                internedString = new InternedString(nextId++, s);
+                internedStrings.put(s, internedString);
             }
             return internedString;
         }
 
-        private InternedString internString(String s) {
-            return this.internString(s, s);
-        }
-
         private InternedString internStackTrace() {
             StackTraceElement[] trace = new Throwable().getStackTrace();
-            String obfuscated = asString(trace, false);
-            String deobfuscated = asString(trace, true);
-            return this.internString(obfuscated, deobfuscated);
+            String obfuscated = asString(trace);
+            InternedString internedString = internedStrings.get(obfuscated);
+            if (internedString == null) {
+                internedString = new InternedString(nextId++, obfuscated);
+                internedStrings.put(obfuscated, internedString);
+            }
+            return internedString;
         }
 
         public InternedString internReason() {
             return this.internString(reason);
         }
 
-        private String asString(StackTraceElement[] trace, boolean deobfuscated) {
-            if (deobfuscated) {
-                StackTraceDeobfuscator deobfuscator = CarpetMod.getDeobfuscator(true);
-                if (deobfuscator != null) trace = deobfuscator.deobfuscate(trace);
-            }
+        private static String asString(StackTraceElement[] trace) {
             StringBuilder stacktrace = new StringBuilder();
-            int i;
-            int size = deobfuscated ? MAX_STACKTRACE_SIZE / 2 : MAX_STACKTRACE_SIZE;
-            for (i = 0; i < trace.length && i < size; i++) {
+            for (int i = 0; i < trace.length && i < MAX_STACKTRACE_SIZE; i++) {
                 StackTraceElement e = trace[i];
 
                 if ("CarpetClientChunkLogger.java".equals(e.getFileName())) {
@@ -305,25 +295,7 @@ public class CarpetClientChunkLogger {
                 if (stacktrace.length() > 0) {
                     stacktrace.append("\n");
                 }
-                stacktrace.append(e.toString());
-            }
-            if (size <= i && deobfuscated) {
-                int reduce = trace.length - size;
-                if (reduce > size) {
-                    stacktrace.append("\n.....cut out.....");
-                    reduce = size;
-                }
-                for (i = trace.length - reduce; i < trace.length; i++) {
-                    StackTraceElement e = trace[i];
-
-                    if ("CarpetClientChunkLogger.java".equals(e.getFileName())) {
-                        continue;
-                    }
-                    if (stacktrace.length() > 0) {
-                        stacktrace.append("\n");
-                    }
-                    stacktrace.append(e.toString());
-                }
+                stacktrace.append(e);
             }
             return stacktrace.toString();
         }
@@ -459,7 +431,7 @@ public class CarpetClientChunkLogger {
             for (InternedString obfuscated : strings) {
                 NbtCompound stackTrace = new NbtCompound();
                 stackTrace.putInt("id", obfuscated.id);
-                stackTrace.putString("stack", obfuscated.deobfuscated);
+                stackTrace.putString("stack", obfuscated.obfuscated);
                 list.add(stackTrace);
             }
             NbtCompound stackList = new NbtCompound();
