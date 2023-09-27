@@ -12,6 +12,7 @@ public class FallingBlockResearchHelper {
 	public static long[] end_times = new long[3];
 
 	public static Deque<Time> lastTimes = new ArrayDeque<>();
+
 	public static void start() {
 		start_time = System.nanoTime();
 	}
@@ -74,6 +75,7 @@ public class FallingBlockResearchHelper {
 		public final long elapsedOverworld;
 		public final long elapsedNether;
 		public final long elapsedEnd;
+
 		public Time(long start, long[] ends) {
 			this.elapsedOverworld = ends[0] - start;
 			this.elapsedNether = ends[1] - start;
@@ -82,11 +84,7 @@ public class FallingBlockResearchHelper {
 
 		@Override
 		public String toString() {
-			return "Time{" +
-					"elapsedOverworld=" + elapsedOverworld +
-					", elapsedNether=" + elapsedNether +
-					", elapsedEnd=" + elapsedEnd +
-					'}';
+			return "Time{" + "elapsedOverworld=" + elapsedOverworld + ", elapsedNether=" + elapsedNether + ", elapsedEnd=" + elapsedEnd + '}';
 		}
 	}
 }

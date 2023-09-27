@@ -7,6 +7,7 @@ import java.lang.reflect.Constructor;
 import org.jetbrains.annotations.Nullable;
 
 import com.sk89q.worldedit.Vector;
+
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
@@ -18,97 +19,98 @@ import net.minecraft.world.World;
  */
 final class TileEntityUtils {
 
-    private TileEntityUtils() {
-    }
+	private TileEntityUtils() {
+	}
 
-    /**
-     * Update the given tag compound with position information.
-     *
-     * @param tag the tag
-     * @param position the position
-     * @return a tag compound
-     */
-    private static NbtCompound updateForSet(NbtCompound tag, Vector position) {
-        checkNotNull(tag);
-        checkNotNull(position);
+	/**
+	 * Update the given tag compound with position information.
+	 *
+	 * @param tag      the tag
+	 * @param position the position
+	 *
+	 * @return a tag compound
+	 */
+	private static NbtCompound updateForSet(NbtCompound tag, Vector position) {
+		checkNotNull(tag);
+		checkNotNull(position);
 
-        tag.put("x", new NbtInt(position.getBlockX()));
-        tag.put("y", new NbtInt(position.getBlockY()));
-        tag.put("z", new NbtInt(position.getBlockZ()));
+		tag.put("x", new NbtInt(position.getBlockX()));
+		tag.put("y", new NbtInt(position.getBlockY()));
+		tag.put("z", new NbtInt(position.getBlockZ()));
 
-        return tag;
-    }
+		return tag;
+	}
 
-    /**
-     * Set a tile entity at the given location.
-     *
-     * @param world the world
-     * @param position the position
-     * @param clazz the tile entity class
-     * @param tag the tag for the tile entity (may be null to not set NBT data)
-     */
-    static void setTileEntity(World world, Vector position, Class<? extends BlockEntity> clazz, @Nullable NbtCompound tag) {
-        checkNotNull(world);
-        checkNotNull(position);
-        checkNotNull(clazz);
+	/**
+	 * Set a tile entity at the given location.
+	 *
+	 * @param world    the world
+	 * @param position the position
+	 * @param clazz    the tile entity class
+	 * @param tag      the tag for the tile entity (may be null to not set NBT data)
+	 */
+	static void setTileEntity(World world, Vector position, Class<? extends BlockEntity> clazz, @Nullable NbtCompound tag) {
+		checkNotNull(world);
+		checkNotNull(position);
+		checkNotNull(clazz);
 
-        BlockEntity tileEntity = constructTileEntity(world, position, clazz);
+		BlockEntity tileEntity = constructTileEntity(world, position, clazz);
 
-        if (tileEntity == null) {
-            return;
-        }
+		if (tileEntity == null) {
+			return;
+		}
 
-        if (tag != null) {
-            // Set X, Y, Z
-            updateForSet(tag, position);
-            tileEntity.readNbt(tag);
-        }
+		if (tag != null) {
+			// Set X, Y, Z
+			updateForSet(tag, position);
+			tileEntity.readNbt(tag);
+		}
 
-        world.setBlockEntity(new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()), tileEntity);
-    }
+		world.setBlockEntity(new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()), tileEntity);
+	}
 
-    /**
-     * Set a tile entity at the given location using the tile entity ID from
-     * the tag.
-     *
-     * @param world the world
-     * @param position the position
-     * @param tag the tag for the tile entity (may be null to do nothing)
-     */
-    static void setTileEntity(World world, Vector position, @Nullable NbtCompound tag) {
-        if (tag != null) {
-            updateForSet(tag, position);
-            BlockEntity tileEntity = BlockEntity.fromNbt(world, tag);
-            if (tileEntity != null) {
-                world.setBlockEntity(new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()), tileEntity);
-            }
-        }
-    }
+	/**
+	 * Set a tile entity at the given location using the tile entity ID from the tag.
+	 *
+	 * @param world    the world
+	 * @param position the position
+	 * @param tag      the tag for the tile entity (may be null to do nothing)
+	 */
+	static void setTileEntity(World world, Vector position, @Nullable NbtCompound tag) {
+		if (tag != null) {
+			updateForSet(tag, position);
+			BlockEntity tileEntity = BlockEntity.fromNbt(world, tag);
+			if (tileEntity != null) {
+				world.setBlockEntity(new BlockPos(position.getBlockX(), position.getBlockY(), position.getBlockZ()), tileEntity);
+			}
+		}
+	}
 
-    /**
-     * Construct a tile entity from the given class.
-     *
-     * @param world the world
-     * @param position the position
-     * @param clazz the class
-     * @return a tile entity (may be null if it failed)
-     */
-    @Nullable
-    static BlockEntity constructTileEntity(World world, Vector position, Class<? extends BlockEntity> clazz) {
-        Constructor<? extends BlockEntity> baseConstructor;
-        try {
-            baseConstructor = clazz.getConstructor(); // creates "blank" TE
-        } catch (Throwable e) {
-            return null; // every TE *should* have this constructor, so this isn't necessary
-        }
+	/**
+	 * Construct a tile entity from the given class.
+	 *
+	 * @param world    the world
+	 * @param position the position
+	 * @param clazz    the class
+	 *
+	 * @return a tile entity (may be null if it failed)
+	 */
+	@Nullable
+	static BlockEntity constructTileEntity(World world, Vector position, Class<? extends BlockEntity> clazz) {
+		Constructor<? extends BlockEntity> baseConstructor;
+		try {
+			baseConstructor = clazz.getConstructor(); // creates "blank" TE
+		} catch (Throwable e) {
+			return null; // every TE *should* have this constructor, so this isn't necessary
+		}
 
-        BlockEntity genericTE;
-        try {
-            // Downcast here for return while retaining the type
-            genericTE = (BlockEntity) baseConstructor.newInstance();
-        } catch (Throwable e) {
-            return null;
-        }
+		BlockEntity genericTE;
+		try {
+			// Downcast here for return while retaining the type
+			genericTE = (BlockEntity) baseConstructor.newInstance();
+		} catch (Throwable e) {
+			return null;
+		}
 
         /*
         genericTE.blockType = Block.blocksList[block.getId()];
@@ -119,8 +121,8 @@ final class TileEntityUtils {
         genericTE.worldObj = world;
         */ // handled by internal code
 
-        return genericTE;
-    }
+		return genericTE;
+	}
 
 
 }

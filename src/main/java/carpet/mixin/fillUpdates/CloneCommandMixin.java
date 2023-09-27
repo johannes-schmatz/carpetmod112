@@ -24,8 +24,7 @@ public class CloneCommandMixin {
             }
     )
     private int changeFlags(int flags) {
-        // TODO: let this get a public static final field!
-        return flags | (CarpetSettings.fillUpdates ? 0 : 1024);
+        return flags | (CarpetSettings.fillUpdates ? 0 : CarpetSettings.NO_UPDATES);
     }
 
     @Redirect(

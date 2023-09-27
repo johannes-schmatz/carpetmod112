@@ -5,7 +5,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.server.world.ScheduledTick;
 
 public class ScheduledTickFix<T> extends ScheduledTick {
-    public ScheduledTickFix(BlockPos positionIn, Block blockIn) {
-        super(positionIn, blockIn);
-    }
+	public ScheduledTickFix(BlockPos positionIn, Block blockIn) {
+		super(positionIn, blockIn);
+	}
 }

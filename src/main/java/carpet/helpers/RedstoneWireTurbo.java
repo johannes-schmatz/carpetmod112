@@ -1,5 +1,4 @@
 package carpet.helpers;
-//Author: theosib
 
 import carpet.mixin.accessors.RedstoneWireBlockAccessor;
 import java.util.List;
@@ -14,6 +13,9 @@ import net.minecraft.block.RedstoneWireBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+/**
+ * @author theosib
+ */
 public class RedstoneWireTurbo
 {
     /*

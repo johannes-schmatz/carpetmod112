@@ -8,7 +8,8 @@ import java.lang.reflect.InvocationTargetException;
 public final class JavaVersionUtil {
 	public static final int JAVA_VERSION = getJavaVersion();
 
-	private JavaVersionUtil() {}
+	private JavaVersionUtil() {
+	}
 
 	private static int getJavaVersion() {
 		String version = System.getProperty("java.version");
@@ -49,11 +50,11 @@ public final class JavaVersionUtil {
 			// allows us to comment out it below and don't get problems here
 			try {
 				@SuppressWarnings("unchecked")
-				FieldAccessor<T> r = (FieldAccessor<T>) JavaVersionUtil.class
-						.getDeclaredMethod("newUnsafeFieldAcessor", Class.class, Field.class, Class.class)
+				FieldAccessor<T> r = (FieldAccessor<T>) JavaVersionUtil.class.getDeclaredMethod("newUnsafeFieldAcessor", Class.class, Field.class, Class.class)
 						.invoke(null, ownerClass, field, fieldType);
 				return r;
-			} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+			} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+			}
 		}
 
 		try {
@@ -91,6 +92,7 @@ public final class JavaVersionUtil {
 
 	private static class ReflectionFieldAccessor<T> implements FieldAccessor<T> {
 		private final Field field;
+
 		private ReflectionFieldAccessor(Field field) {
 			this.field = field;
 		}

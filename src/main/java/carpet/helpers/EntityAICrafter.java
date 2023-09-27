@@ -45,6 +45,7 @@ import carpet.mixin.accessors.VillagerEntityAccessor;
 import carpet.mixin.accessors.IngredientAccessor;
 import com.google.common.collect.Lists;
 import carpet.utils.Messenger;
+
 import net.minecraft.block.Blocks;
 import net.minecraft.crafting.CraftingManager;
 import net.minecraft.crafting.recipe.CraftingRecipe;
@@ -76,7 +77,7 @@ public class EntityAICrafter extends Goal {
 	private final int[] food = new int[3];
 	private int foodSize;
 	private float foodSpeed;
-	private static final Item[] foods = { Items.BREAD, Items.POTATO, Items.CARROT, Items.BEETROOT };
+	private static final Item[] foods = {Items.BREAD, Items.POTATO, Items.CARROT, Items.BEETROOT};
 
 	private final Random randy = new Random();
 	private int cooldown;
@@ -85,17 +86,17 @@ public class EntityAICrafter extends Goal {
 
 	private int idleTimer;
 	private boolean craftingCanHappen; // optimization for not having to check
-										// full
-										// crafting
+	// full
+	// crafting
 	private boolean statsDone = false;
 
 	private int researchCraftingTable;
 	private BlockPos craftingTablePosition;
 	private String villagerName;
-	
+
 	private boolean inishilized = false;
 
-	private static final String[] recipeList = { "yellow_wool", // 0
+	private static final String[] recipeList = {"yellow_wool", // 0
 			"yellow_stained_hardened_clay", // 1
 			"yellow_stained_glass_pane", // 2
 			"yellow_stained_glass", // 3
@@ -529,7 +530,7 @@ public class EntityAICrafter extends Goal {
 			"acacia_boat" // 431
 	};
 
-	private static final String[] tier1 = { "blaze_powder", // 401
+	private static final String[] tier1 = {"blaze_powder", // 401
 			"bucket", // 369
 			"fire_charge", // 303
 			"glowstone", // 295
@@ -565,7 +566,7 @@ public class EntityAICrafter extends Goal {
 			"mossy_cobblestone", // 162
 	};
 
-	private static final String[] tier2 = { "dark_prismarine", // 331
+	private static final String[] tier2 = {"dark_prismarine", // 331
 			"fence", // 306
 			"fence_gate", // 305
 			"furnace", // 299
@@ -606,7 +607,7 @@ public class EntityAICrafter extends Goal {
 			"iron_door", // 249
 	};
 
-	private static final String[] tier3 = { "beacon", // 419
+	private static final String[] tier3 = {"beacon", // 419
 			"brewing_stand", // 382
 			"chest", // 365
 			"detector_rail", // 329
@@ -640,18 +641,17 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * Basic constructor for the crafting AI task
-	 * 
-	 * @param theVillagerIn
-	 *            the villager object.
+	 *
+	 * @param theVillagerIn the villager object.
 	 */
 	public EntityAICrafter(VillagerEntity theVillagerIn) {
 		this.villager = theVillagerIn;
 	}
-	
+
 	/**
 	 * Global update to set there stats.
 	 */
-	public void updateNitwit(){
+	public void updateNitwit() {
 		updateCareerID();
 		setupFoodSpeed();
 		calcCooldown();
@@ -661,8 +661,7 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Used to update the crafting jobs and other settings of the crafter based
-	 * on the saved data.
+	 * Used to update the crafting jobs and other settings of the crafter based on the saved data.
 	 */
 	private void updateCareerID() {
 		if (((VillagerEntityAccessor) villager).getCareer() == 0) {
@@ -749,8 +748,7 @@ public class EntityAICrafter extends Goal {
 			taskList[1] = getRecipe(tier2[tasks[1]]);
 			taskList[2] = getRecipe(tier3[tasks[2]]);
 		} catch (Exception e) {
-			Messenger.print_server_message(villager.getServer(),
-					"A villager with nasty craftings was found and stats was rerolled.");
+			Messenger.print_server_message(villager.getServer(), "A villager with nasty craftings was found and stats was rerolled.");
 			randomiseStats();
 		}
 	}
@@ -822,15 +820,17 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Makes the villager turn towards crafting tables and updates the villagers
-	 * crafting table if it exists.
+	 * Makes the villager turn towards crafting tables and updates the villagers crafting table if it exists.
 	 */
 	private void lookAtCraftingTables() {
 		if (craftingTablePosition != null && researchCraftingTable > 0) {
 			researchCraftingTable--;
 			villager.getLookControl().lookAt((double) craftingTablePosition.getX() + 0.5D,
-					craftingTablePosition.getY() + 1.5, (double) craftingTablePosition.getZ() + 0.5D, 10.0F,
-					(float) villager.getLookPitchSpeed());
+					craftingTablePosition.getY() + 1.5,
+					(double) craftingTablePosition.getZ() + 0.5D,
+					10.0F,
+					(float) villager.getLookPitchSpeed()
+			);
 		} else if (researchCraftingTable <= 0) {
 			researchCraftingTable = 100;
 			findCraftingTableNear();
@@ -881,8 +881,7 @@ public class EntityAICrafter extends Goal {
 			s = "Nitwit";
 		}
 
-		if (villagerName == null)
-			villagerName = s;
+		if (villagerName == null) villagerName = s;
 
 		if (s != null && !villagerName.equals(s)) {
 			villager.setCustomName(s);
@@ -897,8 +896,7 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Sets the food speed based of the current food in the inventory on the
-	 * food preference of the villager.
+	 * Sets the food speed based of the current food in the inventory on the food preference of the villager.
 	 */
 	private void setupFoodSpeed() {
 		SimpleInventory villagerInventory = villager.m_1510844();
@@ -907,8 +905,7 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Recalculates the cooldowns and crafting amounts based on the experience
-	 * of the villager.
+	 * Recalculates the cooldowns and crafting amounts based on the experience of the villager.
 	 */
 	private void calcCooldown() {
 		int welt = ((VillagerEntityAccessor) villager).getRiches();
@@ -922,7 +919,7 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * Returns the food preference speed.
-	 * 
+	 *
 	 * @return returns the speed multiplier based on the food.
 	 */
 	private float foodPreference() {
@@ -931,7 +928,7 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * Returns the recipe that the villager is currently crafting.
-	 * 
+	 *
 	 * @return the recipe object that is being crafted currently.
 	 */
 	private CraftingRecipe currentTaskRecipe() {
@@ -943,7 +940,7 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * Main crafting logic that performs the crafting based on the job
-	 * 
+	 *
 	 * @return returns true if the crafting job is successful and false if not.
 	 */
 	private boolean craftItems() {
@@ -989,7 +986,7 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * Eats food if there is in the inventory and returns if the crafter is fed.
-	 * 
+	 *
 	 * @return Returns true if the villager is fed. False if lacks food.
 	 */
 	private boolean eatFood() {
@@ -1010,9 +1007,9 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * The stack of food that is based on the last slot of the villager.
-	 * 
-	 * @param villagerInventory
-	 *            The inventory object of the villager.
+	 *
+	 * @param villagerInventory The inventory object of the villager.
+	 *
 	 * @return Item stack of food based on the last slot.
 	 */
 	private ItemStack getFoodStack(SimpleInventory villagerInventory) {
@@ -1020,8 +1017,7 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Drops all items the villager is crafting except the food that is in the
-	 * last slot. This is done to switch jobs.
+	 * Drops all items the villager is crafting except the food that is in the last slot. This is done to switch jobs.
 	 */
 	private void dropJob() {
 		SimpleInventory villagerInventory = villager.m_1510844();
@@ -1033,20 +1029,16 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Find the relative inventory items of the currently selected job. A list
-	 * of all inventory stacks and the amount that is needed to be deducted for
-	 * the current job is returned.
-	 * 
-	 * @param list
-	 *            A list of the items needed for the currently selected job.
-	 * @param villagerInventory
-	 *            Villager inventory object.
-	 * @return List of item stacks and the amount needed to be deducted for the
-	 *         currently selected job. Return null if the inventory items arent
-	 *         sufficient for the recipe.
+	 * Find the relative inventory items of the currently selected job. A list of all inventory stacks and the amount that is needed to be deducted for the
+	 * current job is returned.
+	 *
+	 * @param list              A list of the items needed for the currently selected job.
+	 * @param villagerInventory Villager inventory object.
+	 *
+	 * @return List of item stacks and the amount needed to be deducted for the currently selected job. Return null if the inventory items arent sufficient for
+	 * the recipe.
 	 */
-	private Map<ItemStack, Integer> findRelativeInventoryItemsForCrafting(Map<ItemStack, Integer> list,
-			SimpleInventory villagerInventory) {
+	private Map<ItemStack, Integer> findRelativeInventoryItemsForCrafting(Map<ItemStack, Integer> list, SimpleInventory villagerInventory) {
 		Map<ItemStack, Integer> crafting = new HashMap<>();
 		Map<ItemStack, Integer> map = new HashMap<>(list);
 
@@ -1077,11 +1069,10 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Creates a list of each item needed from crafting from the recipe object
-	 * and the amount per item.
-	 * 
-	 * @param recipe
-	 *            The recipe that is being used to create a list of items for.
+	 * Creates a list of each item needed from crafting from the recipe object and the amount per item.
+	 *
+	 * @param recipe The recipe that is being used to create a list of items for.
+	 *
 	 * @return the list of items for the recipe and the amount per item.
 	 */
 	private Map<ItemStack, Integer> genCraftingMap(CraftingRecipe recipe) {
@@ -1107,28 +1098,24 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * Checks if the item stack type is in the list.
-	 * 
-	 * @param map
-	 *            The list that is being checked for if it contains the item
-	 *            stack type.
-	 * @param itemstack
-	 *            The item stack type that is being checked for.
+	 *
+	 * @param map       The list that is being checked for if it contains the item stack type.
+	 * @param itemstack The item stack type that is being checked for.
+	 *
 	 * @return Returns true if the item stack type is in the list.
 	 */
 	private ItemStack itemIsInMap(Map<ItemStack, Integer> map, ItemStack itemstack) {
 		for (Map.Entry<ItemStack, Integer> entry : map.entrySet()) {
-			if (entry.getKey().getItem() == itemstack.getItem())
-				return entry.getKey();
+			if (entry.getKey().getItem() == itemstack.getItem()) return entry.getKey();
 		}
 		return null;
 	}
 
 	/**
-	 * Gets the amount of items of a specific item type found in the current job
-	 * (active recipe)
-	 * 
-	 * @param item
-	 *            The item type that is being checked for in the active recipe.
+	 * Gets the amount of items of a specific item type found in the current job (active recipe)
+	 *
+	 * @param item The item type that is being checked for in the active recipe.
+	 *
 	 * @return The amount of items found in the active recipe.
 	 */
 	private int getActiveRecipeCount(Item item) {
@@ -1145,16 +1132,13 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Drops the items out of the villagers head towards the specified facing
-	 * direction or towards a crafting table if the villager has chosen it as
-	 * the active crafting table.
-	 * 
-	 * @param itemstack
-	 *            The item stack that is being thrown out of the villager.
+	 * Drops the items out of the villagers head towards the specified facing direction or towards a crafting table if the villager has chosen it as the active
+	 * crafting table.
+	 *
+	 * @param itemstack The item stack that is being thrown out of the villager.
 	 */
 	private void dropItem(ItemStack itemstack) {
-		if (itemstack.isEmpty())
-			return;
+		if (itemstack.isEmpty()) return;
 
 		float f1 = villager.headYaw;
 		float f2 = villager.pitch;
@@ -1180,22 +1164,17 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Updates the villager equipment based on the item type that is being
-	 * picked up. If the item is a command block data is printed out, structure
-	 * blocks delete all inventory items of the villager. If the villager can
-	 * pickup the item the idle timer and the crafting is enabled. If the idle
-	 * timer have kicked in the item is checked if it matches other recipes the
-	 * villager have unlocked to switch jobs.
-	 * 
-	 * @param itemEntity
-	 *            Item stack that is being picked up by the villager.
-	 * @param villagerInventory
-	 *            The villagers inventory object.
-	 * @return Returns true if the villager should stop all other inventory
-	 *         actions.
+	 * Updates the villager equipment based on the item type that is being picked up. If the item is a command block data is printed out, structure blocks
+	 * delete all inventory items of the villager. If the villager can pickup the item the idle timer and the crafting is enabled. If the idle timer have kicked
+	 * in the item is checked if it matches other recipes the villager have unlocked to switch jobs.
+	 *
+	 * @param itemEntity        Item stack that is being picked up by the villager.
+	 * @param villagerInventory The villagers inventory object.
+	 *
+	 * @return Returns true if the villager should stop all other inventory actions.
 	 */
 	public boolean updateEquipment(ItemEntity itemEntity, SimpleInventory villagerInventory) {
-		if(!inishilized){
+		if (!inishilized) {
 			return false;
 		}
 		ItemStack itemstack = itemEntity.getItemStack();
@@ -1245,12 +1224,9 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Checks if the item type matches in the recipe lists of the other jobs the
-	 * villager have unlocked and switches job if match is found.
-	 * 
-	 * @param item
-	 *            The item type that is being used to check if it matches the
-	 *            other jobs the villager have unlocked.
+	 * Checks if the item type matches in the recipe lists of the other jobs the villager have unlocked and switches job if match is found.
+	 *
+	 * @param item The item type that is being used to check if it matches the other jobs the villager have unlocked.
 	 */
 	private void checkJobSwitch(Item item) {
 		int unlocked = getUnlockedLevel();
@@ -1268,11 +1244,9 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Switches the job and performs the dropping of items and resets the idle
-	 * timer.
-	 * 
-	 * @param job
-	 *            The new job that is being switched too.
+	 * Switches the job and performs the dropping of items and resets the idle timer.
+	 *
+	 * @param job The new job that is being switched too.
 	 */
 	private void switchJobTo(int job) {
 		currentTask = job;
@@ -1281,11 +1255,9 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Gets the unlocked levels based on the crafting experience of the
-	 * villager.
-	 * 
-	 * @return Returns the level of what level the crafting villager have
-	 *         unlocked based on the crafting experience.
+	 * Gets the unlocked levels based on the crafting experience of the villager.
+	 *
+	 * @return Returns the level of what level the crafting villager have unlocked based on the crafting experience.
 	 */
 	private int getUnlockedLevel() {
 		int wealth = ((VillagerEntityAccessor) villager).getRiches();
@@ -1298,18 +1270,14 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Adds the food item into the villagers inventory. Placed in the last slot
-	 * of the villager. If another food type is found it is swaped if the idle
-	 * timer have kicked in (no crafting done in a period of 10-15 seconds).
-	 * 
-	 * @param stack
-	 *            Item stack that is being placed into the villagers inventory.
-	 * @param villagerInventory
-	 *            The villagers inventory object.
-	 * @return Returns the resulting change after attempting to place the item
-	 *         stack into the villagers inventory. Unchanged if the item stack
-	 *         can't be placed anywhere and returns empty if it was placed into
-	 *         an empty slot or fully on top of another stack.
+	 * Adds the food item into the villagers inventory. Placed in the last slot of the villager. If another food type is found it is swaped if the idle timer
+	 * have kicked in (no crafting done in a period of 10-15 seconds).
+	 *
+	 * @param stack             Item stack that is being placed into the villagers inventory.
+	 * @param villagerInventory The villagers inventory object.
+	 *
+	 * @return Returns the resulting change after attempting to place the item stack into the villagers inventory. Unchanged if the item stack can't be placed
+	 * anywhere and returns empty if it was placed into an empty slot or fully on top of another stack.
 	 */
 	private ItemStack addFood(ItemStack stack, SimpleInventory villagerInventory) {
 		ItemStack groundItem = stack.copy();
@@ -1355,12 +1323,9 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Sets the speed of the food based on the villagers food preference matched
-	 * towards the item stack (food item stack).
-	 * 
-	 * @param itemstack
-	 *            The item stack that is being used to check what food
-	 *            preference the villager has.
+	 * Sets the speed of the food based on the villagers food preference matched towards the item stack (food item stack).
+	 *
+	 * @param itemstack The item stack that is being used to check what food preference the villager has.
 	 */
 	private void setFoodSpeed(ItemStack itemstack) {
 		Item item = itemstack.getItem();
@@ -1384,23 +1349,17 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Adds the item into the villagers inventory. If the item is found it
-	 * stacks the item. If the item is not found it places it into the first
-	 * slot. Only one stack per item is used.
-	 * 
-	 * An exception is done on wooden planks where the wooden planks are stacked
-	 * and the meta data of the plank is changed to the latest plank type that
-	 * was stacked. This is done because of the villages limited inventory size
-	 * and the large number of wooden planks in the game.
-	 * 
-	 * @param stack
-	 *            Item stack that is being placed into the villagers inventory.
-	 * @param villagerInventory
-	 *            The villagers inventory object.
-	 * @return Returns the resulting change after attempting to place the item
-	 *         stack into the villagers inventory. Unchanged if the item stack
-	 *         can't be placed anywhere and returns empty if it was placed into
-	 *         an empty slot or fully on top of another stack.
+	 * Adds the item into the villagers inventory. If the item is found it stacks the item. If the item is not found it places it into the first slot. Only one
+	 * stack per item is used.
+	 * <p>
+	 * An exception is done on wooden planks where the wooden planks are stacked and the meta data of the plank is changed to the latest plank type that was
+	 * stacked. This is done because of the villages limited inventory size and the large number of wooden planks in the game.
+	 *
+	 * @param stack             Item stack that is being placed into the villagers inventory.
+	 * @param villagerInventory The villagers inventory object.
+	 *
+	 * @return Returns the resulting change after attempting to place the item stack into the villagers inventory. Unchanged if the item stack can't be placed
+	 * anywhere and returns empty if it was placed into an empty slot or fully on top of another stack.
 	 */
 	private ItemStack addRecipeItem(ItemStack stack, SimpleInventory villagerInventory) {
 		ItemStack groundItem = stack.copy();
@@ -1467,9 +1426,9 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * Checks if the item stack is a wooden plank of any type.
-	 * 
-	 * @param itemstack
-	 *            Item stack that is being checked if its a plank or not.
+	 *
+	 * @param itemstack Item stack that is being checked if its a plank or not.
+	 *
 	 * @return Returns true if the item stack is of the type plank.
 	 */
 	private boolean plankCheck(ItemStack itemstack) {
@@ -1478,14 +1437,10 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * Used to stack items and delete the older item.
-	 * 
-	 * @param itemEntity
-	 *            The item object that is being used to delete if needed.
-	 * @param itemEntityStack
-	 *            The stacking item stack that is being updated.
-	 * @param itemEdited
-	 *            The item stack that is used to stack on top of the stacking
-	 *            item stack.
+	 *
+	 * @param itemEntity      The item object that is being used to delete if needed.
+	 * @param itemEntityStack The stacking item stack that is being updated.
+	 * @param itemEdited      The item stack that is used to stack on top of the stacking item stack.
 	 */
 	private void processItems(ItemEntity itemEntity, ItemStack itemEntityStack, ItemStack itemEdited) {
 		if (itemEdited.isEmpty()) {
@@ -1496,13 +1451,11 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Checks if the specified Item type is in the recipe that is being checked
-	 * towards.
-	 * 
-	 * @param item
-	 *            The item type that is being checked if its in the recipe.
-	 * @param irecipe
-	 *            The recipe that is being checked if the item type is in.
+	 * Checks if the specified Item type is in the recipe that is being checked towards.
+	 *
+	 * @param item    The item type that is being checked if its in the recipe.
+	 * @param irecipe The recipe that is being checked if the item type is in.
+	 *
 	 * @return Returns true if the item type is in the recipe.
 	 */
 	private boolean craftingItemForPickup(Item item, CraftingRecipe irecipe) {
@@ -1518,25 +1471,22 @@ public class EntityAICrafter extends Goal {
 	}
 
 	/**
-	 * Checks if the specific Item is a food that the villager can consume or
-	 * not.
-	 * 
-	 * @param item
-	 *            The item that is being checked if its a villager preferred food
-	 *            or not.
+	 * Checks if the specific Item is a food that the villager can consume or not.
+	 *
+	 * @param item The item that is being checked if its a villager preferred food or not.
+	 *
 	 * @return Returns true if its a food that can be consumed.
 	 */
 	private boolean isFood(Item item) {
 		for (Item im : foods) {
-			if (im == item)
-				return true;
+			if (im == item) return true;
 		}
 		return false;
 	}
 
 	/**
 	 * Total list of all crafting IRecpie's.
-	 * 
+	 *
 	 * @return List of all IRecpie that can be crafted.
 	 */
 	private static List<CraftingRecipe> recipeList() {
@@ -1545,9 +1495,9 @@ public class EntityAICrafter extends Goal {
 
 	/**
 	 * IRecpie info from the crafting list found in vanilla code.
-	 * 
-	 * @param recipe
-	 *            The string used to get the specific recipe.
+	 *
+	 * @param recipe The string used to get the specific recipe.
+	 *
 	 * @return The specific IRecpie being request.
 	 */
 	private static CraftingRecipe getRecipe(String recipe) {
@@ -1558,21 +1508,20 @@ public class EntityAICrafter extends Goal {
 	/**
 	 * Drops the inventory of the killed villager except for blacklisted items that can have the chance to be used as id-converters.
 	 */
-	public void dropInventory(){
+	public void dropInventory() {
 		SimpleInventory villagerInventory = villager.m_1510844();
 		for (int j = 0; j < villagerInventory.getSize(); ++j) {
 			ItemStack is = villagerInventory.getStack(j);
 			boolean planks = plankCheck(is);
 			boolean die = is.getItem() == Items.DYE;
-			if(!planks && !die) {
+			if (!planks && !die) {
 				villager.dropItem(is, 0.0F);
 			}
 		}
 	}
 
 	/**
-	 * Server printout of all the information related to this specific crafting
-	 * villager.
+	 * Server printout of all the information related to this specific crafting villager.
 	 */
 	private void readoutDebugInfoOnMe() {
 		SimpleInventory villagerInventory = villager.m_1510844();
@@ -1588,15 +1537,26 @@ public class EntityAICrafter extends Goal {
 			sb.append("Current Task: ").append(currentTaskRecipe().getResult().getTranslationKey()).append("\n");
 			sb.append("Crafting Cooldown(ticks)/Batch Size: ").append(cooldown).append("/").append(batchSize).append("\n");
 			sb.append("Food consumption per craft: ").append(food[2]).append("\n");
-			sb.append("Food preference: ").append(foods[food[0]].getName(new ItemStack(foods[food[0]]))).append("\nFood dislike: ").append(foods[food[1]].getName(new ItemStack(foods[food[1]]))).append("\n");
+			sb.append("Food preference: ")
+					.append(foods[food[0]].getName(new ItemStack(foods[food[0]])))
+					.append("\nFood dislike: ")
+					.append(foods[food[1]].getName(new ItemStack(foods[food[1]])))
+					.append("\n");
 			sb.append("Crafting experience: ").append(((VillagerEntityAccessor) villager).getRiches()).append("\n");
-	
+
 			sb.append("Inventory: \n");
 			for (int j = 0; j < villagerInventory.getSize(); ++j) {
-				sb.append("Slot: ").append(j + 1).append(": ").append(villagerInventory.getStack(j).getTranslationKey()).append(" : ").append(villagerInventory.getStack(j).getSize()).append("\n");
+				sb.append("Slot: ")
+						.append(j + 1)
+						.append(": ")
+						.append(villagerInventory.getStack(j).getTranslationKey())
+						.append(" : ")
+						.append(villagerInventory.getStack(j).getSize())
+						.append("\n");
 			}
-		} catch(Exception ignored) {}
-		
+		} catch (Exception ignored) {
+		}
+
 		Messenger.print_server_message(villager.getServer(), sb.toString());
 	}
 }

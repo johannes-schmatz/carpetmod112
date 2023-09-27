@@ -30,29 +30,20 @@ import net.minecraft.world.chunk.storage.AnvilChunkStorage;
 import net.minecraft.world.chunk.storage.ChunkStorage;
 
 import org.jetbrains.annotations.Nullable;
+
 import java.util.Collections;
 import java.util.List;
 
-public class CommandChunk extends CommandCarpetBase
-{
-	/**
-	 * Gets the name of the command
-	 */
-
-	public String getUsage(CommandSource sender)
-	{
+public class CommandChunk extends CommandCarpetBase {
+	public String getUsage(CommandSource sender) {
 		return "Usage: chunk <load | info | unload | regen | repop | asyncrepop | delete> <X> <Z>";
 	}
 
-	public String getName()
-	{
+	public String getName() {
 		return "chunk";
 	}
-	/**
-	 * Callback for when the command is executed
-	 */
-	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
-	{
+
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandChunk", sender)) return;
 
 		if (args.length != 3) {
@@ -64,7 +55,7 @@ public class CommandChunk extends CommandCarpetBase
 			int chunkX = parseChunkPosition(args[1], sender.getSourceBlockPos().getX());
 			int chunkZ = parseChunkPosition(args[2], sender.getSourceBlockPos().getZ());
 
-			switch (args[0]){
+			switch (args[0]) {
 				case "load":
 					world.getChunkAt(chunkX, chunkZ);
 					sender.sendMessage(new LiteralText("Chunk " + chunkX + ", " + chunkZ + " loaded"));
@@ -89,20 +80,18 @@ public class CommandChunk extends CommandCarpetBase
 					info(world, sender, chunkX, chunkZ);
 
 			}
-		}catch (Exception e){
+		} catch (Exception e) {
 			throw new IncorrectUsageException(getUsage(sender));
 		}
 	}
 
-	private boolean checkRepopLoaded(World world, int x, int z){
-		return ((WorldAccessor) world).invokeIsChunkLoaded(x, z, false)
-				&& ((WorldAccessor) world).invokeIsChunkLoaded(x+1, z, false)
-				&& ((WorldAccessor) world).invokeIsChunkLoaded(x, z+1, false)
-				&& ((WorldAccessor) world).invokeIsChunkLoaded(x+1, z+1, false);
+	private boolean checkRepopLoaded(World world, int x, int z) {
+		return ((WorldAccessor) world).invokeIsChunkLoaded(x, z, false) && ((WorldAccessor) world).invokeIsChunkLoaded(x + 1, z, false) &&
+				((WorldAccessor) world).invokeIsChunkLoaded(x, z + 1, false) && ((WorldAccessor) world).invokeIsChunkLoaded(x + 1, z + 1, false);
 	}
 
 	private void regen(World world, CommandSource sender, int x, int z) {
-		if(!checkRepopLoaded(world, x, z)) {
+		if (!checkRepopLoaded(world, x, z)) {
 			sender.sendMessage(new LiteralText(("Area not loaded for re-population")));
 		}
 
@@ -116,7 +105,7 @@ public class CommandChunk extends CommandCarpetBase
 		chunk.load();
 		chunk.setTerrainPopulated(true);
 		chunk.tick(false);
-		ChunkHolder entry = ((ServerWorld)world).getChunkMap().getLoadedChunk(x, z);
+		ChunkHolder entry = ((ServerWorld) world).getChunkMap().getLoadedChunk(x, z);
 		if (entry != null && entry.getChunk() != null) {
 			((PlayerChunkMapEntryAccessor) entry).setChunk(chunk);
 			((PlayerChunkMapEntryAccessor) entry).setSentToPlayers(false);
@@ -126,7 +115,7 @@ public class CommandChunk extends CommandCarpetBase
 	}
 
 	private void repop(World world, CommandSource sender, int x, int z) {
-		if(!checkRepopLoaded(world, x, z)) {
+		if (!checkRepopLoaded(world, x, z)) {
 			sender.sendMessage(new LiteralText(("Area not loaded for re-population")));
 		}
 
@@ -138,7 +127,7 @@ public class CommandChunk extends CommandCarpetBase
 	}
 
 	private void asyncrepop(World world, CommandSource sender, int x, int z) {
-		if(!checkRepopLoaded(world, x, z)) {
+		if (!checkRepopLoaded(world, x, z)) {
 			sender.sendMessage(new LiteralText(("Area not loaded for re-population")));
 		}
 
@@ -150,14 +139,14 @@ public class CommandChunk extends CommandCarpetBase
 				chunk.setTerrainPopulated(false);
 				chunk.populate(chunkProvider, chunkGenerator);
 				System.out.println("Chunk async repop end.");
-			} catch(Throwable e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		});
 	}
 
 	protected void info(World world, CommandSource sender, int x, int z) throws NoSuchFieldException, IllegalAccessException {
-		if(!((WorldAccessor) world).invokeIsChunkLoaded(x, z, false)) {
+		if (!((WorldAccessor) world).invokeIsChunkLoaded(x, z, false)) {
 			sender.sendMessage(new LiteralText(("Chunk is not loaded")));
 		}
 
@@ -166,12 +155,11 @@ public class CommandChunk extends CommandCarpetBase
 		int mask = CommandLoadedChunks.getMask((Long2ObjectOpenHashMap<WorldChunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap());
 		long key = HashCommon.mix(i) & mask;
 		sender.sendMessage(new LiteralText(("Chunk ideal key is " + key)));
-		if (world.isSpawnChunk(x, z))
-			sender.sendMessage(new LiteralText(("Spawn Chunk")));
+		if (world.isSpawnChunk(x, z)) sender.sendMessage(new LiteralText(("Spawn Chunk")));
 	}
 
-	protected void unload(World world, CommandSource sender, int x, int z){
-		if(!((WorldAccessor) world).invokeIsChunkLoaded(x, z, false)) {
+	protected void unload(World world, CommandSource sender, int x, int z) {
+		if (!((WorldAccessor) world).invokeIsChunkLoaded(x, z, false)) {
 			sender.sendMessage(new LiteralText(("Chunk is not loaded")));
 			return;
 		}

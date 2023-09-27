@@ -12,48 +12,49 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
+
 import java.util.Collections;
 import java.util.List;
 
 public class CommandGrow extends CommandCarpetBase {
-    private static final ItemStack STACK = new ItemStack(Items.DYE, 1, DyeColor.WHITE.getId());
+	private static final ItemStack STACK = new ItemStack(Items.DYE, 1, DyeColor.WHITE.getId());
 
-    @Override
-    public String getName() {
-        return "grow";
-    }
+	@Override
+	public String getName() {
+		return "grow";
+	}
 
-    @Override
-    public String getUsage(CommandSource sender) {
-        return this.getName() + " <x> <y> <z> [times]";
-    }
+	@Override
+	public String getUsage(CommandSource sender) {
+		return this.getName() + " <x> <y> <z> [times]";
+	}
 
-    @Override
-    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
-        if(!command_enabled("commandGrow", sender)) return;
+	@Override
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
+		if (!command_enabled("commandGrow", sender)) return;
 
-        if (args.length < 3) {
-            throw new IncorrectUsageException(this.getUsage(sender));
-        }
+		if (args.length < 3) {
+			throw new IncorrectUsageException(this.getUsage(sender));
+		}
 
-        final int amount = args.length > 3 ? parseInt(args[3]) : 1;
-        final BlockPos pos = parseBlockPos(sender, args, 0, false);
-        final World world = sender.getSourceWorld();
-        if (!world.isChunkLoaded(pos)) {
-//            throw new class_6175("Position is not loaded!");
-        } else {
+		final int amount = args.length > 3 ? parseInt(args[3]) : 1;
+		final BlockPos pos = parseBlockPos(sender, args, 0, false);
+		final World world = sender.getSourceWorld();
+        if (world.isChunkLoaded(pos)) {
             for (int i = 0; i < amount; ++i) {
                 DyeItem.fertilize(STACK, world, pos);
             }
+        } else {
+//            throw new class_6175("Position is not loaded!");
         }
-    }
+	}
 
-    @Override
-    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos) {
-        if (args.length > 0 && args.length <= 3) {
-            return suggestCoordinate(args, 0, pos);
-        }
+	@Override
+	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos) {
+		if (args.length > 0 && args.length <= 3) {
+			return suggestCoordinate(args, 0, pos);
+		}
 
-        return Collections.emptyList();
-    }
+		return Collections.emptyList();
+	}
 }

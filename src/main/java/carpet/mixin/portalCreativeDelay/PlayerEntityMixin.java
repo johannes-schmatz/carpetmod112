@@ -17,7 +17,7 @@ public class PlayerEntityMixin {
     )
     private void portalCreativeDelay(CallbackInfoReturnable<Integer> cir) {
         if (CarpetSettings.portalCreativeDelay) {
-            cir.setReturnValue(PortalHelper.player_holds_obsidian((PlayerEntity) (Object) this) ? Integer.MAX_VALUE : 80);
+            cir.setReturnValue(PortalHelper.playerHoldsObsidian((PlayerEntity) (Object) this) ? Integer.MAX_VALUE : 80);
         }
     }
 }

@@ -5,7 +5,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
+
 import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+
 import carpet.CarpetServer;
 
 /**
@@ -13,41 +15,41 @@ import carpet.CarpetServer;
  */
 class ThreadSafeCache {
 
-    private static final long REFRESH_DELAY = 1000 * 30;
-    private static final ThreadSafeCache INSTANCE = new ThreadSafeCache();
-    private Set<UUID> onlineIds = Collections.emptySet();
-    private long lastRefresh = 0;
+	private static final long REFRESH_DELAY = 1000 * 30;
+	private static final ThreadSafeCache INSTANCE = new ThreadSafeCache();
+	private Set<UUID> onlineIds = Collections.emptySet();
+	private long lastRefresh = 0;
 
-    /**
-     * Get an concurrent-safe set of UUIDs of online players.
-     *
-     * @return a set of UUIDs
-     */
-    public Set<UUID> getOnlineIds() {
-        return onlineIds;
-    }
+	/**
+	 * Get an concurrent-safe set of UUIDs of online players.
+	 *
+	 * @return a set of UUIDs
+	 */
+	public Set<UUID> getOnlineIds() {
+		return onlineIds;
+	}
 
-    public void tickStart() {
-        long now = System.currentTimeMillis();
+	public void tickStart() {
+		long now = System.currentTimeMillis();
 
-        if (now - lastRefresh > REFRESH_DELAY) {
-            Set<UUID> onlineIds = new HashSet<UUID>();
+		if (now - lastRefresh > REFRESH_DELAY) {
+			Set<UUID> onlineIds = new HashSet<UUID>();
 
-            for (Object object : CarpetServer.getMinecraftServer().getPlayerManager().getAll()) {
-                if (object != null) {
-                    ServerPlayerEntity player = (ServerPlayerEntity) object;
-                    onlineIds.add(player.getUuid());
-                }
-            }
+			for (Object object : CarpetServer.getMinecraftServer().getPlayerManager().getAll()) {
+				if (object != null) {
+					ServerPlayerEntity player = (ServerPlayerEntity) object;
+					onlineIds.add(player.getUuid());
+				}
+			}
 
-            this.onlineIds = new CopyOnWriteArraySet<UUID>(onlineIds);
+			this.onlineIds = new CopyOnWriteArraySet<UUID>(onlineIds);
 
-            lastRefresh = now;
-        }
-    }
+			lastRefresh = now;
+		}
+	}
 
-    public static ThreadSafeCache getInstance() {
-        return INSTANCE;
-    }
+	public static ThreadSafeCache getInstance() {
+		return INSTANCE;
+	}
 
 }

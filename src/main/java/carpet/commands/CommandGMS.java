@@ -2,6 +2,7 @@ package carpet.commands;
 
 import java.util.Collections;
 import java.util.List;
+
 import org.jetbrains.annotations.Nullable;
 
 import carpet.logging.logHelpers.DebugLogHelper;
@@ -16,58 +17,45 @@ import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 
-public class CommandGMS extends CommandCarpetBase
-{
-    @Override
-    public String getName()
-    {
-        return "s";
-    }
+public class CommandGMS extends CommandCarpetBase {
+	@Override
+	public String getName() {
+		return "s";
+	}
 
-    @Override
-    public String getUsage(CommandSource sender)
-    {
-        return "commands.gamemode.usage";
-    }
+	@Override
+	public String getUsage(CommandSource sender) {
+		return "commands.gamemode.usage";
+	}
 
-    @Override
-    public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException
-    {
-        if (!command_enabled("commandCameramode", sender)) return;
-        if (args.length > 0)
-        {
-            throw new IncorrectUsageException(getUsage(sender));
-        }
-        else
-        {
-            ServerPlayerEntity entityplayer = asPlayer(sender);
-            setPlayerToSurvival(server, entityplayer,false);
-        }
-    }
+	@Override
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
+		if (!command_enabled("commandCameramode", sender)) return;
+		if (args.length > 0) {
+			throw new IncorrectUsageException(getUsage(sender));
+		} else {
+			ServerPlayerEntity entityplayer = asPlayer(sender);
+			setPlayerToSurvival(server, entityplayer, false);
+		}
+	}
 
-    public static void setPlayerToSurvival(MinecraftServer server, ServerPlayerEntity entityplayer, boolean alwaysPutPlayerInSurvival) {
-        GameMode gametype = server.getDefaultGameMode();
-        if(entityplayer.interactionManager.getGameMode() != GameMode.SURVIVAL) {
-            DebugLogHelper.invisDebug(() -> "s1: " + entityplayer.world.players.contains(entityplayer));
-            if(((CameraPlayer) entityplayer).moveToStoredCameraData() &&  !alwaysPutPlayerInSurvival) {
-                DebugLogHelper.invisDebug(() -> "s7: " + entityplayer.world.players.contains(entityplayer));
-                return;
-            }
-            entityplayer.fallDistance = 0;
-            DebugLogHelper.invisDebug(() -> "s5: " + entityplayer.world.players.contains(entityplayer));
-            if(gametype != GameMode.SPECTATOR) {
-                entityplayer.setGameMode(gametype);
-            } else {
-                entityplayer.setGameMode(GameMode.SURVIVAL);
-            }
-            if(!((CameraPlayer) entityplayer).hadNightvision()) entityplayer.removeStatusEffect(StatusEffects.NIGHT_VISION);
-            DebugLogHelper.invisDebug(() -> "s6: " + entityplayer.world.players.contains(entityplayer));
-        }
-    }
-
-    @Override
-    public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos)
-    {
-        return Collections.emptyList();
-    }
+	public static void setPlayerToSurvival(MinecraftServer server, ServerPlayerEntity entityplayer, boolean alwaysPutPlayerInSurvival) {
+		GameMode gametype = server.getDefaultGameMode();
+		if (entityplayer.interactionManager.getGameMode() != GameMode.SURVIVAL) {
+			DebugLogHelper.invisDebug(() -> "s1: " + entityplayer.world.players.contains(entityplayer));
+			if (((CameraPlayer) entityplayer).moveToStoredCameraData() && !alwaysPutPlayerInSurvival) {
+				DebugLogHelper.invisDebug(() -> "s7: " + entityplayer.world.players.contains(entityplayer));
+				return;
+			}
+			entityplayer.fallDistance = 0;
+			DebugLogHelper.invisDebug(() -> "s5: " + entityplayer.world.players.contains(entityplayer));
+			if (gametype != GameMode.SPECTATOR) {
+				entityplayer.setGameMode(gametype);
+			} else {
+				entityplayer.setGameMode(GameMode.SURVIVAL);
+			}
+			if (!((CameraPlayer) entityplayer).hadNightvision()) entityplayer.removeStatusEffect(StatusEffects.NIGHT_VISION);
+			DebugLogHelper.invisDebug(() -> "s6: " + entityplayer.world.players.contains(entityplayer));
+		}
+	}
 }

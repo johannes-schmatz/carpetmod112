@@ -1,117 +1,70 @@
 package carpet.helpers;
-//Author: xcom
 
 import java.util.List;
 
 import carpet.mixin.accessors.EntityAccessor;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Box;
 
+/**
+ * @author Xcom
+ */
 public class BabyGrowingUp {
 
-    public static void carpetSetSize(Entity entity, float width, float height) {
-        float f = entity.width;
-        entity.width = width;
-        entity.height = height;
-        Box oldAABB = entity.getShape();
+	public static void carpetSetSize(Entity entity, float width, float height) {
+		float f = entity.width;
+		entity.width = width;
+		entity.height = height;
+		Box oldAABB = entity.getShape();
 
-        double d0 = (double) width / 2.0D;
-        entity.setShape(new Box(entity.x - d0, entity.y, entity.z - d0, entity.x + d0,
-                entity.y + (double) entity.height, entity.z + d0));
+		double d0 = width / 2.0D;
+		entity.setShape(new Box(entity.x - d0, entity.y, entity.z - d0, entity.x + d0, entity.y + entity.height, entity.z + d0));
 
-        if (entity.width > f && !((EntityAccessor) entity).isFirstUpdate() && !entity.world.isClient) {
-            pushEntityOutOfBlocks(entity, oldAABB);
-        }
-    }
+		if (entity.width > f && !((EntityAccessor) entity).isFirstUpdate() && !entity.world.isClient) {
+			pushEntityOutOfBlocks(entity, oldAABB);
+		}
+	}
 
-    private static void pushEntityOutOfBlocks(Entity entity, Box oldHitbox) {
-        // Pass "null" in first argument to only get _possible_ block collisions
-        List<Box> list1 = entity.world.getCollisions(null, entity.getShape());
-        Box axisalignedbb = entity.getShape();
+	private static void pushEntityOutOfBlocks(Entity entity, Box oldHitbox) {
+		// Pass "null" in first argument to only get _possible_ block collisions
+		List<Box> list1 = entity.world.getCollisions(null, entity.getShape());
+		Box axisalignedbb = entity.getShape();
 
-        for (Box aabb : list1) {
-            if (!oldHitbox.intersects(aabb) && axisalignedbb.intersects(aabb)) {
-                double minX = axisalignedbb.minX;
-                double maxX = axisalignedbb.maxX;
-                double minZ = axisalignedbb.minZ;
-                double maxZ = axisalignedbb.maxZ;
+		for (Box aabb : list1) {
+			if (!oldHitbox.intersects(aabb) && axisalignedbb.intersects(aabb)) {
+				double minX = axisalignedbb.minX;
+				double maxX = axisalignedbb.maxX;
+				double minZ = axisalignedbb.minZ;
+				double maxZ = axisalignedbb.maxZ;
 
-                // Check for collisions on the X and Z axis, and only push the
-                // new AABB if the colliding blocks AABB
-                // is completely to the opposite side of the original AABB
-                if (aabb.maxX > axisalignedbb.minX && aabb.minX < axisalignedbb.maxX) {
-                    if (aabb.maxX >= oldHitbox.minX && aabb.minX >= oldHitbox.maxX) {
-                        minX = aabb.minX - entity.width;
-                        maxX = aabb.minX;
-                    } else if (aabb.maxX <= oldHitbox.minX && aabb.minX <= oldHitbox.minX) {
-                        minX = aabb.maxX;
-                        maxX = aabb.maxX + entity.width;
-                    }
-                }
+				// Check for collisions on the X and Z axis, and only push the
+				// new AABB if the colliding blocks AABB
+				// is completely to the opposite side of the original AABB
+				if (aabb.maxX > axisalignedbb.minX && aabb.minX < axisalignedbb.maxX) {
+					if (aabb.maxX >= oldHitbox.minX && aabb.minX >= oldHitbox.maxX) {
+						minX = aabb.minX - entity.width;
+						maxX = aabb.minX;
+					} else if (aabb.maxX <= oldHitbox.minX && aabb.minX <= oldHitbox.minX) {
+						minX = aabb.maxX;
+						maxX = aabb.maxX + entity.width;
+					}
+				}
 
-                if (aabb.maxZ > axisalignedbb.minZ && aabb.minZ < axisalignedbb.maxZ) {
-                    if (aabb.minZ >= oldHitbox.maxZ && aabb.maxZ >= oldHitbox.maxZ) {
-                        minZ = aabb.minZ - entity.width;
-                        maxZ = aabb.minZ;
-                    } else if (aabb.maxZ <= oldHitbox.minZ && aabb.minZ <= oldHitbox.minZ) {
-                        minZ = aabb.maxZ;
-                        maxZ = aabb.maxZ + entity.width;
-                    }
-                }
+				if (aabb.maxZ > axisalignedbb.minZ && aabb.minZ < axisalignedbb.maxZ) {
+					if (aabb.minZ >= oldHitbox.maxZ && aabb.maxZ >= oldHitbox.maxZ) {
+						minZ = aabb.minZ - entity.width;
+						maxZ = aabb.minZ;
+					} else if (aabb.maxZ <= oldHitbox.minZ && aabb.minZ <= oldHitbox.minZ) {
+						minZ = aabb.maxZ;
+						maxZ = aabb.maxZ + entity.width;
+					}
+				}
 
-                axisalignedbb = new Box(minX, axisalignedbb.minY, minZ, maxX, axisalignedbb.maxY, maxZ);
-            }
-        }
+				axisalignedbb = new Box(minX, axisalignedbb.minY, minZ, maxX, axisalignedbb.maxY, maxZ);
+			}
+		}
 
-        entity.setShape(axisalignedbb);
-    }
-
-    // TODO: delete?
-    // public static void pushEntityOutOfBlocks(Entity entity, AxisAlignedBB
-    // oldHitbox) {
-    // List<AxisAlignedBB> list1 = entity.world.getCollisionBoxes(entity,
-    // entity.getEntityBoundingBox());
-    // AxisAlignedBB axisalignedbb = entity.getEntityBoundingBox();
-    //
-    // for (AxisAlignedBB i : list1) {
-    // double x = calculateX(axisalignedbb, i);
-    // double z = calculateZ(axisalignedbb, i);
-    //
-    // if (!oldHitbox.intersectsWith(i))
-    // entity.setEntityBoundingBox(entity.getEntityBoundingBox().offset(x, 0.0D,
-    // z));
-    //
-    // axisalignedbb = entity.getEntityBoundingBox();
-    // }
-    // }
-    //
-    // public static double calculateX(AxisAlignedBB base, AxisAlignedBB box) {
-    // if (box.maxY > base.minY && box.minY < base.maxY && box.maxZ > base.minZ
-    // && box.minZ < base.maxZ) {
-    // double x = (base.maxX + base.minX) / 2.0D;
-    //
-    // if (x < box.minX) {
-    // return box.minX - base.maxX;
-    // } else if (x > box.maxX) {
-    // return box.maxX - base.minX;
-    // }
-    // }
-    //
-    // return 0;
-    // }
-    //
-    // public static double calculateZ(AxisAlignedBB base, AxisAlignedBB box) {
-    // if (box.maxX > base.minX && box.minX < base.maxX && box.maxY > base.minY
-    // && box.minY < base.maxY) {
-    // double z = (base.maxZ + base.minZ) / 2.0D;
-    //
-    // if (z < box.minZ) {
-    // return box.minZ - base.maxZ;
-    // } else if (z > box.maxZ) {
-    // return box.maxZ - base.minZ;
-    // }
-    // }
-    //
-    // return 0;
-    // }
+		entity.setShape(axisalignedbb);
+	}
 }

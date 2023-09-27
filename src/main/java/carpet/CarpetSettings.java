@@ -32,8 +32,10 @@ import net.minecraft.server.ServerStatus;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FallingBlock;
 import net.minecraft.server.MinecraftServer;
@@ -42,9 +44,9 @@ import net.minecraft.server.world.ServerWorld;
 
 import static carpet.CarpetSettings.RuleCategory.*;
 
-public final class CarpetSettings
-{
-    private CarpetSettings() {}
+public final class CarpetSettings {
+    private CarpetSettings() {
+    }
 
     public static boolean locked = false;
 
@@ -52,6 +54,7 @@ public final class CarpetSettings
 
     public static long setSeed = 0; // Xcom: if you dunno where to put it, shove it in CarpetSettings - Earth :)
     public static long endChunkSeed = 0;
+    public static final int NO_UPDATES = 1024;
 
 
     // ===== COMMANDS ===== //
@@ -174,7 +177,7 @@ public final class CarpetSettings
     private static boolean validateInstantFallingFlag(boolean value) {
         if (value) {
             FallingBlock.fallImmediately = true;
-        }else {
+        } else {
             FallingBlock.fallImmediately = false;
         }
         return true;
@@ -1052,19 +1055,14 @@ public final class CarpetSettings
         RuleCategory[] category();
 
         /**
-         * Options to select in menu and in carpet client.
-         * Inferred for booleans and enums. Otherwise, must be present.
+         * Options to select in menu and in carpet client. Inferred for booleans and enums. Otherwise, must be present.
          */
         String[] options() default {};
 
         /**
-         * The name of the validator method called when the rule is changed.
-         * The validator method must:
-         * - be declared in CarpetSettings
-         * - be static
-         * - have a return type of boolean
-         * - have a single parameter whose type is the same as that of the rule
-         * The validator returns true if the value of the rule is accepted, and false otherwise.
+         * The name of the validator method called when the rule is changed. The validator method must: - be declared in CarpetSettings - be static - have a
+         * return type of boolean - have a single parameter whose type is the same as that of the rule The validator returns true if the value of the rule is
+         * accepted, and false otherwise.
          */
         String validator() default ""; // default no method
     }
@@ -1104,6 +1102,7 @@ public final class CarpetSettings
 
     private static Map<String, Field> rules = new HashMap<>();
     private static Map<String, String> defaults = new HashMap<>();
+
     static {
         for (Field field : CarpetSettings.class.getFields()) {
             if (field.isAnnotationPresent(Rule.class)) {
@@ -1150,7 +1149,8 @@ public final class CarpetSettings
                             containsDefault = true;
                     }
                     if (!containsDefault) {
-                        throw new AssertionError("Default value of \"" + def + "\" for rule \"" + name + "\" is not included in its options. This is required for Carpet Client to work.");
+                        throw new AssertionError("Default value of \"" + def + "\" for rule \"" + name +
+                                "\" is not included in its options. This is required for Carpet Client to work.");
                     }
                 }
 
@@ -1339,8 +1339,7 @@ public final class CarpetSettings
                 .toArray(String[]::new);
     }
 
-    public static void resetToUserDefaults(MinecraftServer server)
-    {
+    public static void resetToUserDefaults(MinecraftServer server) {
         resetToVanilla();
         applySettingsFromConf(server);
     }
@@ -1387,121 +1386,98 @@ public final class CarpetSettings
 
     // ===== CONFIG ===== //
 
-    public static void applySettingsFromConf(MinecraftServer server)
-    {
+    public static void applySettingsFromConf(MinecraftServer server) {
         Map<String, String> conf = readConf(server);
         boolean is_locked = locked;
         locked = false;
-        if (is_locked)
-        {
+        if (is_locked) {
             LOG.info("[CM]: Carpet Mod is locked by the administrator");
         }
-        for (String key: conf.keySet())
-        {
+        for (String key : conf.keySet()) {
             if (!set(key, conf.get(key)))
                 LOG.error("[CM]: The value of " + conf.get(key) + " for " + key + " is not valid - ignoring...");
             else
-                LOG.info("[CM]: loaded setting "+key+" as "+conf.get(key)+" from carpet.conf");
+                LOG.info("[CM]: loaded setting " + key + " as " + conf.get(key) + " from carpet.conf");
         }
         locked = is_locked;
     }
 
-    private static Map<String, String> readConf(MinecraftServer server)
-    {
-        try
-        {
+    private static Map<String, String> readConf(MinecraftServer server) {
+        try {
             File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "carpet.conf");
             BufferedReader b = new BufferedReader(new FileReader(settings_file));
             String line = "";
-            Map<String,String> result = new HashMap<String, String>();
-            while ((line = b.readLine()) != null)
-            {
+            Map<String, String> result = new HashMap<String, String>();
+            while ((line = b.readLine()) != null) {
                 line = line.replaceAll("\\r|\\n", "");
-                if ("locked".equalsIgnoreCase(line))
-                {
+                if ("locked".equalsIgnoreCase(line)) {
                     locked = true;
                 }
-                String[] fields = line.split("\\s+",2);
-                if (fields.length > 1)
-                {
-                    if (!hasRule(fields[0]))
-                    {
+                String[] fields = line.split("\\s+", 2);
+                if (fields.length > 1) {
+                    if (!hasRule(fields[0])) {
                         LOG.error("[CM]: Setting " + fields[0] + " is not a valid - ignoring...");
                         continue;
                     }
-                    result.put(fields[0],fields[1]);
+                    result.put(fields[0], fields[1]);
                 }
             }
             b.close();
             return result;
-        }
-        catch(FileNotFoundException e)
-        {
-            return new HashMap<String, String>();
-        }
-        catch (IOException e)
-        {
+        } catch (FileNotFoundException e) {
+            return new HashMap<>();
+        } catch (IOException e) {
             e.printStackTrace();
-            return new HashMap<String, String>();
+            return new HashMap<>();
         }
 
     }
-    private static void writeConf(MinecraftServer server, Map<String, String> values)
-    {
+
+    private static void writeConf(MinecraftServer server, Map<String, String> values) {
         if (locked) return;
-        try
-        {
+        try {
             File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "carpet.conf");
             FileWriter fw = new FileWriter(settings_file);
-            for (String key: values.keySet())
-            {
-                fw.write(key+" "+values.get(key)+"\n");
+            for (String key : values.keySet()) {
+                fw.write(key + " " + values.get(key) + "\n");
             }
             fw.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
             LOG.error("[CM]: failed write the carpet.conf");
         }
     }
 
     // stores different defaults in the file
-    public static boolean addOrSetPermarule(MinecraftServer server, String setting_name, String string_value)
-    {
+    public static boolean addOrSetPermarule(MinecraftServer server, String setting_name, String string_value) {
         if (locked) return false;
-        if (hasRule(setting_name))
-        {
+        if (hasRule(setting_name)) {
             Map<String, String> conf = readConf(server);
             conf.put(setting_name, string_value);
             writeConf(server, conf);
-            return set(setting_name,string_value);
-        }
-        return false;
-    }
-    // removes overrides of the default values in the file
-    public static boolean removePermarule(MinecraftServer server, String setting_name)
-    {
-        if (locked) return false;
-        if (hasRule(setting_name))
-        {
-            Map<String, String> conf = readConf(server);
-            conf.remove(setting_name);
-            writeConf(server, conf);
-            return set(setting_name,getDefault(setting_name));
+            return set(setting_name, string_value);
         }
         return false;
     }
 
-    public static String[] findStartupOverrides(MinecraftServer server)
-    {
+    // removes overrides of the default values in the file
+    public static boolean removePermarule(MinecraftServer server, String setting_name) {
+        if (locked) return false;
+        if (hasRule(setting_name)) {
+            Map<String, String> conf = readConf(server);
+            conf.remove(setting_name);
+            writeConf(server, conf);
+            return set(setting_name, getDefault(setting_name));
+        }
+        return false;
+    }
+
+    public static String[] findStartupOverrides(MinecraftServer server) {
         ArrayList<String> res = new ArrayList<String>();
         if (locked) return res.toArray(new String[0]);
-        Map <String,String> defaults = readConf(server);
-        for (String rule: rules.keySet().stream().sorted().collect(Collectors.toList()))
-        {
-            if (defaults.containsKey(rule))
-            {
+        Map<String, String> defaults = readConf(server);
+        for (String rule : rules.keySet().stream().sorted().collect(Collectors.toList())) {
+            if (defaults.containsKey(rule)) {
                 res.add(get(rule));
             }
         }

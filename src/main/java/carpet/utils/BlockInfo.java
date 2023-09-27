@@ -141,15 +141,13 @@ public class BlockInfo
         return component;
     }
 
-    public static List<Text> blockInfo(BlockPos pos, World world)
-    {
+    public static List<Text> blockInfo(BlockPos pos, World world) {
         BlockState state = world.getBlockState(pos);
         Material material = state.getMaterial();
         Block block = state.getBlock();
         String metastring = "";
-        if (block.getDropItemMetadata(state) != 0)
-        {
-            metastring = ":"+block.getDropItemMetadata(state);
+        if (block.getDropItemMetadata(state) != 0) {
+            metastring = ":" + block.getDropItemMetadata(state);
         }
         Text stateInfo = new LiteralText("");
         boolean first = true;

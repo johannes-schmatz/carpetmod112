@@ -2,6 +2,7 @@ package carpet.logging.logHelpers;
 
 import carpet.logging.LoggerRegistry;
 import carpet.utils.Messenger;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
@@ -28,7 +29,7 @@ public class ExplosionLogHelper {
 	}
 
 	public void onExplosionDone(long gametime) {
-		if(lastGametime != gametime) {
+		if (lastGametime != gametime) {
 			explosionCountInCurrentGT = 1;
 			explosionCountInCurrentPos = 0;
 			previousPosition = pos;
@@ -43,12 +44,14 @@ public class ExplosionLogHelper {
 			Text[] msg = null;
 			switch (option) {
 				case "brief":
-					msg = new Text[]{Messenger.m(null,
+					msg = new Text[]{Messenger.m(
+							null,
 							"d #" + explosionCountInCurrentGT,
 							"gb ->",
 							Messenger.dblt("l", pos.x, pos.y, pos.z),
-							(affectBlocks)?"m (affects blocks)":"m  (doesn't affect blocks)"
-					)};
+							(affectBlocks) ? "m (affects blocks)" : "m  (doesn't affect blocks)"
+					)
+					};
 					explosionCountInCurrentGT++;
 					break;
 
@@ -56,15 +59,19 @@ public class ExplosionLogHelper {
 
 				case "compact":
 					tickHasCompact = true;
-					if(previousPosition != null && !pos.equals(previousPosition))  {
-						msg = new Text[]{Messenger.m(null,
+					if (previousPosition != null && !pos.equals(previousPosition)) {
+						msg = new Text[]{Messenger.m(
+								null,
 								"d #" + explosionCountInCurrentGT,
 								"gb ->",
 								"d " + explosionCountInCurrentPos + "x ",
 								Messenger.dblt("l", previousPosition.x, previousPosition.y, previousPosition.z),
-								(affectBlocks)?"m (affects blocks)":"m  (doesn't affect blocks)",
-								"g (", "d " + (System.currentTimeMillis()-startTime), "g ms)"
-						)};
+								(affectBlocks) ? "m (affects blocks)" : "m  (doesn't affect blocks)",
+								"g (",
+								"d " + (System.currentTimeMillis() - startTime),
+								"g ms)"
+						)
+						};
 						explosionCountInCurrentGT += explosionCountInCurrentPos;
 						explosionCountInCurrentPos = 0;
 						previousPosition = pos;
@@ -78,21 +85,25 @@ public class ExplosionLogHelper {
 	}
 
 	public static void logLastExplosion() {
-		if(LoggerRegistry.__explosions) {
+		if (LoggerRegistry.__explosions) {
 			if (tickHasCompact) {
 				tickHasCompact = false;
 				LoggerRegistry.getLogger("explosions").log((option) -> {
 					Text[] msg = null;
 					if ("compact".equals(option)) {
 						if (previousPosition != null) {
-							msg = new Text[]{Messenger.m(null,
+							msg = new Text[]{Messenger.m(
+									null,
 									"d #" + (explosionCountInCurrentGT),
 									"gb ->",
 									"d " + explosionCountInCurrentPos + "x ",
 									Messenger.dblt("l", previousPosition.x, previousPosition.y, previousPosition.z),
 									(affectBlocks) ? "m (affects blocks)" : "m  (doesn't affect blocks)",
-									"g (", "d " + (System.currentTimeMillis()-startTime), "g ms)"
-							)};
+									"g (",
+									"d " + (System.currentTimeMillis() - startTime),
+									"g ms)"
+							)
+							};
 						}
 						startTime = 0;
 					}

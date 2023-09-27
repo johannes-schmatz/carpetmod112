@@ -6,14 +6,14 @@ import net.minecraft.stat.ItemStat;
 import net.minecraft.text.Text;
 
 public class StatSubItem extends ItemStat {
-    private final ItemStat base;
+	private final ItemStat base;
 
-    public StatSubItem(ItemStat base, int meta, Text translation) {
-        super(base.key, "." + meta, translation, ((StatCraftingAccessor) base).getItem());
-        this.base = base;
-    }
+	public StatSubItem(ItemStat base, int meta, Text translation) {
+		super(base.key, "." + meta, translation, ((StatCraftingAccessor) base).getItem());
+		this.base = base;
+	}
 
-    public ItemStat getBase() {
-        return this.base;
-    }
+	public ItemStat getBase() {
+		return this.base;
+	}
 }

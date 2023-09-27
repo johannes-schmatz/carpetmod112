@@ -7,7 +7,7 @@ import net.minecraft.server.world.ServerWorld;
 
 public class TeleportHelper {
 
-	public static void changeDimensions(ServerPlayerEntity player, ServerPlayerEntity target){
+	public static void changeDimensions(ServerPlayerEntity player, ServerPlayerEntity target) {
 		// Adapted from spectator teleport code (NetHandlerPlayServer::handleSpectate)
 		double x = target.x;
 		double y = target.y;
@@ -20,8 +20,11 @@ public class TeleportHelper {
 		int dimension = worldTo.dimension.getType().getId();
 		player.dimensionId = dimension;
 
-		player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(dimension, worldFrom.getDifficulty(), worldFrom.getData().getGeneratorType(),
-				player.interactionManager.getGameMode()));
+		player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(dimension,
+				worldFrom.getDifficulty(),
+				worldFrom.getData().getGeneratorType(),
+				player.interactionManager.getGameMode()
+		));
 		server.getPlayerManager().updatePermissions(player);
 		worldFrom.removeEntityNow(player);
 		player.removed = false;

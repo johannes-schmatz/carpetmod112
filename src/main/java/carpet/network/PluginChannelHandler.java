@@ -4,15 +4,15 @@ import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 
 public interface PluginChannelHandler {
-    String[] getChannels();
+	String[] getChannels();
 
-    default boolean register(String channel, ServerPlayerEntity player) {
-        return true;
-    }
+	default boolean register(String channel, ServerPlayerEntity player) {
+		return true;
+	}
 
-    default void unregister(String channel, ServerPlayerEntity player) {
+	default void unregister(String channel, ServerPlayerEntity player) {
 
-    }
+	}
 
-    void onCustomPayload(CustomPayloadC2SPacket packet, ServerPlayerEntity player);
+	void onCustomPayload(CustomPayloadC2SPacket packet, ServerPlayerEntity player);
 }

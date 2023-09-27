@@ -25,9 +25,6 @@ import net.minecraft.world.chunk.*;
 import java.util.*;
 
 public class CommandPalette extends CommandCarpetBase {
-	/**
-	 * Gets the name of the command
-	 */
 
 	public String getUsage(CommandSource sender) {
 		return "Usage: palette <bits | fill | size | posInfo> <X> <Y> <Z> <full | normal> <4-8 | 13>";
@@ -37,9 +34,6 @@ public class CommandPalette extends CommandCarpetBase {
 		return "palette";
 	}
 
-	/**
-	 * Callback for when the command is executed
-	 */
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandChunk", sender)) return;
 
@@ -146,8 +140,7 @@ public class CommandPalette extends CommandCarpetBase {
 				if (j != k) {
 					sender.getSourceWorld().setBlockState(set, Blocks.GLASS.defaultState(), 128);
 				} else {
-					sender.getSourceWorld().setBlockState(set, Blocks.STAINED_GLASS.defaultState().set(ColoredBlock.COLOR, DyeColor.byId(color)),
-							128);
+					sender.getSourceWorld().setBlockState(set, Blocks.STAINED_GLASS.defaultState().set(ColoredBlock.COLOR, DyeColor.byId(color)), 128);
 				}
 			} else if (type == 3) {
 				if (backup[i] != null && !backupSet.contains(set)) {
@@ -208,7 +201,8 @@ public class CommandPalette extends CommandCarpetBase {
 				if (ibs != null) {
 					int left = itr & leftMask;
 					if (left == blockStateMaskL) {
-						String s = String.format("%" + bits + "s", Integer.toBinaryString(itr)).replace(' ', '0') + " " + ibs.toString().replace("minecraft:", "");
+						String s =
+								String.format("%" + bits + "s", Integer.toBinaryString(itr)).replace(' ', '0') + " " + ibs.toString().replace("minecraft:", "");
 						sender.sendMessage(new LiteralText(s));
 					}
 				}
@@ -219,7 +213,8 @@ public class CommandPalette extends CommandCarpetBase {
 				if (ibs != null) {
 					int right = itr & rightMask;
 					if (right == blockStateMaskR) {
-						String s = String.format("%" + bits + "s", Integer.toBinaryString(itr)).replace(' ', '0') + " " + ibs.toString().replace("minecraft:", "");
+						String s =
+								String.format("%" + bits + "s", Integer.toBinaryString(itr)).replace(' ', '0') + " " + ibs.toString().replace("minecraft:", "");
 						sender.sendMessage(new LiteralText(s));
 					}
 				}
