@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin extends Entity {
     @Shadow public abstract ItemStack getItemStack();
-    @Shadow private int pickupCooldown;
+    @Shadow private int pickUpDelay;
     @Shadow private int age;
 
     public ItemEntityMixin(World worldIn) {
@@ -30,13 +30,13 @@ public abstract class ItemEntityMixin extends Entity {
             method = "onPlayerCollision",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/player/PlayerInventory;m_4381741(Lnet/minecraft/item/ItemStack;)Z"
+                    target = "Lnet/minecraft/entity/player/PlayerInventory;add(Lnet/minecraft/item/ItemStack;)Z"
             )
     )
     private boolean insertStack(PlayerInventory inventory, ItemStack stack) {
         try {
             CarpetMod.playerInventoryStacking.set(Boolean.TRUE);
-            return inventory.m_4381741(stack);
+            return inventory.add(stack);
         } finally {
             CarpetMod.playerInventoryStacking.set(Boolean.FALSE);
         }
@@ -62,7 +62,7 @@ public abstract class ItemEntityMixin extends Entity {
         // Add check for stacking shoulkers without NBT on the ground CARPET-XCOM
         if (((ExtendedItemStack) (Object) otherStack).isGroundStackable() && ((ExtendedItemStack) (Object) ownStack).isGroundStackable()) {
             otherStack.increase(ownStack.getSize());
-            ((ItemEntityAccessor) other).setPickupDelay(Math.max(((ItemEntityAccessor) other).getPickupDelay(), this.pickupCooldown));
+            ((ItemEntityAccessor) other).setPickupDelay(Math.max(((ItemEntityAccessor) other).getPickupDelay(), this.pickUpDelay));
             ((ItemEntityAccessor) other).setAge(Math.min(((ItemEntityAccessor) other).getAge(), this.age));
             other.setItemStack(otherStack);
             this.remove();

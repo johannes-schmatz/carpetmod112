@@ -149,7 +149,8 @@ public abstract class LivingEntityMixin {
     )
     private float applyArmorCalculationsAndLog(LivingEntity entity, DamageSource source, float damage) {
         float after = damageAfterArmorResistance(source, damage);
-        DamageReporter.modify_damage((LivingEntity) (Object) this, source, damage, after, String.format("Armour %.1f, Toughness %.1f", (float) this.getArmorProtection(), this.getAttribute(EntityAttributes.f_8039308).get()));
+        DamageReporter.modify_damage((LivingEntity) (Object) this, source, damage, after, String.format("Armour %.1f, Toughness %.1f",
+                (float) this.getArmorProtection(), this.getAttribute(EntityAttributes.ARMOR_TOUGHNESS).get()));
         return after;
     }
 

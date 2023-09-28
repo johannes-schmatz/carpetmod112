@@ -22,7 +22,7 @@ public class NetworkManagerMixin {
     }
 
     @Inject(
-            method = "sendNow",
+            method = "doSend",
             at = @At("HEAD")
     )
     private void onSend(Packet<?> inPacket, GenericFutureListener<? extends Future<? super Void>>[] futureListeners, CallbackInfo ci) {

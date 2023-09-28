@@ -109,17 +109,17 @@ public class CommandWaypoint extends CommandCarpetBase {
 		}
 		if (args.length > 2) {
 			if (args.length < 5) throw new IncorrectUsageException(USAGE_ADD);
-			x = parseCoordinate(x, args[2], true).getRelative();
-			y = parseCoordinate(y, args[3], 0, dimension.getHeight(), false).getRelative();
-			z = parseCoordinate(z, args[4], true).getRelative();
+			x = parseTeleportCoordinate(x, args[2], true).getCoordinate();
+			y = parseTeleportCoordinate(y, args[3], 0, dimension.getHeight(), false).getCoordinate();
+			z = parseTeleportCoordinate(z, args[4], true).getCoordinate();
 			if (args.length > 5) {
 				if (!validDimension) {
 					throw new CommandException("Invalid dimension");
 				}
 				if (args.length > 6) {
 					if (args.length < 8) throw new IncorrectUsageException(USAGE_ADD);
-					yaw = parseCoordinate(yaw, args[6], false).getRelative();
-					pitch = parseCoordinate(pitch, args[7], false).getRelative();
+					yaw = parseTeleportCoordinate(yaw, args[6], false).getCoordinate();
+					pitch = parseTeleportCoordinate(pitch, args[7], false).getCoordinate();
 				}
 			}
 		}

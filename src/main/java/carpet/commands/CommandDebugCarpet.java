@@ -35,13 +35,13 @@ public class CommandDebugCarpet extends CommandCarpetBase {
     public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
         if("tracker".equalsIgnoreCase(args[0])) {
             for(EntityTrackerEntry e : ((EntityTrackerAccessor) ((ServerWorld) sender.getSourceWorld()).getEntityTracker()).getEntries()){
-                sender.sendMessage(Messenger.s(sender, e.m_8045853().toString()));
+                sender.sendMessage(Messenger.s(sender, e.getCurrentTrackedEntity().toString()));
             }
         }
         if("trackedToMe".equalsIgnoreCase(args[0])) {
             for(EntityTrackerEntry e : ((EntityTrackerAccessor) ((ServerWorld) sender.getSourceWorld()).getEntityTracker()).getEntries()){
-                if(e.m_1373828((ServerPlayerEntity) sender)){
-                    sender.sendMessage(Messenger.s(sender, e.m_8045853().toString()));
+                if(e.broadcastTo((ServerPlayerEntity) sender)){
+                    sender.sendMessage(Messenger.s(sender, e.getCurrentTrackedEntity().toString()));
                 }
             }
         }

@@ -1404,7 +1404,7 @@ public final class CarpetSettings {
 
     private static Map<String, String> readConf(MinecraftServer server) {
         try {
-            File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "carpet.conf");
+            File settings_file = server.getWorldStorageSource().getFile(server.getWorldSaveName(), "carpet.conf");
             BufferedReader b = new BufferedReader(new FileReader(settings_file));
             String line = "";
             Map<String, String> result = new HashMap<String, String>();
@@ -1436,7 +1436,7 @@ public final class CarpetSettings {
     private static void writeConf(MinecraftServer server, Map<String, String> values) {
         if (locked) return;
         try {
-            File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "carpet.conf");
+            File settings_file = server.getWorldStorageSource().getFile(server.getWorldSaveName(), "carpet.conf");
             FileWriter fw = new FileWriter(settings_file);
             for (String key : values.keySet()) {
                 fw.write(key + " " + values.get(key) + "\n");

@@ -101,7 +101,7 @@ public class BetterDispenser {
 				ItemStack itemstack;
 
 				if (Material.WATER.equals(material) && block instanceof LiquidBlock && iblockstate.get(LiquidBlock.LEVEL) == 0) {
-					itemstack = PotionUtils.m_6892246(new ItemStack(Items.POTION), Potions.WATER);
+					itemstack = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
 				} else {
 					itemstack = new ItemStack(Items.GLASS_BOTTLE);
 				}

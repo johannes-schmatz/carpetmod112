@@ -35,10 +35,10 @@ public class CommandFillBiome extends CommandCarpetBase {
 
 		if (args.length < 5) throw new IncorrectUsageException(getUsage(sender));
 
-		int x1 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getRelative());
-		int z1 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getZ(), args[1], false).getRelative());
-		int x2 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getX(), args[2], false).getRelative());
-		int z2 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getZ(), args[3], false).getRelative());
+		int x1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getCoordinate());
+		int z1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[1], false).getCoordinate());
+		int x2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[2], false).getCoordinate());
+		int z2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[3], false).getCoordinate());
 
 		int minX = Math.min(x1, x2);
 		int maxX = Math.max(x1, x2);
@@ -77,7 +77,7 @@ public class CommandFillBiome extends CommandCarpetBase {
 		int maxChunkZ = Math.floorDiv(maxZ, 16);
 		for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
 			for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
-				ChunkHolder entry = world.getChunkMap().getLoadedChunk(chunkX, chunkZ);
+				ChunkHolder entry = world.getChunkMap().getChunk(chunkX, chunkZ);
 				if (entry != null) {
 					WorldChunk chunk = entry.getChunk();
 					if (chunk != null) {

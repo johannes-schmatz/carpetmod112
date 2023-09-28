@@ -13,7 +13,7 @@ public class FakeClientConnection extends Connection {
 	}
 
 	@Override
-	public boolean isOpen() {
+	public boolean isConnected() {
 		return true;
 	}
 

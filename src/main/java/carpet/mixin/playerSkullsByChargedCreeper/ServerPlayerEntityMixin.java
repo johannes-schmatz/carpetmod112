@@ -9,7 +9,7 @@ import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtException;
-import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.nbt.SnbtParser;
 import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,7 +37,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         creeper.addMobHeadDrop();
         try {
             ItemStack skull = new ItemStack(Items.SKULL, 1, 3);
-            skull.setNbt(StringNbtReader.parse(String.format("{SkullOwner:\"%s\"}", getName().toLowerCase())));
+            skull.setNbt(SnbtParser.parse(String.format("{SkullOwner:\"%s\"}", getName().toLowerCase())));
             this.dropItem(skull, 0.0F);
         } catch (NbtException e) {
             e.printStackTrace();

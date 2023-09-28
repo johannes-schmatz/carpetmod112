@@ -132,7 +132,7 @@ public class EntityAIAutotrader extends Goal {
 		entityitem.velocityX = -MathHelper.sin(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
 		entityitem.velocityY = MathHelper.cos(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
 		entityitem.velocityZ = -MathHelper.sin(f2 * 0.017453292F) * 0.3F + 0.1F;
-		entityitem.resetPickupCooldown();
+		entityitem.setDefaultPickUpDelay();
 		villager.world.addEntity(entityitem);
 	}
 

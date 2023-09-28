@@ -21,11 +21,11 @@ public abstract class ServerWorldMixin {
             method = "save",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/ChunkMap;isLoaded(II)Z"
+                    target = "Lnet/minecraft/server/ChunkMap;hasChunk(II)Z"
             )
     )
     private boolean isInPlayerChunkMap(ChunkMap map, int chunkX, int chunkZ) {
-        ChunkHolder entry = map.getLoadedChunk(chunkX, chunkZ);
+        ChunkHolder entry = map.getChunk(chunkX, chunkZ);
         if (entry != null && CarpetSettings.whereToChunkSavestate.canUnloadNearPlayers) {
             WorldChunk chunk = entry.getChunk();
             getChunkSource().scheduleUnload(chunk);

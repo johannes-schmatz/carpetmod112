@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface VillagerEntityAccessor {
     @Accessor int getRiches();
     @Accessor void setRiches(int riches);
-    @Accessor("f_3381958") int getCareer();
-    @Accessor("f_3381958") void setCareer(int id);
-    @Accessor("f_4282224") int getCareerLevel();
-    @Accessor("f_4282224") void setCareerLevel(int level);
+    @Accessor("career") int getCareer();
+    @Accessor("career") void setCareer(int id);
+    @Accessor("careerLevel") int getCareerLevel();
+    @Accessor("careerLevel") void setCareerLevel(int level);
 }

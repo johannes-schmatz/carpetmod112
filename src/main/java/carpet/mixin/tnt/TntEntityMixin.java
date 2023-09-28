@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(PrimedTntEntity.class)
 public abstract class TntEntityMixin extends Entity {
-    @Shadow private int f_7722649;
+    @Shadow private int fuse;
     private TNTLogHelper logHelper = null;
     private int mergedTNT = 1;
     private boolean mergeBool;
@@ -153,7 +153,7 @@ public abstract class TntEntityMixin extends Entity {
                         TntEntityMixin entityTNTPrimed = (TntEntityMixin) entity;
                         if(entityTNTPrimed.velocityX == 0 && entityTNTPrimed.velocityY == 0 && entityTNTPrimed.velocityZ == 0
                                 && this.x == entityTNTPrimed.x && this.y == entityTNTPrimed.y && this.z == entityTNTPrimed.z
-                                && this.f_7722649 == entityTNTPrimed.f_7722649){
+                                && this.fuse == entityTNTPrimed.fuse){
                             mergedTNT += entityTNTPrimed.mergedTNT;
                             entityTNTPrimed.remove();
                         }
@@ -167,7 +167,7 @@ public abstract class TntEntityMixin extends Entity {
             method = "tick",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/PrimedTntEntity;f_7722649:I",
+                    target = "Lnet/minecraft/entity/PrimedTntEntity;fuse:I",
                     ordinal = 0
             )
     )

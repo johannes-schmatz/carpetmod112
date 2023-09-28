@@ -22,7 +22,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
             method = "setGameMode",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;m_2820371()V"
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;dropShoulderEntities()V"
             )
     )
     private void onChangeToSpectator(GameMode gameType, CallbackInfo ci) {

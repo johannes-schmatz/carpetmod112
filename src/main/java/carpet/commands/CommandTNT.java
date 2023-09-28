@@ -48,9 +48,9 @@ public class CommandTNT extends CommandCarpetBase {
 			sendSuccess(sender, this, "TNT scanning block cleared.");
 		} else if (args.length > 2) {
 			if (args.length > 3) throw new IncorrectUsageException(USAGE);
-			x = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getRelative());
-			y = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getY(), args[1], false).getRelative());
-			z = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getZ(), args[2], false).getRelative());
+			x = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getCoordinate());
+			y = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getY(), args[1], false).getCoordinate());
+			z = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[2], false).getCoordinate());
 			tntScanPos = new BlockPos(x, y, z);
 			OptimizedTNT.setBlastChanceLocation(tntScanPos);
 			sendSuccess(sender, this, String.format("TNT scanning block at: %d %d %d", x, y, z));

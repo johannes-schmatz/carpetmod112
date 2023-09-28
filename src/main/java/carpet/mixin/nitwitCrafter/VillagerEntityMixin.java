@@ -21,7 +21,7 @@ public abstract class VillagerEntityMixin extends PassiveEntity {
 
     @Shadow public abstract int getProfession();
 
-    @Shadow @Final private SimpleInventory f_0078634;
+    @Shadow @Final private SimpleInventory inventory;
 
     public VillagerEntityMixin(World worldIn) {
         super(worldIn);
@@ -37,8 +37,8 @@ public abstract class VillagerEntityMixin extends PassiveEntity {
 
     @Inject(
             method = {
-                    "m_4674327",
-                    "m_7338286"
+                    "registerAgeDependentGoals",
+                    "onGrowUp"
             },
             at = @At(
                     value = "INVOKE",
@@ -83,7 +83,7 @@ public abstract class VillagerEntityMixin extends PassiveEntity {
     )
     private void updateCraftingEquipment(ItemEntity itemEntity, CallbackInfo ci) {
         if (CarpetSettings.nitwitCrafter && craftingAI != null) {
-            if (craftingAI.updateEquipment(itemEntity, f_0078634)) ci.cancel();
+            if (craftingAI.updateEquipment(itemEntity, inventory)) ci.cancel();
         }
     }
 }

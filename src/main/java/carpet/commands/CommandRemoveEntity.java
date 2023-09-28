@@ -21,7 +21,7 @@ public class CommandRemoveEntity extends KillCommand {
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (args.length == 0) {
 			PlayerEntity entityplayer = asPlayer(sender);
-			entityplayer.m_3468489();
+			entityplayer.discard();
 			sendSuccess(sender, this, "commands.kill.successful", entityplayer.getName());
 		} else {
 			Entity entity = parseEntity(server, sender, args[0]);

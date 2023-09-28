@@ -105,7 +105,7 @@ public class CommandChunk extends CommandCarpetBase {
 		chunk.load();
 		chunk.setTerrainPopulated(true);
 		chunk.tick(false);
-		ChunkHolder entry = ((ServerWorld) world).getChunkMap().getLoadedChunk(x, z);
+		ChunkHolder entry = ((ServerWorld) world).getChunkMap().getChunk(x, z);
 		if (entry != null && entry.getChunk() != null) {
 			((PlayerChunkMapEntryAccessor) entry).setChunk(chunk);
 			((PlayerChunkMapEntryAccessor) entry).setSentToPlayers(false);
@@ -183,7 +183,7 @@ public class CommandChunk extends CommandCarpetBase {
 
 		{ // delete chunk from PlayerWorldManager
 			ChunkMap playerWorldManager = ((ServerWorld) world).getChunkMap();
-			ChunkHolder chunkPlayerManager = playerWorldManager.getLoadedChunk(x, z);
+			ChunkHolder chunkPlayerManager = playerWorldManager.getChunk(x, z);
 			if (chunkPlayerManager != null) { // the ChunkPlayerManager might not exist
 				((PlayerChunkMapEntryAccessor) chunkPlayerManager).setChunk(null);
 

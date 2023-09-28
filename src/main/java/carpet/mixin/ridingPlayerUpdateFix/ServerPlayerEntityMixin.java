@@ -3,11 +3,11 @@ package carpet.mixin.ridingPlayerUpdateFix;
 import carpet.CarpetSettings;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.living.mob.passive.animal.LlamaEntity;
 import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.entity.vehicle.MinecartEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.entity.living.player.ServerPlayerEntity;
-import net.minecraft.unmapped.C_7410869;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,7 +34,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     private void ridingPlayerUpdateFix(CallbackInfo ci) {
         if (CarpetSettings.ridingPlayerUpdateFix) {
             Entity riding = getVehicle();
-            if (riding instanceof MinecartEntity || riding instanceof C_7410869){
+            if (riding instanceof MinecartEntity || riding instanceof LlamaEntity){
                 this.server.getPlayerManager().move((ServerPlayerEntity) (Object) this);
             }
         }

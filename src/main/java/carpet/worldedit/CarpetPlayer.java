@@ -86,7 +86,7 @@ class CarpetPlayer extends AbstractPlayerActor {
 
 	@Override
 	public void giveItem(int type, int amt) {
-		this.player.inventory.m_4381741(new ItemStack(Item.byId(type), amt, 0));
+		this.player.inventory.add(new ItemStack(Item.byId(type), amt, 0));
 	}
 
 	@Override

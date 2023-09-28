@@ -12,7 +12,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.state.BlockState;
-import net.minecraft.server.command.Command;
+import net.minecraft.server.command.AbstractCommand;
 import net.minecraft.server.command.exception.CommandException;
 import net.minecraft.server.command.source.CommandResults;
 import net.minecraft.server.command.source.CommandSource;
@@ -20,7 +20,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtException;
-import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.nbt.SnbtParser;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.exception.IncorrectUsageException;
 import net.minecraft.server.entity.living.player.ServerPlayerEntity;
@@ -31,7 +31,7 @@ import carpet.helpers.CapturedDrops;
 import carpet.worldedit.WorldEditBridge;
 import org.jetbrains.annotations.Nullable;
 
-public class CommandFeel extends Command {
+public class CommandFeel extends AbstractCommand {
 
 	public String getName() {
 		return "feel";
@@ -84,7 +84,7 @@ public class CommandFeel extends Command {
 					String s = parseString(args, 9);
 
 					try {
-						nbttagcompound = StringNbtReader.parse(s);
+						nbttagcompound = SnbtParser.parse(s);
 						flag = true;
 					} catch (NbtException nbtexception) {
 						throw new CommandException("commands.fill.tagError", nbtexception.getMessage());

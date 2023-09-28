@@ -121,11 +121,11 @@ public class CommandPlayer extends CommandCarpetBase {
 				gamemode = entity.interactionManager.getGameMode().getId();
 			}
 			if (args.length >= 5) {
-				d0 = parseCoordinate(d0, args[2], true).getRelative();
-				d1 = parseCoordinate(d1, args[3], -4096, 4096, false).getRelative();
-				d2 = parseCoordinate(d2, args[4], true).getRelative();
-				yaw = parseCoordinate(yaw, args.length > 5 ? args[5] : "~", false).getRelative();
-				pitch = parseCoordinate(pitch, args.length > 6 ? args[6] : "~", false).getRelative();
+				d0 = parseTeleportCoordinate(d0, args[2], true).getCoordinate();
+				d1 = parseTeleportCoordinate(d1, args[3], -4096, 4096, false).getCoordinate();
+				d2 = parseTeleportCoordinate(d2, args[4], true).getCoordinate();
+				yaw = parseTeleportCoordinate(yaw, args.length > 5 ? args[5] : "~", false).getCoordinate();
+				pitch = parseTeleportCoordinate(pitch, args.length > 6 ? args[6] : "~", false).getCoordinate();
 			}
 			if (args.length >= 8) {
 				String dimension_string = args[7];
@@ -150,7 +150,7 @@ public class CommandPlayer extends CommandCarpetBase {
 			if (!(player instanceof FakeServerPlayerEntity)) {
 				throw new IncorrectUsageException("use /kill or /kick on regular players");
 			}
-			player.m_3468489();
+			player.discard();
 			return;
 		}
 		if ("shadow".equalsIgnoreCase(action)) {
@@ -210,8 +210,8 @@ public class CommandPlayer extends CommandCarpetBase {
 						throw new IncorrectUsageException("look direction is north, south, east, west, up or down");
 					}
 				} else if (args.length > 3) {
-					float yaw = (float) parseCoordinate(player.yaw, args[2], false).getRelative();
-					float pitch = (float) parseCoordinate(player.pitch, args[3], false).getRelative();
+					float yaw = (float) parseTeleportCoordinate(player.yaw, args[2], false).getCoordinate();
+					float pitch = (float) parseTeleportCoordinate(player.pitch, args[3], false).getCoordinate();
 					actionPack.look(yaw, pitch);
 				} else {
 					throw new IncorrectUsageException("/player " + playerName + " look <north|south|east|west|up|down| yaw .. pitch>");

@@ -19,8 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(VillagerEntity.class)
 public abstract class VillagerEntityMixin extends PassiveEntity {
     @Shadow public abstract int getProfession();
-    @Shadow private int f_3381958;
-    @Shadow private int f_4282224;
+    @Shadow private int career;
+    @Shadow private int careerLevel;
     @Shadow private TradeOffers traderOffers;
 
     public VillagerEntityMixin(World worldIn) {
@@ -31,13 +31,13 @@ public abstract class VillagerEntityMixin extends PassiveEntity {
             method = "m_5773335()V",
             at = @At(
                     value = "FIELD",
-                    target = "Lnet/minecraft/entity/living/mob/passive/VillagerEntity;f_3381958:I",
+                    target = "Lnet/minecraft/entity/living/mob/passive/VillagerEntity;career:I",
                     ordinal = 2
             )
     )
     private void addElytra(CallbackInfo ci) {
         // leatherworker: profession=4, career=2
-        if (CarpetSettings.elytraTradable && getProfession() == 4 && f_3381958 == 2 && f_4282224 == 4) {
+        if (CarpetSettings.elytraTradable && getProfession() == 4 && career == 2 && careerLevel == 4) {
             int leatherAmount = 15 + this.random.nextInt(64 - 15 + 1);
             int emeraldAmount = 20 + this.random.nextInt(64 - 20 + 1);
             this.traderOffers.add(new TradeOffer(

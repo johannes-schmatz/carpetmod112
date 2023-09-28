@@ -16,7 +16,7 @@ public class HostileEntityMixin {
     private static final ThreadLocal<Float> attackDamagePre = new ThreadLocal<>();
 
     @Inject(
-            method = "attack",
+            method = "damageAttackTarget",
             at = @At(
                     value = "CONSTANT",
                     args = "intValue=0"
@@ -29,7 +29,7 @@ public class HostileEntityMixin {
     }
 
     @Inject(
-            method = "attack",
+            method = "damageAttackTarget",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/enchantment/EnchantmentHelper;getKnockbackLevel(Lnet/minecraft/entity/living/LivingEntity;)I"

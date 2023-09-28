@@ -22,7 +22,7 @@ public class FireChargeItemMixin extends Item {
         }
         ItemStack itemstack = player.getHandStack(hand);
         GhastEntity ghast = (GhastEntity) player.getVehicle();
-        player.m_5156068().m_3555599(this, 40);
+        player.getItemCooldownManager().set(this, 40);
         GhastHelper.set_off_fball(ghast, world, player);
         if (!player.abilities.creativeMode) {
             itemstack.decrease(1);

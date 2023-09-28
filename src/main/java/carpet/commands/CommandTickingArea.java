@@ -61,8 +61,8 @@ public class CommandTickingArea extends CommandCarpetBase {
 	}
 
 	private static ChunkPos parseChunkPos(CommandSource sender, String[] args, int index) throws InvalidNumberException {
-		int x = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getX() >> 4, args[index], false).getRelative());
-		int z = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getZ() >> 4, args[index + 1], false).getRelative());
+		int x = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX() >> 4, args[index], false).getCoordinate());
+		int z = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ() >> 4, args[index + 1], false).getCoordinate());
 		return new ChunkPos(x, z);
 	}
 

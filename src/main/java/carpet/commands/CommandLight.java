@@ -33,13 +33,13 @@ public class CommandLight extends CommandCarpetBase {
 		String type;
 		if (args.length > 7) {
 			if (args.length > 8) throw new IncorrectUsageException(USAGE);
-			x1 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getRelative());
-			y1 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getY(), args[1], false).getRelative());
-			z1 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getZ(), args[2], false).getRelative());
+			x1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getCoordinate());
+			y1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getY(), args[1], false).getCoordinate());
+			z1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[2], false).getCoordinate());
 
-			x2 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getX(), args[3], false).getRelative());
-			y2 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getY(), args[4], false).getRelative());
-			z2 = (int) Math.round(parseCoordinate(sender.getSourceBlockPos().getZ(), args[5], false).getRelative());
+			x2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[3], false).getCoordinate());
+			y2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getY(), args[4], false).getCoordinate());
+			z2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[5], false).getCoordinate());
 
 			type = args[6];
 			try {

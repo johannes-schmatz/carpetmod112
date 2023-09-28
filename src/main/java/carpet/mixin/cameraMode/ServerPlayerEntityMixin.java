@@ -38,7 +38,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Ca
     }
 
     @Inject(
-            method = "m_2442031",
+            method = "copyFrom",
             at = @At("RETURN")
     )
     private void onCopyFrom(ServerPlayerEntity other, boolean keepEverything, CallbackInfo ci) {

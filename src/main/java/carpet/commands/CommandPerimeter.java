@@ -46,9 +46,9 @@ public class CommandPerimeter extends CommandCarpetBase {
 			double d1 = vec3d.y;
 			double d2 = vec3d.z;
 			if (args.length >= 3) {
-				d0 = parseRawCoordinate(d0, args[0], true);
-				d1 = parseRawCoordinate(d1, args[1], false);
-				d2 = parseRawCoordinate(d2, args[2], true);
+				d0 = parseCoordinate(d0, args[0], true);
+				d1 = parseCoordinate(d1, args[1], false);
+				d2 = parseCoordinate(d2, args[2], true);
 				blockpos = new BlockPos(d0, d1, d2);
 			}
 			World world = sender.getSourceWorld();

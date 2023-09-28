@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity {
     @Shadow public PlayerAbilities abilities;
-    @Shadow protected abstract void m_2820371();
-    @Shadow protected abstract void m_9978028(NbtCompound tag);
+    @Shadow protected abstract void dropShoulderEntities();
+    @Shadow protected abstract void dropShoulderEntity(NbtCompound tag);
     @Shadow protected abstract void setLeftShoulderData(NbtCompound tag);
     @Shadow public abstract NbtCompound getLeftShoulderData();
     @Shadow public abstract NbtCompound getRightShoulderData();
@@ -47,7 +47,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     private void onLivingUpdateEnd(CallbackInfo ci) {
         boolean parrots_will_drop = !CarpetSettings.persistentParrots || this.abilities.invulnerable;
         if (!this.world.isClient && ((parrots_will_drop && this.fallDistance > 0.5F) || this.isInWater() || (parrots_will_drop && this.hasVehicle())) || this.abilities.flying) {
-            this.m_2820371();
+            this.dropShoulderEntities();
         }
     }
 
@@ -55,22 +55,22 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             method = "damage",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/living/player/PlayerEntity;m_2820371()V"
+                    target = "Lnet/minecraft/entity/living/player/PlayerEntity;dropShoulderEntities()V"
             )
     )
     private void dropParrotsOnAttack(PlayerEntity entityPlayer, DamageSource source, float amount) {
         if (CarpetSettings.persistentParrots && !this.isSneaking()) {
             if (this.random.nextFloat() < amount / 15.0) {
-                this.m_9978028(this.getLeftShoulderData());
+                this.dropShoulderEntity(this.getLeftShoulderData());
                 this.setLeftShoulderData(new NbtCompound());
             }
             if (this.random.nextFloat() < amount / 15.0) {
-                this.m_9978028(this.getRightShoulderData());
+                this.dropShoulderEntity(this.getRightShoulderData());
                 this.setRightShoulderData(new NbtCompound());
             }
         } else {
             // bug in carpet? (there it's missing)
-            this.m_2820371();
+            this.dropShoulderEntities();
         }
     }
 }

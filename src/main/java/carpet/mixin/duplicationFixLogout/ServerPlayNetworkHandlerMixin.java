@@ -21,6 +21,6 @@ public class ServerPlayNetworkHandlerMixin {
     )
     private void onDigging(PlayerHandActionC2SPacket packet, CallbackInfo ci) {
         // Prevent player preforming actions after disconnecting. CARPET-XCOM
-        if (CarpetSettings.duplicationFixLogout && player.m_6230070()) ci.cancel();
+        if (CarpetSettings.duplicationFixLogout && player.isDisconnected()) ci.cancel();
     }
 }

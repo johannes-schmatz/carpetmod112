@@ -172,6 +172,6 @@ public class CarpetClientMessageHandler {
     }
 
     public static void confirmationReceivedCustomRecipesSendUpdate(ServerPlayerEntity sender) {
-        sender.m_2249138().m_1614649(sender);
+        sender.getRecipeBook().sendInitRecipes(sender);
     }
 }

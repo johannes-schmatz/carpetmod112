@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Direction.class)
 public class DirectionMixin {
     @Inject(
-            method = "m_3280464",
+            method = "nearest",
             at = @At(
                     value = "RETURN",
                     ordinal = 0
@@ -24,7 +24,7 @@ public class DirectionMixin {
     }
 
     @Inject(
-            method = "m_3280464",
+            method = "nearest",
             at = @At(
                     value = "RETURN",
                     ordinal = 1

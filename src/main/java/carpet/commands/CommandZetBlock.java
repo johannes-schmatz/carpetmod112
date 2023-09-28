@@ -18,7 +18,7 @@ import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtException;
-import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.nbt.SnbtParser;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.SetBlockCommand;
 import net.minecraft.util.math.BlockPos;
@@ -61,7 +61,7 @@ public class CommandZetBlock extends SetBlockCommand {
 				String s = parseString(args, 6);
 
 				try {
-					nbttagcompound = StringNbtReader.parse(s);
+					nbttagcompound = SnbtParser.parse(s);
 					flag = true;
 				} catch (NbtException nbtexception) {
 					throw new CommandException("commands.setblock.tagError", nbtexception.getMessage());

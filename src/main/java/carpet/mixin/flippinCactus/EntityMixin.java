@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(Entity.class)
 public class EntityMixin {
     @Redirect(
-            method = "getDirection",
+            method = "getHorizontalFacing",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/math/Direction;byIdHorizontal(I)Lnet/minecraft/util/math/Direction;"

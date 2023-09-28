@@ -19,7 +19,7 @@ public class EntityTrackerEntryMixin {
     @Shadow @Final private Entity currentTrackedEntity;
 
     @Redirect(
-            method = "m_1373828",
+            method = "broadcastTo",
             at = @At(
                     value = "FIELD",
                     target = "Lnet/minecraft/server/entity/EntityTrackerEntry;trackedDistance:I"

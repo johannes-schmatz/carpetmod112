@@ -35,7 +35,7 @@ public class ChunkMixin {
             method = "populate(Lnet/minecraft/world/chunk/ChunkGenerator;)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/chunk/ChunkGenerator;populate(II)V"
+                    target = "Lnet/minecraft/world/chunk/ChunkGenerator;populateChunk(II)V"
             )
     )
     private void onPopulate(ChunkGenerator generator, CallbackInfo ci) {

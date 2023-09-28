@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import net.minecraft.crafting.CraftingManager;
-import net.minecraft.crafting.recipe.CraftingRecipe;
+import net.minecraft.crafting.recipe.Recipe;
 import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.resource.Identifier;
 import net.minecraft.util.JsonUtils;
@@ -32,7 +32,7 @@ public class CustomCrafting {
 	private static final Logger LOGGER = LogManager.getLogger();
 	private static final String CARPET_DIRECTORY_RECIPES = "carpet/recipes";
 	private static ArrayList<Pair<String, JsonObject>> recipeList = new ArrayList<>();
-	private static HashSet<CraftingRecipe> recipes = new HashSet<CraftingRecipe>();
+	private static HashSet<Recipe> recipes = new HashSet<Recipe>();
 
 	public static boolean registerCustomRecipes(boolean result) throws IOException {
 		if (!result) {
@@ -62,7 +62,7 @@ public class CustomCrafting {
 						bufferedreader = Files.newBufferedReader(path1);
 						JsonObject json = JsonUtils.fromJson(gson, bufferedreader, JsonObject.class);
 						recipeList.add(Pair.of(s, json));
-						CraftingRecipe ir = RecipeManagerAccessor.invokeParseRecipeJson(json);
+						Recipe ir = RecipeManagerAccessor.invokeParseRecipeJson(json);
 						recipes.add(ir);
 						CraftingManager.register(s, ir);
 					} catch (JsonParseException jsonparseexception) {
@@ -85,7 +85,7 @@ public class CustomCrafting {
 		return recipeList;
 	}
 
-	public static boolean filterCustomRecipesForOnlyCarpetClientUsers(CraftingRecipe recipe, ServerPlayerEntity player) {
+	public static boolean filterCustomRecipesForOnlyCarpetClientUsers(Recipe recipe, ServerPlayerEntity player) {
 		return !recipes.contains(recipe) || CarpetClientServer.isPlayerRegistered(player);
 	}
 }

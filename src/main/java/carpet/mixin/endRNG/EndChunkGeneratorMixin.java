@@ -35,7 +35,7 @@ public class EndChunkGeneratorMixin implements ExtendedEndChunkGenerator {
     }
 
     @Inject(
-            method = "populate",
+            method = "populateChunk",
             at = @At("HEAD")
     )
     private void onPopulate(int x, int z, CallbackInfo ci) {
@@ -45,7 +45,7 @@ public class EndChunkGeneratorMixin implements ExtendedEndChunkGenerator {
     }
 
     @Inject(
-            method = "populate",
+            method = "populateChunk",
             at = @At("RETURN")
     )
     private void onPopulateEnd(int x, int z, CallbackInfo ci) {

@@ -13,10 +13,10 @@ public class ServerPlayNetworkHandlerMixin {
             method = "handlePlayerMove",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;m_1692135()Z"
+                    target = "Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;isInTeleportationState()Z"
             )
     )
     private boolean antiCheatSpeed(ServerPlayerEntity player) {
-        return CarpetSettings.antiCheatSpeed || player.m_1692135();
+        return CarpetSettings.antiCheatSpeed || player.isInTeleportationState();
     }
 }

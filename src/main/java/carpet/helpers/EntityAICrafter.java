@@ -48,7 +48,7 @@ import carpet.utils.Messenger;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.crafting.CraftingManager;
-import net.minecraft.crafting.recipe.CraftingRecipe;
+import net.minecraft.crafting.recipe.Recipe;
 import net.minecraft.crafting.recipe.Ingredient;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -69,11 +69,11 @@ public class EntityAICrafter extends Goal {
 	private int craftingCooldown;
 
 	private final int[] tasks = new int[3];
-	private final int tier2Unlock = 1200 * 8;
-	private final int tier3Unlock = 1200 * 64;
-	private final CraftingRecipe[] taskList = new CraftingRecipe[3];
+	private static final int tier2Unlock = 1200 * 8;
+	private static final int tier3Unlock = 1200 * 64;
+	private final Recipe[] taskList = new Recipe[3];
 
-	private final int foodSlot = 7;
+	private static final int foodSlot = 7;
 	private final int[] food = new int[3];
 	private int foodSize;
 	private float foodSpeed;
@@ -677,7 +677,7 @@ public class EntityAICrafter extends Goal {
 	 * Fixes the food that is stuck in the wrong slots of the villager.
 	 */
 	private void fixFoodInventory() {
-		SimpleInventory villagerInventory = villager.m_1510844();
+		SimpleInventory villagerInventory = villager.getVillagerInventory();
 		ItemStack foodStack = villagerInventory.getStack(foodSlot);
 		boolean dropWrongFoods = false;
 
@@ -899,7 +899,7 @@ public class EntityAICrafter extends Goal {
 	 * Sets the food speed based of the current food in the inventory on the food preference of the villager.
 	 */
 	private void setupFoodSpeed() {
-		SimpleInventory villagerInventory = villager.m_1510844();
+		SimpleInventory villagerInventory = villager.getVillagerInventory();
 		ItemStack foodStack = getFoodStack(villagerInventory);
 		setFoodSpeed(foodStack);
 	}
@@ -931,7 +931,7 @@ public class EntityAICrafter extends Goal {
 	 *
 	 * @return the recipe object that is being crafted currently.
 	 */
-	private CraftingRecipe currentTaskRecipe() {
+	private Recipe currentTaskRecipe() {
 		if (currentTask < 0 || currentTask >= taskList.length) {
 			currentTask = 0;
 		}
@@ -953,7 +953,7 @@ public class EntityAICrafter extends Goal {
 			return false;
 		}
 
-		SimpleInventory villagerInventory = villager.m_1510844();
+		SimpleInventory villagerInventory = villager.getVillagerInventory();
 		ItemStack food = getFoodStack(villagerInventory);
 		if (foodCooldown <= 0 && food.getSize() < foodSize) {
 			return false;
@@ -994,7 +994,7 @@ public class EntityAICrafter extends Goal {
 			foodCooldown--;
 			return true;
 		}
-		SimpleInventory villagerInventory = villager.m_1510844();
+		SimpleInventory villagerInventory = villager.getVillagerInventory();
 		ItemStack food = getFoodStack(villagerInventory);
 		if (food.getSize() < foodSize) {
 			return false;
@@ -1020,7 +1020,7 @@ public class EntityAICrafter extends Goal {
 	 * Drops all items the villager is crafting except the food that is in the last slot. This is done to switch jobs.
 	 */
 	private void dropJob() {
-		SimpleInventory villagerInventory = villager.m_1510844();
+		SimpleInventory villagerInventory = villager.getVillagerInventory();
 		for (int i = 0; i < villagerInventory.getSize() - 2; ++i) {
 			ItemStack itemstack = villagerInventory.getStack(i);
 			dropItem(itemstack.copy());
@@ -1075,7 +1075,7 @@ public class EntityAICrafter extends Goal {
 	 *
 	 * @return the list of items for the recipe and the amount per item.
 	 */
-	private Map<ItemStack, Integer> genCraftingMap(CraftingRecipe recipe) {
+	private Map<ItemStack, Integer> genCraftingMap(Recipe recipe) {
 		Map<ItemStack, Integer> map = new HashMap<>();
 		DefaultedList<Ingredient> list = recipe.getIngredients();
 
@@ -1159,7 +1159,7 @@ public class EntityAICrafter extends Goal {
 		entityitem.velocityX = -MathHelper.sin(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
 		entityitem.velocityY = MathHelper.cos(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
 		entityitem.velocityZ = -MathHelper.sin(f2 * 0.017453292F) * 0.3F + 0.1F;
-		entityitem.resetPickupCooldown();
+		entityitem.setDefaultPickUpDelay();
 		villager.world.addEntity(entityitem);
 	}
 
@@ -1458,7 +1458,7 @@ public class EntityAICrafter extends Goal {
 	 *
 	 * @return Returns true if the item type is in the recipe.
 	 */
-	private boolean craftingItemForPickup(Item item, CraftingRecipe irecipe) {
+	private boolean craftingItemForPickup(Item item, Recipe irecipe) {
 		DefaultedList<Ingredient> list = irecipe.getIngredients();
 		for (Ingredient ig : list) {
 			for (ItemStack is : ((IngredientAccessor) ig).getStacks()) {
@@ -1489,7 +1489,7 @@ public class EntityAICrafter extends Goal {
 	 *
 	 * @return List of all IRecpie that can be crafted.
 	 */
-	private static List<CraftingRecipe> recipeList() {
+	private static List<Recipe> recipeList() {
 		return Lists.newArrayList(CraftingManager.REGISTRY);
 	}
 
@@ -1500,7 +1500,7 @@ public class EntityAICrafter extends Goal {
 	 *
 	 * @return The specific IRecpie being request.
 	 */
-	private static CraftingRecipe getRecipe(String recipe) {
+	private static Recipe getRecipe(String recipe) {
 		return CraftingManager.getRecipe(new Identifier(recipe));
 	}
 
@@ -1509,7 +1509,7 @@ public class EntityAICrafter extends Goal {
 	 * Drops the inventory of the killed villager except for blacklisted items that can have the chance to be used as id-converters.
 	 */
 	public void dropInventory() {
-		SimpleInventory villagerInventory = villager.m_1510844();
+		SimpleInventory villagerInventory = villager.getVillagerInventory();
 		for (int j = 0; j < villagerInventory.getSize(); ++j) {
 			ItemStack is = villagerInventory.getStack(j);
 			boolean planks = plankCheck(is);
@@ -1524,14 +1524,14 @@ public class EntityAICrafter extends Goal {
 	 * Server printout of all the information related to this specific crafting villager.
 	 */
 	private void readoutDebugInfoOnMe() {
-		SimpleInventory villagerInventory = villager.m_1510844();
+		SimpleInventory villagerInventory = villager.getVillagerInventory();
 		StringBuilder sb = new StringBuilder();
 		try {
 			calcCooldown();
 			sb.append("Crafter info:\n");
 			sb.append("Craftings:\n");
 			for (int i = 0; i < taskList.length; ++i) {
-				CraftingRecipe ir = taskList[i];
+				Recipe ir = taskList[i];
 				sb.append("tier ").append(i + 1).append(": ").append(ir.getResult().getTranslationKey()).append("\n");
 			}
 			sb.append("Current Task: ").append(currentTaskRecipe().getResult().getTranslationKey()).append("\n");

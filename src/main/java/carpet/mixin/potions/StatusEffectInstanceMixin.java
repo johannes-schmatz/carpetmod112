@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(StatusEffectInstance.class)
 public class StatusEffectInstanceMixin implements ExtendedStatusEffectInstance {
-    @Shadow @Final private StatusEffect id;
+    @Shadow @Final private StatusEffect effect;
     @Shadow @Final private static Logger LOGGER;
     @Shadow private boolean ambient;
     @Shadow private int amplifier;
@@ -23,7 +23,7 @@ public class StatusEffectInstanceMixin implements ExtendedStatusEffectInstance {
     @Override
     @SuppressWarnings("ConstantConditions")
     public StatusEffectInstance combine(StatusEffectInstance other) {
-        if (this.id != other.getEffect()) LOGGER.warn("This method should only be called for matching effects!");
+        if (this.effect != other.getEffect()) LOGGER.warn("This method should only be called for matching effects!");
         if (other == (Object) this) return other;
         boolean combine = CarpetSettings.combinePotionDuration > 0 && ItemPotionHolder.itemPotion && other.getAmplifier() == this.amplifier;
         if (!combine && CarpetSettings.effectsFix && !this.ambient && other.getAmplifier() >= this.amplifier && other.getDuration() < this.duration) {

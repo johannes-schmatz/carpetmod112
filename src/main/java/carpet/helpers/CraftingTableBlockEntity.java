@@ -13,7 +13,7 @@ import net.minecraft.inventory.*;
 import net.minecraft.inventory.menu.InventoryMenu;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.crafting.recipe.CraftingRecipe;
+import net.minecraft.crafting.recipe.Recipe;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DefaultedList;
@@ -164,7 +164,7 @@ public class CraftingTableBlockEntity extends InventoryBlockEntity implements Si
 	public ItemStack getStack(int slot) {
 		if (slot > 0) return this.inventory.getStack(slot - 1);
 		if (!output.isEmpty()) return output;
-		Optional<CraftingRecipe> recipe = getCurrentRecipe();
+		Optional<Recipe> recipe = getCurrentRecipe();
 		return recipe.map(r -> r.apply(inventory)).orElse(ItemStack.EMPTY);
 	}
 
@@ -233,12 +233,12 @@ public class CraftingTableBlockEntity extends InventoryBlockEntity implements Si
 		this.inventory.clear();
 	}
 
-	private Optional<CraftingRecipe> getCurrentRecipe() {
+	private Optional<Recipe> getCurrentRecipe() {
 		if (this.world == null) return Optional.empty();
-		return Optional.ofNullable(CraftingManager.getRecipe(inventory, this.world));
+		return Optional.ofNullable(CraftingManager.findRecipe(inventory, this.world));
 	}
 
-	protected void onCrafting(PlayerEntity player, CraftingRecipe irecipe, ItemStack stack) {
+	protected void onCrafting(PlayerEntity player, Recipe irecipe, ItemStack stack) {
 		if (player == null) {
 			return;
 		}
@@ -249,15 +249,15 @@ public class CraftingTableBlockEntity extends InventoryBlockEntity implements Si
 		this.amountCrafted = 0;
 
 		if (irecipe != null && !irecipe.isSpecial()) {
-			player.m_5474670(Lists.newArrayList(irecipe));
+			player.unlockRecipes(Lists.newArrayList(irecipe));
 		}
 	}
 
 	public ItemStack craft(PlayerEntity player) {
 		if (this.world == null) return ItemStack.EMPTY;
-		Optional<CraftingRecipe> optionalRecipe = getCurrentRecipe();
+		Optional<Recipe> optionalRecipe = getCurrentRecipe();
 		if (!optionalRecipe.isPresent()) return ItemStack.EMPTY;
-		CraftingRecipe recipe = optionalRecipe.get();
+		Recipe recipe = optionalRecipe.get();
 		ItemStack stack = recipe.apply(this.inventory);
 		onCrafting(player, recipe, stack);
 		DefaultedList<ItemStack> remaining = recipe.getRemainder(this.inventory);

@@ -3,7 +3,7 @@ package carpet.commands;
 import carpet.CarpetSettings;
 import carpet.utils.Messenger;
 
-import net.minecraft.server.command.Command;
+import net.minecraft.server.command.AbstractCommand;
 import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.server.command.exception.InvalidNumberException;
 import net.minecraft.entity.living.player.PlayerEntity;
@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 
 import java.util.List;
 
-public abstract class CommandCarpetBase extends Command {
+public abstract class CommandCarpetBase extends AbstractCommand {
 	@Override
 	public boolean canUse(MinecraftServer server, CommandSource sender) {
 		return true;

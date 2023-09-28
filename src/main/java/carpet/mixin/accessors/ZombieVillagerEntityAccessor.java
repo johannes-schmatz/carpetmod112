@@ -6,5 +6,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ZombieVillagerEntity.class)
 public interface ZombieVillagerEntityAccessor {
-    @Accessor("f_8527141") int getConversionTimer();
+    @Accessor("conversionTicks") int getConversionTimer();
 }

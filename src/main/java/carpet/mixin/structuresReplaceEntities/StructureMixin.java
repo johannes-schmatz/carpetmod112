@@ -38,7 +38,7 @@ public abstract class StructureMixin {
         if (!entities.isEmpty()) System.out.println("Killing entities because of structure block paste");
         for (Entity e : entities) {
             System.out.println(e);
-            e.m_3468489();
+            e.discard();
         }
     }
 }

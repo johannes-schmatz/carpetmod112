@@ -384,7 +384,7 @@ public class CommandRNG extends CommandCarpetBase {
 
 				if (!eligibleChunksForSpawning.contains(chunkpos)) {
 					if (!flag && worldServerIn.getWorldBorder().contains(chunkpos)) {
-						ChunkHolder playerchunkmapentry = worldServerIn.getChunkMap().getLoadedChunk(chunkpos.x, chunkpos.z);
+						ChunkHolder playerchunkmapentry = worldServerIn.getChunkMap().getChunk(chunkpos.x, chunkpos.z);
 
 						if (playerchunkmapentry != null && playerchunkmapentry.isPopulated()) {
 							eligibleChunksForSpawning.add(chunkpos);

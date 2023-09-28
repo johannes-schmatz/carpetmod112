@@ -55,7 +55,7 @@ public class ChunkLoading {
 			ChunkMap pcm = server.getChunkMap();
 
 			for (WorldChunk chunk : Lists.newArrayList(chunkproviderserver.getLoadedChunks())) {
-				if (chunk != null && !pcm.isLoaded(chunk.chunkX, chunk.chunkZ)) {
+				if (chunk != null && !pcm.hasChunk(chunk.chunkX, chunk.chunkZ)) {
 					chunkproviderserver.scheduleUnload(chunk);
 				}
 			}
@@ -78,7 +78,7 @@ public class ChunkLoading {
 			ChunkMap pcm = server.getChunkMap();
 
 			for (WorldChunk chunk : Lists.newArrayList(chunkproviderserver.getLoadedChunks())) {
-				if (chunk != null && !pcm.isLoaded(chunk.chunkX, chunk.chunkZ)) {
+				if (chunk != null && !pcm.hasChunk(chunk.chunkX, chunk.chunkZ)) {
 					queueUnload113(server, chunkproviderserver, chunk);
 				}
 			}

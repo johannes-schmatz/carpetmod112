@@ -132,7 +132,7 @@ public class EntityInfo {
 		if (e.netherPortalCooldown > 0) {
 			lst.add(String.format(" - Portal cooldown for %d ticks", e.netherPortalCooldown));
 		}
-		if (e.m_1930223()) {
+		if (e.isInvulnerable()) {
 			lst.add(" - Invulnerable");
 		} //  func_190530_aW()
 		if (e.isImmuneToExplosions()) {
@@ -167,11 +167,11 @@ public class EntityInfo {
 			lst.add(String.format(" - Despawn timer: %s", makeTime(elb.getDespawnTimer())));
 
 			lst.add(String.format(" - Health: %.2f/%.2f", elb.getHealth(), elb.getMaxHealth()));
-			if (elb.getAttribute(EntityAttributes.f_9312142).get() > 0.0) {
-				lst.add(String.format(" - Armour: %.1f", elb.getAttribute(EntityAttributes.f_9312142).get()));
+			if (elb.getAttribute(EntityAttributes.ARMOR).get() > 0.0) {
+				lst.add(String.format(" - Armour: %.1f", elb.getAttribute(EntityAttributes.ARMOR).get()));
 			}
-			if (elb.getAttribute(EntityAttributes.f_8039308).get() > 0.0) {
-				lst.add(String.format(" - Toughness: %.1f", elb.getAttribute(EntityAttributes.f_8039308).get()));
+			if (elb.getAttribute(EntityAttributes.ARMOR_TOUGHNESS).get() > 0.0) {
+				lst.add(String.format(" - Toughness: %.1f", elb.getAttribute(EntityAttributes.ARMOR_TOUGHNESS).get()));
 			}
 			//lst.add(String.format(" - Base speed: %.1fb/s",get_speed(elb.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue())));
 
@@ -196,7 +196,7 @@ public class EntityInfo {
 				lst.add(String.format(" - Off hand: %s", display_item(offhand)));
 			}
 			String armour = "";
-			for (ItemStack armourpiece : elb.m_0529754()) {
+			for (ItemStack armourpiece : elb.getArmorSlots()) {
 				if (!(armourpiece.isEmpty())) {
 					armour += String.format("\n   * %s", display_item(armourpiece));
 				}
@@ -253,7 +253,7 @@ public class EntityInfo {
 						if (e instanceof VillagerEntity) {
 							VillagerEntity ev = (VillagerEntity) e;
 
-							SimpleInventory vinv = ev.m_1510844();
+							SimpleInventory vinv = ev.getVillagerInventory();
 							String inventory_content = "";
 							for (int i = 0; i < vinv.getSize(); ++i) {
 								ItemStack vstack = vinv.getStack(i);

@@ -10,7 +10,7 @@ import net.minecraft.entity.living.mob.GolemEntity;
 import net.minecraft.entity.living.mob.MobEntity;
 import net.minecraft.entity.living.mob.ambient.AmbientEntity;
 import net.minecraft.entity.living.mob.passive.PassiveEntity;
-import net.minecraft.entity.living.mob.passive.Trader;
+import net.minecraft.entity.living.mob.passive.Tradable;
 import net.minecraft.entity.living.mob.passive.VillagerEntity;
 import net.minecraft.entity.living.mob.passive.animal.tamable.TameableEntity;
 import net.minecraft.entity.living.player.PlayerEntity;
@@ -94,7 +94,7 @@ class CarpetEntityType implements EntityType {
 
 	@Override
 	public boolean isNPC() {
-		return entity instanceof VillagerEntity || entity instanceof Trader;
+		return entity instanceof VillagerEntity || entity instanceof Tradable;
 	}
 
 	@Override

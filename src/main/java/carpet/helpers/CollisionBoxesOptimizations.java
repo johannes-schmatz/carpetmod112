@@ -28,7 +28,7 @@ public class CollisionBoxesOptimizations {
 		final int startZ = MathHelper.floor(aabb.minZ) - 1;
 		final int endZ = MathHelper.ceil(aabb.maxZ) + 1;
 		WorldBorder worldborder = world.getWorldBorder();
-		boolean flag = entityIn != null && entityIn.m_0400073();
+		boolean flag = entityIn != null && entityIn.isOutsideWorldBorder();
 		boolean flag1 = entityIn != null && world.isWithinBorder(entityIn);
 		BlockState stateStone = Blocks.STONE.defaultState();
 		BlockPos.PooledMutable posMutable = BlockPos.PooledMutable.origin();
@@ -63,7 +63,7 @@ public class CollisionBoxesOptimizations {
 													return true;
 												}
 											} else if (entityIn != null && flag == flag1) {
-												entityIn.m_6370463(!flag1);
+												entityIn.setOutsideWorldBorder(!flag1);
 											}
 
 											posMutable.set(x, y, z);
@@ -75,7 +75,7 @@ public class CollisionBoxesOptimizations {
 												state = chunk.getBlockState(posMutable);
 											}
 
-											state.getCollisions(world, posMutable.immutable(), aabb, outList, entityIn, false);
+											state.addCollisions(world, posMutable.immutable(), aabb, outList, entityIn, false);
 
 											if (p_191504_3_ && !outList.isEmpty()) {
 												return true;

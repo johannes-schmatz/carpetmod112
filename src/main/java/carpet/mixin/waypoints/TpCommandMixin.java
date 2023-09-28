@@ -6,7 +6,7 @@ import net.minecraft.server.command.exception.CommandException;
 import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.Command;
+import net.minecraft.server.command.AbstractCommand;
 import net.minecraft.server.command.TpCommand;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TpCommand.class)
-public abstract class TpCommandMixin extends Command {
+public abstract class TpCommandMixin extends AbstractCommand {
     @Inject(
             method = "run",
             at = @At("HEAD"),

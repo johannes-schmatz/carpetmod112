@@ -10,7 +10,7 @@ import net.minecraft.block.DispenserBlock;
 import net.minecraft.block.DropperBlock;
 import net.minecraft.block.entity.DispenserBlockEntity;
 import net.minecraft.crafting.CraftingManager;
-import net.minecraft.crafting.recipe.CraftingRecipe;
+import net.minecraft.crafting.recipe.Recipe;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DefaultedList;
@@ -64,7 +64,7 @@ public class DropperBlockMixin extends DispenserBlock {
         for (int i = 0; i < 9; i++) {
             craftingInventory.setStack(i, dispenserTE.getStack(i));
         }
-        CraftingRecipe recipe = CraftingManager.getRecipe(craftingInventory, worldIn);
+        Recipe recipe = CraftingManager.findRecipe(craftingInventory, worldIn);
         if (recipe == null) {
             return false;
         }

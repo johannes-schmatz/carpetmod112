@@ -68,7 +68,7 @@ public class Buildscript extends LegacyFabricProject {
 		String ornithe_maven = "https://maven.ornithemc.net/releases";
 
 		o.loader(quilt_maven, "org.quiltmc", "quilt-loader", "0.19.1");
-		o.yarn(ornithe_maven, "net.ornithemc", "feather", "1.12.2+build.11");
+		o.yarn(ornithe_maven, "net.ornithemc", "feather", "1.12.2+build.19");
 		o.intermediary(ornithe_maven, "net.ornithemc", "calamus-intermediary", "1.12.2");
 	}
 

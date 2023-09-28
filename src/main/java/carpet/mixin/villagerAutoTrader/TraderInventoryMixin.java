@@ -9,14 +9,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.entity.living.mob.passive.Trader;
+import net.minecraft.entity.living.mob.passive.Tradable;
 import net.minecraft.entity.living.mob.passive.VillagerEntity;
 import net.minecraft.world.village.trade.TradeOffer;
 import net.minecraft.world.village.trade.TraderInventory;
 
 @Mixin(TraderInventory.class)
 public class TraderInventoryMixin {
-    @Shadow @Final private Trader trader;
+    @Shadow @Final private Tradable trader;
     @Shadow private TradeOffer offer;
 
     @Inject(

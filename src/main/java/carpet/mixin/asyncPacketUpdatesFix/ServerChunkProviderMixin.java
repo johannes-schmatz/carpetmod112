@@ -35,7 +35,7 @@ public class ServerChunkProviderMixin {
 	private void asyncPacketUpdatesFix(int x, int z, CallbackInfoReturnable<WorldChunk> cir, WorldChunk lv) {
 		// Fix for chunks not updating after async updates CARPET-PUNCHSTER
 		if(CarpetSettings.asyncPacketUpdatesFix) {
-			ChunkHolder entry = world.getChunkMap().getLoadedChunk(x, z);
+			ChunkHolder entry = world.getChunkMap().getChunk(x, z);
 			if (entry != null && entry.getChunk() != null) {
 				((PlayerChunkMapEntryAccessor) entry).setChunk(lv);
 				entry.populate();

@@ -87,7 +87,7 @@ public class LoggerRegistry {
 	}
 
 	private static File getSaveFile(MinecraftServer server) {
-		return server.getWorldStorageSource().getFile(server.getWorldDirName(), "loggerData.json");
+		return server.getWorldStorageSource().getFile(server.getWorldSaveName(), "loggerData.json");
 	}
 
 	public static void readSaveFile(MinecraftServer server) {

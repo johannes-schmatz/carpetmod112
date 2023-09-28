@@ -81,7 +81,7 @@ public class FakeServerPlayerEntity extends ServerPlayerEntity {
 		server.getPlayerManager().sendPacket(new EntityHeadAnglesS2CPacket(instance, (byte) (instance.headYaw * 256 / 360)), instance.dimensionId);
 		server.getPlayerManager().sendPacket(new EntityTeleportS2CPacket(instance), instance.dimensionId);
 		server.getPlayerManager().move(instance);
-		instance.dataTracker.set(f_7376295, (byte) 0x7f); // show all model layers (incl. capes)
+		instance.dataTracker.set(MODEL_PARTS, (byte) 0x7f); // show all model layers (incl. capes)
 		createAndAddFakePlayerToTeamBot(instance);
 		return instance;
 	}
@@ -146,7 +146,7 @@ public class FakeServerPlayerEntity extends ServerPlayerEntity {
 		server.getPlayerManager().sendPacket(new EntityHeadAnglesS2CPacket(instance, (byte) (instance.headYaw * 256 / 360)), instance.dimensionId);
 		server.getPlayerManager().sendPacket(new EntityTeleportS2CPacket(instance), instance.dimensionId);
 		server.getPlayerManager().move(instance);
-		instance.dataTracker.set(f_7376295, (byte) 0x7f); // show all model layers (incl. capes)
+		instance.dataTracker.set(MODEL_PARTS, (byte) 0x7f); // show all model layers (incl. capes)
 		createAndAddFakePlayerToTeamBot(instance);
 		if (infos.length > 1) ((ActionPackOwner) instance).getActionPack().fromString(infos[1]);
 		return instance;
@@ -162,7 +162,7 @@ public class FakeServerPlayerEntity extends ServerPlayerEntity {
 	}
 
 	@Override
-	public void m_3468489() {
+	public void discard() {
 		logout();
 	}
 

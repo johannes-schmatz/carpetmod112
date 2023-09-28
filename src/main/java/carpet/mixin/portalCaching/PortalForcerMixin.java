@@ -114,7 +114,7 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
         BlockPattern.Match pattern = Blocks.NETHER_PORTAL.findPortalShape(this.world, outPos);
         boolean axisNegative = pattern.getForward().clockwiseY().getAxisDirection() == Direction.AxisDirection.NEGATIVE;
         double horizontal = pattern.getForward().getAxis() == Direction.Axis.X ? pattern.getTopLeftFront().getZ() : pattern.getTopLeftFront().getX();
-        double outY = pattern.getTopLeftFront().getY() + 1 - entity.m_3718736().y * pattern.getHeight();
+        double outY = pattern.getTopLeftFront().getY() + 1 - entity.getLastPortalOffset().y * pattern.getHeight();
 
         if (axisNegative) {
             ++horizontal;
@@ -122,7 +122,7 @@ public class PortalForcerMixin implements ExtendedPortalForcer {
 
         //CM portalSuffocationFix
         //removed offset calculation outside of the if statement
-        double offset = (1.0D - entity.m_3718736().x) * pattern.getWidth() * pattern.getForward().clockwiseY().getAxisDirection().getOffset();
+        double offset = (1.0D - entity.getLastPortalOffset().x) * pattern.getWidth() * pattern.getForward().clockwiseY().getAxisDirection().getOffset();
         if (CarpetSettings.portalSuffocationFix) {
             double correctedRadius = 1.02 * entity.width / 2;
             if (correctedRadius >= pattern.getWidth() - correctedRadius) {

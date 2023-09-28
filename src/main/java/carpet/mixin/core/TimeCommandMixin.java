@@ -1,6 +1,6 @@
 package carpet.mixin.core;
 
-import net.minecraft.server.command.Command;
+import net.minecraft.server.command.AbstractCommand;
 import net.minecraft.server.command.source.CommandResults;
 import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.server.MinecraftServer;
@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Mixin(TimeCommand.class)
-public abstract class TimeCommandMixin extends Command {
+public abstract class TimeCommandMixin extends AbstractCommand {
     @Inject(
             method = "run",
             at = @At(

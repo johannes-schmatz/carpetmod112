@@ -61,8 +61,8 @@ public class GhastEntityMixin extends FlyingEntity {
         }
         boolean worked = super.canInteract(player, hand);
         if (!worked) {
-            player.m_7212753(this, true);
-            player.m_5156068().m_3555599(Items.FIRE_CHARGE, 1);
+            player.startRiding(this, true);
+            player.getItemCooldownManager().set(Items.FIRE_CHARGE, 1);
         }
         return false;
     }

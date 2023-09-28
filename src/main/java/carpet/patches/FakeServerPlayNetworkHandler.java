@@ -18,7 +18,7 @@ public class FakeServerPlayNetworkHandler extends ServerPlayNetworkHandler {
 
 	@Override
 	public void sendDisconnect(Text textComponent) {
-		player.m_3468489();
+		player.discard();
 	}
 }
 

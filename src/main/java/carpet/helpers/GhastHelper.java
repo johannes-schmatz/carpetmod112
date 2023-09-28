@@ -59,7 +59,7 @@ public class GhastHelper {
 	 */
 	public static void set_off_fball(GhastEntity ghast, World world, PlayerEntity player) {
 		world.doEvent(null, 1015, new BlockPos(ghast), 0);
-		Vec3d vec3d = player.m_0430803(1.0F);
+		Vec3d vec3d = player.getRotationVec(1.0F);
 		world.doEvent(null, 1016, new BlockPos(ghast), 0);
 		FireballEntity entitylargefireball = new FireballEntity(world, player, 30.0 * vec3d.x, 30.0 * vec3d.y, 30.0 * vec3d.z);
 		entitylargefireball.explosionPower = ghast.m_2353420();
@@ -117,7 +117,7 @@ public class GhastHelper {
 			}
 			Vec3d vec3d = Vec3d.ZERO;
 			if (forward != 0.0f) {
-				vec3d = rider.m_0430803(1.0F);
+				vec3d = rider.getRotationVec(1.0F);
 				if (forward < 0.0f) {
 					vec3d = vec3d.subtractFrom(Vec3d.ZERO);
 				}
@@ -139,7 +139,7 @@ public class GhastHelper {
 				this.parentEntity.getMovementControl()
 						.update(this.parentEntity.x + vec3d.x, this.parentEntity.y + vec3d.y, this.parentEntity.z + vec3d.z, 1.0D);
 			} else {
-				this.parentEntity.getMovementControl().updated = MovementControl.C_4223144.WAIT;
+				this.parentEntity.getMovementControl().operation = MovementControl.Operation.WAIT;
 			}
 		}
 	}

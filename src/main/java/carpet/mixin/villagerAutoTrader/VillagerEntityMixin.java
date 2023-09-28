@@ -46,8 +46,8 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
 
     @Inject(
             method = {
-                    "m_4674327",
-                    "m_7338286"
+                    "registerAgeDependentGoals",
+                    "onGrowUp"
             },
             at = @At(
                     value = "INVOKE",

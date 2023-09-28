@@ -7,7 +7,7 @@ import com.sk89q.worldedit.util.command.CommandMapping;
 
 import carpet.commands.CommandCarpetBase;
 
-import net.minecraft.server.command.ICommand;
+import net.minecraft.server.command.Command;
 import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.server.MinecraftServer;
 
@@ -48,7 +48,7 @@ class CommandWrapper extends CommandCarpetBase {
 	}
 
 	@Override
-	public int compareTo(ICommand o) {
+	public int compareTo(Command o) {
 		return super.compareTo(o);
 	}
 }

@@ -4,12 +4,12 @@ import carpet.CarpetSettings;
 import carpet.utils.extensions.DupingPlayer;
 import carpet.utils.extensions.ExtendedItemStack;
 
-import net.minecraft.crafting.recipe.CraftingRecipe;
+import net.minecraft.crafting.recipe.Recipe;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.inventory.ResultInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.crafting.RecipePlacementHelper;
 import net.minecraft.server.entity.living.player.ServerPlayerEntity;
-import net.minecraft.unmapped.C_1544625;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,21 +17,21 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(C_1544625.class)
+@Mixin(RecipePlacementHelper.class)
 public class ServerRecipeBookHelperMixin {
-    @Shadow private CraftingInventory f_3101989;
-    @Shadow private ResultInventory f_6356755;
+    @Shadow private CraftingInventory craftingInventory;
+    @Shadow private ResultInventory resultInventory;
 
     // Intentional duping bug added back for compatibility with 12.0, community request. CARPET-XCOM
     @Inject(
-            method = "m_1260733",
+            method = "clickRecipe(Lnet/minecraft/server/entity/living/player/ServerPlayerEntity;Lnet/minecraft/crafting/recipe/Recipe;Z)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/unmapped/C_1544625;m_0962979()V",
+                    target = "Lnet/minecraft/server/crafting/RecipePlacementHelper;clickRecipe()V",
                     shift = At.Shift.AFTER
             )
     )
-    private void craftingWindowDupingBugAddedBack(ServerPlayerEntity player, CraftingRecipe p_194327_2_, boolean p_194327_3_, CallbackInfo ci){
+    private void craftingWindowDupingBugAddedBack(ServerPlayerEntity player, Recipe p_194327_2_, boolean p_194327_3_, CallbackInfo ci){
         if (!CarpetSettings.craftingWindowDuplication) return;
         int slot = ((DupingPlayer) player).getDupeItem();
         if(slot == Integer.MIN_VALUE) return;
@@ -40,9 +40,9 @@ public class ServerRecipeBookHelperMixin {
 
         int size = dupeItem.getSize();
 
-        for (int j = 0; j < this.f_3101989.getSize(); ++j)
+        for (int j = 0; j < this.craftingInventory.getSize(); ++j)
         {
-            ItemStack itemstack = this.f_3101989.getStack(j);
+            ItemStack itemstack = this.craftingInventory.getStack(j);
 
             if (!itemstack.isEmpty())
             {
@@ -52,7 +52,7 @@ public class ServerRecipeBookHelperMixin {
         }
 
         ((ExtendedItemStack) (Object) dupeItem).forceStackSize(size);
-        f_6356755.clear();
+        resultInventory.clear();
         ((DupingPlayer) player).clearDupeItem();
     }
 }

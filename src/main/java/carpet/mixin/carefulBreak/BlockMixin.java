@@ -25,7 +25,7 @@ public class BlockMixin {
             method = "dropItems(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/ItemEntity;resetPickupCooldown()V"
+                    target = "Lnet/minecraft/entity/ItemEntity;setDefaultPickUpDelay()V"
             ),
             cancellable = true,
             locals = LocalCapture.CAPTURE_FAILHARD

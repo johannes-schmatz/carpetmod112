@@ -272,7 +272,7 @@ public class EntityPlayerActionPack {
 				closest = e;
 			}
 		}
-		player.m_7212753(closest, true);
+		player.startRiding(closest, true);
 	}
 
 	public void dismount() {
@@ -405,7 +405,7 @@ public class EntityPlayerActionPack {
 
 	private HitResult rayTraceBlocks(double blockReachDistance) {
 		Vec3d eyeVec = player.getEyePosition(1.0F);
-		Vec3d lookVec = player.m_0430803(1.0F);
+		Vec3d lookVec = player.getRotationVec(1.0F);
 		Vec3d pointVec = eyeVec.add(lookVec.x * blockReachDistance, lookVec.y * blockReachDistance, lookVec.z * blockReachDistance);
 		return player.getSourceWorld().rayTrace(eyeVec, pointVec, false, false, true);
 	}
@@ -427,7 +427,7 @@ public class EntityPlayerActionPack {
 			if (world.getBlockState(hitResult.getPos()).getMaterial() == Material.AIR) hitResult = null;
 		}
 
-		Vec3d lookVec = player.m_0430803(1.0F);
+		Vec3d lookVec = player.getRotationVec(1.0F);
 		Vec3d pointVec = eyeVec.add(lookVec.x * reach, lookVec.y * reach, lookVec.z * reach);
 		Vec3d field_26675 = null;
 		List<Entity> list = world.getEntities(player,
@@ -607,7 +607,7 @@ public class EntityPlayerActionPack {
 			BlockState iblockstate = world.getBlockState(pos);
 			Block block = iblockstate.getBlock();
 
-			if ((block instanceof CommandBlock || block instanceof StructureBlock) && !player.m_1692135()) {
+			if ((block instanceof CommandBlock || block instanceof StructureBlock) && !player.isInTeleportationState()) {
 				return false;
 			} else if (iblockstate.getMaterial() == Material.AIR) {
 				return false;
@@ -648,7 +648,7 @@ public class EntityPlayerActionPack {
 			this.isHittingBlock = false;
 			this.curBlockDamageMP = 0.0F;
 			player.getSourceWorld().updateBlockMiningProgress(player.getNetworkId(), this.currentBlock, -1);
-			player.m_4087953();
+			player.resetLastAttackedTicks();
 			this.currentBlock = new BlockPos(-1, -1, -1);
 		}
 	}

@@ -37,7 +37,7 @@ public class SpawnHelperMixin {
     private int mobcapTotal;
 
     @Inject(
-            method = "spawnEntities",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/world/ServerWorld;getSpawnPoint()Lnet/minecraft/util/math/BlockPos;"
@@ -59,7 +59,7 @@ public class SpawnHelperMixin {
     }
 
     @Inject(
-            method = "spawnEntities",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/living/mob/MobCategory;isRare()Z",
@@ -77,7 +77,7 @@ public class SpawnHelperMixin {
     }
 
     @Redirect(
-            method = "spawnEntities",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/living/mob/MobCategory;getCap()I"
@@ -98,7 +98,7 @@ public class SpawnHelperMixin {
     //   k4 = this.localvar$zej000$modifyExistingCount(k4);
     //   if (k4 <= l4) {
     @ModifyVariable(
-            method = "spawnEntities",
+            method = "tick",
             at = @At(
                     value = "LOAD",
                     ordinal = 4
@@ -123,7 +123,7 @@ public class SpawnHelperMixin {
     }
 
     @Redirect(
-            method = "spawnEntities",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/math/MathHelper;ceil(D)I"
@@ -137,7 +137,7 @@ public class SpawnHelperMixin {
     // which acts like a for (int i = 0; i < tries; i++) loop around the spawning code
     // the iterator executes the code below when it is finished
     @Redirect(
-            method = "spawnEntities",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/Set;iterator()Ljava/util/Iterator;",
@@ -158,7 +158,7 @@ public class SpawnHelperMixin {
     }
 
     @Redirect(
-            method = "spawnEntities",
+            method = "tick",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/world/ServerWorld;addEntity(Lnet/minecraft/entity/Entity;)Z"

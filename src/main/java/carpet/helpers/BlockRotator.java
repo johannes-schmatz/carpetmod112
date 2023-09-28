@@ -40,7 +40,7 @@ public class BlockRotator {
 		if (block instanceof GlazedTerracottaBlock) {
 			facing = Direction.byId((int) hitX - 2);
 			if (facing == Direction.UP || facing == Direction.DOWN) {
-				facing = placer.getDirection().getOpposite();
+				facing = placer.getHorizontalFacing().getOpposite();
 			}
 			return block.defaultState().set(HorizontalFacingBlock.FACING, facing);
 		} else if (block instanceof ObserverBlock) {
@@ -50,7 +50,7 @@ public class BlockRotator {
 		} else if (block instanceof RepeaterBlock) {
 			facing = Direction.byId((((int) hitX) % 10) - 2);
 			if (facing == Direction.UP || facing == Direction.DOWN) {
-				facing = placer.getDirection().getOpposite();
+				facing = placer.getHorizontalFacing().getOpposite();
 			}
 			return block.defaultState()
 					.set(HorizontalFacingBlock.FACING, facing)
@@ -65,7 +65,7 @@ public class BlockRotator {
 		} else if (block instanceof ComparatorBlock) {
 			facing = Direction.byId((((int) hitX) % 10) - 2);
 			if ((facing == Direction.UP) || (facing == Direction.DOWN)) {
-				facing = placer.getDirection().getOpposite();
+				facing = placer.getHorizontalFacing().getOpposite();
 			}
 			ComparatorBlock.Mode m = (hitX > 10) ? ComparatorBlock.Mode.SUBTRACT : ComparatorBlock.Mode.COMPARE;
 			return block.defaultState()

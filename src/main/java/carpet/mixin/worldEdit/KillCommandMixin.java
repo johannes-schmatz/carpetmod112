@@ -16,11 +16,11 @@ public class KillCommandMixin {
             method = "run",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;m_3468489()V"
+                    target = "Lnet/minecraft/entity/Entity;discard()V"
             )
     )
     private void recordEntityRemoval(Entity entity, MinecraftServer server, CommandSource sender, String[] args) {
-        entity.m_3468489();
+        entity.discard();
         if (!(entity instanceof ServerPlayerEntity)) {
             ServerPlayerEntity worldEditPlayer = sender instanceof ServerPlayerEntity ? (ServerPlayerEntity) sender : null;
             WorldEditBridge.recordEntityRemoval(worldEditPlayer, sender.getSourceWorld(), entity);

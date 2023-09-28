@@ -147,7 +147,7 @@ public class CarpetServer {
 
 	public void loadBots() {
 		try {
-			File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "bot.conf");
+			File settings_file = server.getWorldStorageSource().getFile(server.getWorldSaveName(), "bot.conf");
 			BufferedReader b = new BufferedReader(new FileReader(settings_file));
 			String line = "";
 			boolean temp = CarpetSettings.removeFakePlayerSkins;
@@ -166,7 +166,7 @@ public class CarpetServer {
 
 	public void writeConf(ArrayList<String> names) {
 		try {
-			File settings_file = server.getWorldStorageSource().getFile(server.getWorldDirName(), "bot.conf");
+			File settings_file = server.getWorldStorageSource().getFile(server.getWorldSaveName(), "bot.conf");
 			if (names != null) {
 				FileWriter fw = new FileWriter(settings_file);
 				for (String name : names) {

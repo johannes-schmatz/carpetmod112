@@ -14,7 +14,7 @@ import net.minecraft.world.HitResult;
 @Mixin(PotionEntity.class)
 public class ThrownPotionEntityMixin {
     @Inject(
-            method = "m_6536215",
+            method = "applySplashPotion",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/living/LivingEntity;addStatusEffect(Lnet/minecraft/entity/living/effect/StatusEffectInstance;)V"
@@ -25,7 +25,7 @@ public class ThrownPotionEntityMixin {
     }
 
     @Inject(
-            method = "m_6536215",
+            method = "applySplashPotion",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/living/LivingEntity;addStatusEffect(Lnet/minecraft/entity/living/effect/StatusEffectInstance;)V",

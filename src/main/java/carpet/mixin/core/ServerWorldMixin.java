@@ -40,7 +40,7 @@ public abstract class ServerWorldMixin extends World {
     )
     private int findChunksForSpawning(NaturalSpawner worldEntitySpawner, ServerWorld worldServerIn, boolean spawnHostileMobs, boolean spawnPeacefulMobs,
             boolean spawnOnSetTickRate) {
-        return TickSpeed.process_entities ? worldEntitySpawner.spawnEntities(worldServerIn, spawnHostileMobs, spawnPeacefulMobs, spawnOnSetTickRate) : 0;
+        return TickSpeed.process_entities ? worldEntitySpawner.tick(worldServerIn, spawnHostileMobs, spawnPeacefulMobs, spawnOnSetTickRate) : 0;
     }
 
     @Redirect(

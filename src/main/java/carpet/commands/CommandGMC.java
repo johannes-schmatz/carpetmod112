@@ -51,9 +51,9 @@ public class CommandGMC extends CommandCarpetBase {
 						entityplayer.x + 8.0D,
 						entityplayer.y + 5.0D,
 						entityplayer.z + 8.0D
-				), mob -> mob.m_9015927(entityplayer));
+				), mob -> mob.isAngryAt(entityplayer));
 				StatusEffectInstance fireresist = entityplayer.getEffectInstance(StatusEffect.get("fire_resistance"));
-				if (!entityplayer.onGround || entityplayer.m_1567581() || (((EntityAccessor) entityplayer).getFireTicks() > 0 &&
+				if (!entityplayer.onGround || entityplayer.isFallFlying() || (((EntityAccessor) entityplayer).getFireTicks() > 0 &&
 						(fireresist == null || fireresist.getDuration() < ((EntityAccessor) entityplayer).getFireTicks())) || entityplayer.getBreath() != 300 ||
 						!hostiles.isEmpty()) {
 					sendSuccess(sender, this, "Restricted use to: on ground, not in water, not on fire, not flying/falling, not near hostile mobs.");

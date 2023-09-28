@@ -11,7 +11,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.command.Command;
+import net.minecraft.server.command.AbstractCommand;
 import net.minecraft.server.command.exception.CommandException;
 import net.minecraft.server.command.source.CommandResults;
 import net.minecraft.server.command.source.CommandSource;
@@ -28,7 +28,7 @@ import net.minecraft.world.gen.structure.StructureBox;
 import carpet.worldedit.WorldEditBridge;
 import org.jetbrains.annotations.Nullable;
 
-public class CommandColon extends Command {
+public class CommandColon extends AbstractCommand {
 
 	public String getName() {
 		return "colon";

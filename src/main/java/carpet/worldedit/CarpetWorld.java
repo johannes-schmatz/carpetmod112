@@ -203,7 +203,7 @@ class CarpetWorld extends AbstractWorld {
 		}
 
 		ItemEntity entity = new ItemEntity(getWorld(), position.getX(), position.getY(), position.getZ(), CarpetWorldEdit.toCarpetItemStack(item));
-		entity.resetPickupCooldown();
+		entity.setDefaultPickUpDelay();
 		getWorld().addEntity(entity);
 	}
 
