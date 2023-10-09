@@ -1,5 +1,6 @@
 package carpet.mixin.fillUpdates;
 
+import carpet.CarpetSettings;
 import carpet.utils.extensions.ExtendedWorldChunk;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.util.math.BlockPos;
@@ -22,7 +23,7 @@ public class WorldMixin {
             )
     )
     private BlockState setBlockStateCarpet(WorldChunk chunk, BlockPos pos, BlockState state, BlockPos posAgain, BlockState newStateAgain, int flags) {
-        return ((ExtendedWorldChunk) chunk).setBlockStateCarpet(pos, state, (flags & 1024) != 0);
+        return ((ExtendedWorldChunk) chunk).setBlockStateCarpet(pos, state, (flags & CarpetSettings.NO_UPDATES) != 0);
     }
 
     @ModifyConstant(
@@ -30,6 +31,6 @@ public class WorldMixin {
             constant = @Constant(intValue = 16)
     )
     private int checkNoUpdateFlag(int flags) {
-        return flags | 1024;
+        return flags | CarpetSettings.NO_UPDATES;
     }
 }

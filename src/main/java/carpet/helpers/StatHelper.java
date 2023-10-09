@@ -80,17 +80,22 @@ public class StatHelper {
 	@Nullable
 	public static String getUsername(MinecraftServer server, UUID uuid) {
 		GameProfileCache profileCache = server.getGameProfileCache();
-		GameProfile profile = profileCache.get(uuid);
-		if (profile != null) return profile.getName();
+		GameProfile cachedProfile = profileCache.get(uuid);
+		if (cachedProfile != null) {
+			return cachedProfile.getName();
+		}
+
 		MinecraftSessionService sessionService = server.getSessionService();
-		profile = sessionService.fillProfileProperties(new GameProfile(uuid, null), false);
-		if (profile.isComplete()) return profile.getName();
-		LOGGER.warn("Could not find name of user " + uuid);
+		GameProfile gameProfile = sessionService.fillProfileProperties(new GameProfile(uuid, null), false);
+		if (gameProfile.isComplete()) {
+			return gameProfile.getName();
+		}
+		LOGGER.warn("Could not find name of user {}", uuid);
 		return null;
 	}
 
 	public static void initialize(Scoreboard scoreboard, MinecraftServer server, ScoreboardObjective objective) {
-		LOGGER.info("Initializing " + objective);
+		LOGGER.info("Initializing {}", objective);
 		ScoreboardCriterion criteria = objective.getCriterion();
 		if (!(criteria instanceof StatCriterion)) return;
 		Stat stat = ((ScoreCriteriaStatAccessor) criteria).getStat();
@@ -102,7 +107,7 @@ public class StatHelper {
 			if (username == null) continue;
 			ScoreboardScore score = scoreboard.getScore(username, objective);
 			score.set(value);
-			LOGGER.info("Initialized score " + objective.getName() + " of " + username + " to " + value);
+			LOGGER.info("Initialized score {} of {} to {}", objective.getName(), username, value);
 		}
 	}
 
@@ -133,6 +138,7 @@ public class StatHelper {
 		return OBJECTS_DROPPED_META_STATS.get((id << 4) | (meta & 0xf));
 	}
 
+	@FunctionalInterface
 	private interface StatStorage {
 		void store(int stateId, Stat stat);
 	}

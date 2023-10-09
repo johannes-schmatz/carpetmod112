@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class EntityAIAutotrader extends Goal {
 
-	private VillagerEntity villager;
+	private final VillagerEntity villager;
 	private BlockPos emeraldBlockPosition = null;
 	private int counter = 0;
 
@@ -48,6 +48,7 @@ public class EntityAIAutotrader extends Goal {
 	/**
 	 * AI update task that in this case only searches for a emerald block to throw items toward it when trading.
 	 */
+	@Override
 	public void tick() {
 		counter++;
 		if (counter % 100 == 0) {
@@ -78,7 +79,7 @@ public class EntityAIAutotrader extends Goal {
 	 *
 	 * @return
 	 */
-	public boolean updateEquipment(ItemEntity itemEntity, TradeOffers tradeOffers) {
+	public void updateEquipment(ItemEntity itemEntity, TradeOffers tradeOffers) {
 		for (TradeOffer offer : tradeOffers) {
 			if (!offer.isDisabled()) {
 				ItemStack groundItems = itemEntity.getItemStack();
@@ -98,11 +99,10 @@ public class EntityAIAutotrader extends Goal {
 						groundItems.decrease(price);
 					}
 
-					return true;
+					return;
 				}
 			}
 		}
-		return true;
 	}
 
 	/**
@@ -143,7 +143,7 @@ public class EntityAIAutotrader extends Goal {
 	 * @param recipe
 	 * @param sortedTradeList
 	 */
-	public void addToFirstList(TradeOffers buyingList, TradeOffer recipe, List<Integer> sortedTradeList) {
+	public static void addToFirstList(TradeOffers buyingList, TradeOffer recipe, List<Integer> sortedTradeList) {
 		int index = -1;
 		for (int i = 0; i < buyingList.size(); i++) {
 			TradeOffer b = buyingList.get(i);
@@ -172,7 +172,7 @@ public class EntityAIAutotrader extends Goal {
 	 * @param buyingListsorted
 	 * @param sortedTradeList
 	 */
-	public void sortRepopulatedSortedList(TradeOffers buyingList, TradeOffers buyingListsorted, List<Integer> sortedTradeList) {
+	public static void sortRepopulatedSortedList(TradeOffers buyingList, TradeOffers buyingListsorted, List<Integer> sortedTradeList) {
 		if (buyingList == null) return;
 
 		TradeOffers copy = new TradeOffers();
@@ -193,14 +193,14 @@ public class EntityAIAutotrader extends Goal {
 	/**
 	 * Reloads the NBT data of the sorted list for the trade order.
 	 *
-	 * @param nbttagcompound
+	 * @param recipes
 	 * @param sortedTradeList
 	 */
-	public void setRecipiesForSaving(NbtCompound nbttagcompound, List<Integer> sortedTradeList) {
-		NbtList nbttaglist = nbttagcompound.getList("Recipes", 10);
+	public static void setRecipiesForSaving(NbtCompound recipes, List<Integer> sortedTradeList) {
+		NbtList recipesList = recipes.getList("Recipes", 10);
 
-		for (int i = 0; i < nbttaglist.size(); ++i) {
-			NbtCompound nbt = nbttaglist.getCompound(i);
+		for (int i = 0; i < recipesList.size(); ++i) {
+			NbtCompound nbt = recipesList.getCompound(i);
 			sortedTradeList.add(nbt.getInt("n"));
 		}
 	}
@@ -212,18 +212,18 @@ public class EntityAIAutotrader extends Goal {
 	 *
 	 * @return
 	 */
-	public NbtCompound getRecipiesForSaving(List<Integer> list) {
-		NbtCompound nbttagcompound = new NbtCompound();
-		NbtList nbttaglist = new NbtList();
+	public static NbtCompound getRecipiesForSaving(List<Integer> list) {
+		NbtCompound recipes = new NbtCompound();
+		NbtList recipesList = new NbtList();
 
 		for (int i = 0; i < list.size(); ++i) {
 			int index = list.get(i);
 			NbtCompound num = new NbtCompound();
 			num.putInt("n", index);
-			nbttaglist.add(num);
+			recipesList.add(num);
 		}
 
-		nbttagcompound.put("Recipes", nbttaglist);
-		return nbttagcompound;
+		recipes.put("Recipes", recipesList);
+		return recipes;
 	}
 }

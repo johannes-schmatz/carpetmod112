@@ -12,7 +12,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 public class CarpetClientServer implements PluginChannelHandler {
-
     public static boolean activateInstantMine = true;
     private final MinecraftServer minecraftServer;
     public static final String CARPET_CHANNEL_NAME = "carpet:client";

@@ -31,18 +31,18 @@ public class CommandTick extends CommandCarpetBase {
 	}
 
 	@Override
-	public void run(final MinecraftServer server, final CommandSource sender, String[] args) throws CommandException {
+	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandTick", sender)) return;
 		if (args.length == 0) {
 			throw new IncorrectUsageException(getUsage(sender));
 		}
 		if ("rate".equalsIgnoreCase(args[0])) {
 			if (args.length == 2) {
-				float tickrate = (float) parseDouble(args[1], 0.01D);
-				TickSpeed.tickrate(tickrate);
+				float tickRate = (float) parseDouble(args[1], 0.01D);
+				TickSpeed.tickRate(tickRate);
 			}
 			CarpetClientMessageHandler.sendTickRateChanges();
-			sendSuccess(sender, this, String.format("tick rate is %.1f", TickSpeed.tickrate));
+			sendSuccess(sender, this, String.format("tick rate is %.1f", TickSpeed.tickRate));
 			return;
 		} else if ("warp".equalsIgnoreCase(args[0])) {
 			long advance = args.length >= 2 ? parseLong(args[1], 0, Long.MAX_VALUE) : TickSpeed.time_bias > 0 ? 0 : Long.MAX_VALUE;

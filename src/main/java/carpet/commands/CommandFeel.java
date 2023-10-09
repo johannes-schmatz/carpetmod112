@@ -32,20 +32,23 @@ import carpet.worldedit.WorldEditBridge;
 import org.jetbrains.annotations.Nullable;
 
 public class CommandFeel extends AbstractCommand {
-
+	@Override
 	public String getName() {
 		return "feel";
 	}
 
+	@Override
 	public int getRequiredPermissionLevel() {
 		return 2;
 	}
 
 
+	@Override
 	public String getUsage(CommandSource sender) {
 		return "commands.fill.usage";
 	}
 
+	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (args.length < 7) {
 			throw new IncorrectUsageException("commands.fill.usage");
@@ -72,7 +75,6 @@ public class CommandFeel extends AbstractCommand {
 					Math.max(startInput.getY(), endInput.getY()),
 					Math.max(startInput.getZ(), endInput.getZ())
 			);
-			int i = (end.getX() - start.getX() + 1) * (end.getY() - start.getY() + 1) * (end.getZ() - start.getZ() + 1);
 
 			if (start.getY() >= 0 && end.getY() < 256) {
 				World world = sender.getSourceWorld();
@@ -198,6 +200,7 @@ public class CommandFeel extends AbstractCommand {
 	}
 
 
+	@Override
 	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
 		if (args.length > 0 && args.length <= 3) {
 			return suggestCoordinate(args, 0, targetPos);
@@ -214,6 +217,6 @@ public class CommandFeel extends AbstractCommand {
 	}
 
 	enum FillType {
-		REPLACE, DESTROY, KEEP, HOLLOW, OUTLINE, NOUPDATE;
+		REPLACE, DESTROY, KEEP, HOLLOW, OUTLINE, NOUPDATE
 	}
 }

@@ -28,7 +28,7 @@ public abstract class ServerWorldMixin extends World implements WorldWithBlockEv
     }
 
     @Inject(
-            method = "init",
+            method = "init()Lnet/minecraft/world/World;",
             at = @At("RETURN")
     )
     private void onInit(CallbackInfoReturnable<World> cir) {

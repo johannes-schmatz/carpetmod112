@@ -1,20 +1,14 @@
 package carpet.commands;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.jetbrains.annotations.Nullable;
-
 import carpet.logging.logHelpers.DebugLogHelper;
 import carpet.utils.extensions.CameraPlayer;
 
-import net.minecraft.server.command.exception.CommandException;
-import net.minecraft.server.command.source.CommandSource;
-import net.minecraft.server.command.exception.IncorrectUsageException;
 import net.minecraft.entity.living.effect.StatusEffects;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.server.entity.living.player.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 
 public class CommandGMS extends CommandCarpetBase {
@@ -49,10 +43,10 @@ public class CommandGMS extends CommandCarpetBase {
 			}
 			entityplayer.fallDistance = 0;
 			DebugLogHelper.invisDebug(() -> "s5: " + entityplayer.world.players.contains(entityplayer));
-			if (gametype != GameMode.SPECTATOR) {
-				entityplayer.setGameMode(gametype);
-			} else {
+			if (gametype == GameMode.SPECTATOR) {
 				entityplayer.setGameMode(GameMode.SURVIVAL);
+			} else {
+				entityplayer.setGameMode(gametype);
 			}
 			if (!((CameraPlayer) entityplayer).hadNightvision()) entityplayer.removeStatusEffect(StatusEffects.NIGHT_VISION);
 			DebugLogHelper.invisDebug(() -> "s6: " + entityplayer.world.players.contains(entityplayer));

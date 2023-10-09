@@ -16,7 +16,7 @@ public class StructureMixin {
             constant = @Constant(intValue = 4)
     )
     private int changeFlags1(int flags) {
-        return flags | (CarpetSettings.fillUpdates ? 0 : 1024);
+        return flags | (CarpetSettings.fillUpdates ? 0 : CarpetSettings.NO_UPDATES);
     }
 
     @ModifyArg(
@@ -29,7 +29,7 @@ public class StructureMixin {
             index = 2
     )
     private int changeFlags2(int flags) {
-        return flags | (CarpetSettings.fillUpdates ? 0 : 1024);
+        return flags | (CarpetSettings.fillUpdates ? 0 : CarpetSettings.NO_UPDATES);
     }
 
     @Redirect(

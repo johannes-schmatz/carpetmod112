@@ -6,7 +6,6 @@ import net.minecraft.world.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
 
 public class LagSpikeHelper {
-
 	private static @Nullable DimensionType pendingLagDimension;
 	private static TickPhase pendingLagPhase;
 	private static Enum<?> pendingLagSubPhase;

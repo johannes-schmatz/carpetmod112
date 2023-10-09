@@ -8,7 +8,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-// Fix the player chunk map truncation in negative coords causing offsets in chunk loading CARPET-XCOM
+/**
+ * Fix the player chunk map truncation in negative coordinates causing offsets in chunk loading.
+ * @author Xcom
+  */
 @Mixin(ChunkMap.class)
 public class PlayerChunkMapMixin {
     @Redirect(

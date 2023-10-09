@@ -349,7 +349,7 @@ public class RedstoneWireTurbo
      * rx is the forward direction along the West/East axis
      * rz is the forward direction along the North/South axis
      */
-    static private int computeHeading(final int rx, final int rz) {
+    private static int computeHeading(final int rx, final int rz) {
         // rx and rz can only take on values -1, 0, and 1, so we can
         // compute a code number that allows us to use a single switch
         // to determine the heading.
@@ -447,7 +447,7 @@ public class RedstoneWireTurbo
             newState = this.calculateCurrentChanges(worldIn, upd1);
         }
  
-        // Only inform neighors if the state has changed
+        // Only inform neighbors if the state has changed
         if (newState != oldState) {
             // Store the new state
             upd1.currentState = newState;
@@ -535,7 +535,7 @@ public class RedstoneWireTurbo
             }
             heading = computeHeading(cx, cz);
              
-            // Propagate that heading to descendent nodes.
+            // Propagate that heading to descendant nodes.
             for (int i=0; i<24; i++) {
                 final UpdateNode nn = neighbor_nodes[i];
                 if (nn != null) {
@@ -647,7 +647,7 @@ public class RedstoneWireTurbo
             // left-to-right based on direction of information flow.
             for (UpdateNode upd : thisLayer) {
                 if (upd.type == UpdateNode.Type.REDSTONE) {
-                    // If the node is is redstone wire, 
+                    // If the node is redstone wire,
                     // schedule updates to neighbors if its value
                     // has changed.  
                     updateNode(worldIn, upd, currentWalkLayer);
@@ -661,7 +661,7 @@ public class RedstoneWireTurbo
                     // World.notifyNeighborsOfStateChange, and 
                     // notifyNeighborsOfStateExcept.  We don't use 
                     // World.notifyNeighborsOfStateChange here, since we are
-                    // already keeping track of all of the neighbor positions
+                    // already keeping track of all the neighbor positions
                     // that need to be updated.  All on its own, handling neighbors 
                     // this way reduces block updates by 1/3 (24 instead of 36).
                     worldIn.neighborChanged(upd.self, wire, upd.parent);
@@ -692,7 +692,7 @@ public class RedstoneWireTurbo
      * (2) Partway through that wave of updates, a neighbor is updated that causes an update to a completely
      *     separate redstone wire.
      * (3) This results in a call to BlockRedstoneWire.neighborChanged for that other wire, in the middle of 
-     *     an already on-going propagation through the first wire.
+     *     an already ongoing propagation through the first wire.
      *
      * The vanilla code, being depth-first, would end up fully processing the second wire before going back
      * to finish processing the first one.  (Although technically, vanilla has no special concept of "being
@@ -707,14 +707,13 @@ public class RedstoneWireTurbo
         if (source != null) {
             // If the cause of the redstone wire update is known, we can use that to help determine
             // direction of information flow.
-            UpdateNode src = nodeCache.get(source);
-            if (src == null) {
-                src = new UpdateNode();
-                src.self = source;
-                src.parent = source;
-                src.visited = true;
-                identifyNode(worldIn, src);
-                nodeCache.put(source, src);
+            if (nodeCache.get(source) == null) {
+                UpdateNode src1 = new UpdateNode();
+                src1.self = source;
+                src1.parent = source;
+                src1.visited = true;
+                identifyNode(worldIn, src1);
+                nodeCache.put(source, src1);
             }
         }
  
@@ -731,7 +730,7 @@ public class RedstoneWireTurbo
         upd.currentState = newState;
  
         // Receiving this block update may mean something in the world changed.
-        // Therefore we clear the cached block info about all neighbors of
+        // Therefore, we clear the cached block info about all neighbors of
         // the position receiving the update and then re-identify what they are.
         if (upd.neighbor_nodes != null) {
             for (int i=0; i<24; i++) {
@@ -775,7 +774,7 @@ public class RedstoneWireTurbo
             return state;
         }
  
-        // Check to see if this update was received during an on-going breadth first search
+        // Check to see if this update was received during an ongoing breadth first search
         if (currentWalkLayer>0 || nodeCache.size()>0) {
             // As breadthFirstWalk progresses, it sends block updates to neighbors.  Some of those
             // neighbors may affect the world so as to cause yet another redstone wire block to receive
@@ -876,18 +875,18 @@ public class RedstoneWireTurbo
                 // Get the max redstone power level of each of the cardinal
                 // neighbors
                 UpdateNode neighbor = upd.neighbor_nodes[n];
-                l = this.getMaxCurrentStrength(neighbor, l);
+                l = getMaxCurrentStrength(neighbor, l);
  
                 // Also check the positions above and below the cardinal
                 // neighbors
                 boolean neighbor_is_cube = neighbor.currentState.isConductor();
                 if (!neighbor_is_cube) {
                     UpdateNode neighbor_down = upd.neighbor_nodes[rs_neighbors_dn[m]];
-                    l = this.getMaxCurrentStrength(neighbor_down, l);
+                    l = getMaxCurrentStrength(neighbor_down, l);
                 } else
                 if (!center_up_is_cube) {
                     UpdateNode neighbor_up = upd.neighbor_nodes[rs_neighbors_up[m]];
-                    l = this.getMaxCurrentStrength(neighbor_up, l);
+                    l = getMaxCurrentStrength(neighbor_up, l);
                 }
             }
         }

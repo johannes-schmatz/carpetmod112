@@ -19,7 +19,6 @@ import net.minecraft.item.DyeColor;
 import net.minecraft.util.math.BlockPos;
 
 public class CommandCounter extends CommandCarpetBase {
-
 	@Override
 	public String getUsage(CommandSource sender) {
 		return "Usage: counter <color> <reset/realtime>";
@@ -29,7 +28,6 @@ public class CommandCounter extends CommandCarpetBase {
 	public String getName() {
 		return "counter";
 	}
-
 
 	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {

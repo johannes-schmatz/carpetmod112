@@ -26,8 +26,8 @@ public class EntityTrackerEntryMixin {
                     shift = At.Shift.AFTER
             )
     )
-    private void leashFix(ServerPlayerEntity playerMP, CallbackInfo ci) {
+    private void leashFix(ServerPlayerEntity player, CallbackInfo ci) {
         if (CarpetSettings.leashFix == CarpetSettings.LeashFix.off || !(currentTrackedEntity instanceof MobEntity)) return;
-        playerMP.networkHandler.sendPacket(new EntityAttachS2CPacket(currentTrackedEntity, ((MobEntity) currentTrackedEntity).getHoldingEntity()));
+        player.networkHandler.sendPacket(new EntityAttachS2CPacket(currentTrackedEntity, ((MobEntity) currentTrackedEntity).getHoldingEntity()));
     }
 }

@@ -15,8 +15,7 @@ import java.util.Random;
 
 public class CommandTNT extends CommandCarpetBase {
 	public static Random rand = new Random();
-	public static BlockPos tntScanPos = null;
-	public static final String USAGE = "/tnt [x y z]/clear";
+	private static final String USAGE = "/tnt [x y z]/clear";
 
 	@Override
 	public String getName() {
@@ -30,9 +29,6 @@ public class CommandTNT extends CommandCarpetBase {
 
 	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
-		int x;
-		int y;
-		int z;
 		if (args[0].equals("setSeed")) {
 			try {
 				rand.setSeed(Long.parseLong(args[1]) ^ 0x5DEECE66DL);
@@ -44,18 +40,15 @@ public class CommandTNT extends CommandCarpetBase {
 			} catch (Exception ignored) {
 			}
 		} else if (args[0].equals("clear")) {
-			tntScanPos = null;
 			sendSuccess(sender, this, "TNT scanning block cleared.");
-		} else if (args.length > 2) {
-			if (args.length > 3) throw new IncorrectUsageException(USAGE);
-			x = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getCoordinate());
-			y = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getY(), args[1], false).getCoordinate());
-			z = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[2], false).getCoordinate());
-			tntScanPos = new BlockPos(x, y, z);
-			OptimizedTNT.setBlastChanceLocation(tntScanPos);
+		} else if (args.length == 3) {
+			int x = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getCoordinate());
+			int y = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getY(), args[1], false).getCoordinate());
+			int z = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[2], false).getCoordinate());
+			OptimizedTNT.setBlastChanceLocation(new BlockPos(x, y, z));
 			sendSuccess(sender, this, String.format("TNT scanning block at: %d %d %d", x, y, z));
 		} else {
-			throw new IncorrectUsageException(USAGE);
+			throw new IncorrectUsageException(getUsage(sender));
 		}
 	}
 

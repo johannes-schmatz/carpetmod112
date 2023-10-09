@@ -54,27 +54,27 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Ca
             // Rule to prevent /c camera mode to spectate other players, disable after exiting spectator mode CARPET-XCOM
             cameraData.disableSpectatePlayers = false;
         }
-        cameraData.gamemodeCamera = false;
+        cameraData.gameModeCamera = false;
     }
 
     @Override
     public void storeCameraData(boolean hasNightvision) {
-        cameraData = new CameraData(asPlayer(), hasNightvision, cameraData.gamemodeCamera);
+        cameraData = new CameraData(asPlayer(), hasNightvision, cameraData.gameModeCamera);
     }
 
     @Override
     public void setGamemodeCamera() {
-        cameraData.gamemodeCamera = true;
+        cameraData.gameModeCamera = true;
     }
 
     @Override
     public boolean getGamemodeCamera() {
-        return cameraData.gamemodeCamera;
+        return cameraData.gameModeCamera;
     }
 
     @Override
     public boolean hadNightvision() {
-        return cameraData.nightvision;
+        return cameraData.nightVision;
     }
 
     @Override

@@ -230,7 +230,7 @@ public abstract class ChunkMixin implements NewLightChunk {
             return this.hasSkyAccess(pos) ? type.defaultValue : 0;
         }
         if (type == LightType.SKY) {
-            return !this.world.dimension.isOverworld() ? 0 : section.getSkyLight(x, y & 15, z);
+            return this.world.dimension.isOverworld() ? section.getSkyLight(x, y & 15, z) : 0;
         }
         return type == LightType.BLOCK ? section.getBlockLight(x, y & 15, z) : type.defaultValue;
     }

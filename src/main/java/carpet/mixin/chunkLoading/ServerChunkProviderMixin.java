@@ -100,11 +100,11 @@ public abstract class ServerChunkProviderMixin {
                     WorldChunk newChunk = this.loadChunk(chunk.chunkX, chunk.chunkZ);
                     if (newChunk != null)
                         newChunk.tick(true);
-                    ChunkHolder pcmEntry = world.getChunkMap().getChunk(chunk.chunkX, chunk.chunkZ);
-                    if (pcmEntry != null) {
-                        ((PlayerChunkMapEntryAccessor) pcmEntry).setChunk(newChunk);
-                        ((PlayerChunkMapEntryAccessor) pcmEntry).setSentToPlayers(false);
-                        pcmEntry.populate();
+                    ChunkHolder holder = world.getChunkMap().getChunk(chunk.chunkX, chunk.chunkZ);
+                    if (holder != null) {
+                        ((PlayerChunkMapEntryAccessor) holder).setChunk(newChunk);
+                        ((PlayerChunkMapEntryAccessor) holder).setSentToPlayers(false);
+                        holder.populate();
                     }
                 }
             }

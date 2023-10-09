@@ -24,14 +24,16 @@ public class ObserverBlockMixin extends FacingBlock {
             method = "update",
             constant = @Constant(intValue = 2)
     )
-    private int adjustDelay(int delay, BlockState state, World world, BlockPos pos) {
+    private int adjustDelay(int delay, BlockState observerState, World world, BlockPos observerWorld) {
         if (CarpetSettings.observerPoweredTerracotta){
-            Direction enumfacing = state.get(FACING);
-            BlockPos blockpos = pos.offset(enumfacing.getOpposite());
-            BlockState iblockstate = world.getBlockState(blockpos);
-            Block block = iblockstate.getBlock();
+            Direction direction = observerState.get(FACING);
+
+            BlockPos pos = observerWorld.offset(direction.getOpposite());
+            BlockState state = world.getBlockState(pos);
+            Block block = state.getBlock();
+
             if (block == Blocks.STAINED_HARDENED_CLAY){
-                delay = block.getDropItemMetadata(iblockstate);
+                delay = block.getDropItemMetadata(state);
                 if (delay == 0) delay = 100;
             }
         }

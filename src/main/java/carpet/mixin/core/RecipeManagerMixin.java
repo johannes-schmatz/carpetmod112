@@ -28,8 +28,7 @@ public abstract class RecipeManagerMixin {
     )
     private static boolean registerCustomRecipes() throws IOException {
         boolean result = load();
-        result = CustomCrafting.registerCustomRecipes(result);
-        return result;
+        return CustomCrafting.registerCustomRecipes(result);
     }
 
     @Redirect(

@@ -1,5 +1,7 @@
 package carpet.logging;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,13 +13,13 @@ import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 public class Logger {
-	// Reference to the minecraft server. Used to look players up by name.
+	/** Reference to the minecraft server. Used to look players up by name. */
 	private final MinecraftServer server;
 
-	// The set of subscribed players.
+	/** The set of subscribed players. */
 	private final Map<String, String> subscribedPlayers;
 
-	// The logName of this log. Gets prepended to logged messages.
+	/** The logName of this log. Gets prepended to logged messages. */
 	private final String logName;
 
 	private final String default_option;
@@ -26,9 +28,9 @@ public class Logger {
 
 	private final LogHandler defaultHandler;
 
-	// The map of player names to the log handler used
+	/** The map of player names to the log handler used */
 	private final Map<String, LogHandler> handlers;
-	// Added boolean to create a sublist of loggers as a debugger list and use this boolean to distingwish the two.
+	/** Added boolean to create a sublist of loggers as a debugger list and use this boolean to distinguish the two. */
 	private boolean debugger = false;
 	private boolean generic = false;
 
@@ -92,7 +94,7 @@ public class Logger {
 	 * Returns true if there are any online subscribers for this log.
 	 */
 	public boolean hasSubscribers() {
-		return subscribedPlayers.size() > 0;
+		return !subscribedPlayers.isEmpty();
 	}
 
 	public Logger asDebugger() {
@@ -180,7 +182,7 @@ public class Logger {
 	public boolean subscribed(ServerPlayerEntity player) {
 		for (Map.Entry<String, String> en : subscribedPlayers.entrySet()) {
 			ServerPlayerEntity p = playerFromName(en.getKey());
-			if (p != null && player.equals(p)) {
+			if (player.equals(p)) {
 				return true;
 			}
 		}
@@ -200,7 +202,7 @@ public class Logger {
 
 	// ----- Event Handlers ----- //
 
-	public String getAcceptedOption(String arg) {
+	public @Nullable String getAcceptedOption(String arg) {
 		if (options != null && Arrays.asList(options).contains(arg)) return arg;
 		return null;
 	}

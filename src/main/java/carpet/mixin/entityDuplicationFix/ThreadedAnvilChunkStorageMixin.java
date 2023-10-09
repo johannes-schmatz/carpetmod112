@@ -30,13 +30,15 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
     @Shadow protected abstract void saveChunk(ChunkPos pos, NbtCompound compound) throws IOException;
 
     private final Map<ChunkPos, NbtCompound> chunksInWrite = new HashMap<>();
-    // Insert new chunk into pending queue, replacing any older one at the same position
+    /** Insert new chunk into pending queue, replacing any older one at the same position */
     private synchronized void queueChunkToRemove(ChunkPos pos, NbtCompound data) {
         chunkSaveQueue.put(pos, data);
     }
 
-    // Fetch another chunk to save to disk and atomically move it into
-    // the queue of chunk(s) being written.
+    /**
+     * Fetch another chunk to save to disk and atomically move it into
+     * the queue of chunk(s) being written.
+     */
     private synchronized Map.Entry<ChunkPos, NbtCompound> fetchChunkToWrite() {
         if (chunkSaveQueue.isEmpty()) return null;
         Iterator<Map.Entry<ChunkPos, NbtCompound>> iter =
@@ -47,13 +49,15 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ChunkStorage {
         return entry;
     }
 
-    // Once the write for a chunk is completely committed to disk,
-    // this method discards it
+    /**
+     * Once the write for a chunk is completely committed to disk,
+     * this method discards it
+     */
     private synchronized void retireChunkToWrite(ChunkPos pos, NbtCompound data) {
         chunksInWrite.remove(pos);
     }
 
-    // Check these data structures for a chunk being reloaded
+    /** Check these data structures for a chunk being reloaded */
     private synchronized NbtCompound reloadChunkFromRemoveQueues(ChunkPos pos) {
         NbtCompound data = chunkSaveQueue.get(pos);
         if (data != null) return data;

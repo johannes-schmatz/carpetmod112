@@ -120,8 +120,8 @@ public class CommandSpawn extends CommandCarpetBase {
 			return;
 
 		} else if ("mocking".equalsIgnoreCase(args[0])) {
-			boolean domock = parseBoolean(args[1]);
-			if (domock) {
+			boolean doMock = parseBoolean(args[1]);
+			if (doMock) {
 				SpawnReporter.initialize_mocking();
 				sendSuccess(sender, this, "Mock spawns started, Spawn statistics reset");
 			} else {
@@ -169,7 +169,6 @@ public class CommandSpawn extends CommandCarpetBase {
 					case "end":
 						msg(sender, SpawnReporter.printMobcapsForDimension(world, 1, "the end"));
 						return;
-
 				}
 			}
 

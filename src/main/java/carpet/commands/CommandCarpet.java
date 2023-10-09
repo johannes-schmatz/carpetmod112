@@ -41,7 +41,7 @@ public class CommandCarpet extends CommandCarpetBase {
 	private static Text displayInteractiveSetting(String ruleName) {
 		String def = CarpetSettings.getDefault(ruleName);
 		String val = CarpetSettings.get(ruleName);
-		List<Object> args = new ArrayList<>();
+		List<String> args = new ArrayList<>();
 		args.add("w - " + ruleName + " ");
 		args.add("!/carpet " + ruleName);
 		args.add("^y " + CarpetSettings.getDescription(ruleName));
@@ -96,7 +96,7 @@ public class CommandCarpet extends CommandCarpetBase {
 						tags.add("w  ");
 					}
 					tags.remove(tags.size() - 1);
-					Messenger.m((PlayerEntity) sender, tags.toArray(new Object[0]));
+					Messenger.m(sender, tags.toArray(new Object[0]));
 				}
 				return;
 			}

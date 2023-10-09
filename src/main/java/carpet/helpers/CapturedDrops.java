@@ -10,7 +10,7 @@ import net.minecraft.entity.ItemEntity;
  */
 public class CapturedDrops {
 	private static boolean isCapturingDrops = false;
-	private static List<ItemEntity> lastCapturedDrops = new ArrayList<>();
+	private static final List<ItemEntity> lastCapturedDrops = new ArrayList<>();
 
 	public static void setCapturingDrops(boolean capturingDrops) {
 		isCapturingDrops = capturingDrops;

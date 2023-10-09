@@ -212,36 +212,34 @@ public abstract class MinecraftServerMixin {
             } else {
                 this.onServerCrashed(null);
             }
-        } catch (Throwable var46) {
-            LOGGER.error("Encountered an unexpected exception", var46);
-            CrashReport c_2975244 = null;
-            if (var46 instanceof CrashException) {
-                c_2975244 = this.populateCrashReport(((CrashException)var46).getReport());
+        } catch (Throwable throwable) {
+            LOGGER.error("Encountered an unexpected exception", throwable);
+            CrashReport crashReport;
+            if (throwable instanceof CrashException) {
+                crashReport = this.populateCrashReport(((CrashException)throwable).getReport());
             } else {
-                c_2975244 = this.populateCrashReport(new CrashReport("Exception in server tick loop", var46));
+                crashReport = this.populateCrashReport(new CrashReport("Exception in server tick loop", throwable));
             }
 
             File file = new File(
                     new File(this.getRunDir(), "crash-reports"), "crash-" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date()) + "-server.txt"
             );
-            if (c_2975244.writeToFile(file)) {
+            if (crashReport.writeToFile(file)) {
                 LOGGER.error("This crash report has been saved to: {}", file.getAbsolutePath());
             } else {
                 LOGGER.error("We were unable to save this crash report to disk.");
             }
 
-            this.onServerCrashed(c_2975244);
+            this.onServerCrashed(crashReport);
         } finally {
             try {
                 this.stopped = true;
                 this.stop();
-            } catch (Throwable var44) {
-                LOGGER.error("Exception stopping the server", var44);
+            } catch (Throwable throwable) {
+                LOGGER.error("Exception stopping the server", throwable);
             } finally {
                 this.exit();
             }
-
         }
-
     }
 }

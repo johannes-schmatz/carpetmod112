@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 public class ServerChunkProviderMixin implements BoundingBoxProvider {
     @Shadow @Final private ChunkGenerator generator;
 
+    @Override
     public NbtList getBoundingBoxes(Entity entity) {
         if (generator instanceof BoundingBoxProvider) return ((BoundingBoxProvider) generator).getBoundingBoxes(entity);
         return new NbtList();

@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.Entities;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.living.mob.MobEntity;
+import net.minecraft.entity.living.mob.passive.animal.SkeletonTrapGoal;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.locale.I18n;
 import org.jetbrains.annotations.Nullable;
@@ -24,8 +25,7 @@ public class AIHelper {
     private static final Map<Class<? extends Goal>, String> TASK_NAME_MAP = new HashMap<>();
 
     static {
-        // TODO: finish mapping these
-        /*
+        // order is the same as the .patch files in the original carpet
         TASK_NAME_MAP.put(MeleeAttackGoal.class, "Melee attack");
         TASK_NAME_MAP.put(ProjectileAttackGoal.class, "Ranged attack");
         TASK_NAME_MAP.put(BowAttackGoal.class, "Ranged bow attack");
@@ -34,55 +34,55 @@ public class AIHelper {
         TASK_NAME_MAP.put(BreakDoorGoal.class, "Breaking door");
         TASK_NAME_MAP.put(CreeperIgniteGoal.class, "Creeper swelling");
         TASK_NAME_MAP.put(TrackIronGolemTargetGoal.class, "Defending village");
-        TASK_NAME_MAP.put(DoorInteractGoal.class, "Interacting with door");
+        TASK_NAME_MAP.put(AbstractDoorInteractGoal.class, "Interacting with door");
         TASK_NAME_MAP.put(EatGrassGoal.class, "Eating grass");
-        TASK_NAME_MAP.put(FindNearestEntityGoal.class, "Looking for nearest other entity");
-        TASK_NAME_MAP.put(FindPlayerGoal.class, "Looking for nearest player");
+        TASK_NAME_MAP.put(MobEntityActiveTargetGoal.class, "Looking for nearest other entity");
+        TASK_NAME_MAP.put(MobEntityPlayerTargetGoal.class, "Looking for nearest player");
         TASK_NAME_MAP.put(EscapeSunlightGoal.class, "Seeking shelter from the sun");
         TASK_NAME_MAP.put(FollowMobGoal.class, "Following other entity");
-        TASK_NAME_MAP.put(class_3219.class, "Following golem");
+        TASK_NAME_MAP.put(FollowGolemGoal.class, "Following golem");
         TASK_NAME_MAP.put(FollowOwnerGoal.class, "Following owner");
-        TASK_NAME_MAP.put(class_2744.class, "Following owner while flying");
+        TASK_NAME_MAP.put(FlyingFollowOwnerGoal.class, "Following owner while flying");
         TASK_NAME_MAP.put(FollowParentGoal.class, "Following parent");
-        TASK_NAME_MAP.put(class_6476.class, "Farming");
+        TASK_NAME_MAP.put(VillagerFarmGoal.class, "Farming");
         TASK_NAME_MAP.put(RevengeGoal.class, "Hurt by another entity");
-        TASK_NAME_MAP.put(class_3375.class, "Land on owners sholder");
+        TASK_NAME_MAP.put(PerchOnShoulderGoal.class, "Land on owners shoulder");
         TASK_NAME_MAP.put(PounceAtTargetGoal.class, "Leaping at target");
-        TASK_NAME_MAP.put(FormCaravanGoal.class, "Llama following caravan");
+        TASK_NAME_MAP.put(LlamaFollowCaravanGoal.class, "Llama following caravan");
         TASK_NAME_MAP.put(LookAtCustomerGoal.class, "Looking at player");
         TASK_NAME_MAP.put(IronGolemLookGoal.class, "Looking at villager");
         TASK_NAME_MAP.put(LookAroundGoal.class, "Idle, looking around");
-        TASK_NAME_MAP.put(BreedGoal.class, "Mating (Animals)");
-        TASK_NAME_MAP.put(class_6485.class, "Moving indoors");
-        TASK_NAME_MAP.put(MoveThroughVillageGoal.class, "Moving through village");
-        TASK_NAME_MAP.put(MoveToTargetPosGoal.class, "Moving to block");
-        TASK_NAME_MAP.put(GoToWalkTargetGoal.class, "Moving towards restriction");
+        TASK_NAME_MAP.put(AnimalBreedGoal.class, "Mating (Animals)");
+        TASK_NAME_MAP.put(StayIndoorsGoal.class, "Moving indoors");
+        TASK_NAME_MAP.put(WanderThroughVillageAtNightGoal.class, "Moving through village");
+        TASK_NAME_MAP.put(GoToBlockGoal.class, "Moving to block");
+        TASK_NAME_MAP.put(WanderThroughVillageGoal.class, "Moving towards restriction");
         TASK_NAME_MAP.put(GoToEntityTargetGoal.class, "Moving towards target");
-        TASK_NAME_MAP.put(FollowTargetGoal.class, "Looking for nearest target");
+        TASK_NAME_MAP.put(ActiveTargetGoal.class, "Looking for nearest target");
         TASK_NAME_MAP.put(AttackGoal.class, "Ocelot attacking");
-        TASK_NAME_MAP.put(CatSitOnBlockGoal.class, "Ocelot sitting");
+        TASK_NAME_MAP.put(OcelotSitOnBlockGoal.class, "Ocelot sitting");
         TASK_NAME_MAP.put(LongDoorInteractGoal.class, "Opening door");
-        TASK_NAME_MAP.put(TrackOwnerAttackerGoal.class, "Owner hurt by target");
-        TASK_NAME_MAP.put(AttackWithOwnerGoal.class, "Owner hurts target");
+        TASK_NAME_MAP.put(AttackWithOwnerGoal.class, "Owner hurt by target");
+        TASK_NAME_MAP.put(OwnerHurtGoal.class, "Owner hurts target");
         TASK_NAME_MAP.put(EscapeDangerGoal.class, "Panicking");
-        TASK_NAME_MAP.put(class_6488.class, "Playing");
-        TASK_NAME_MAP.put(class_6491.class, "Prevented from opening door");
+        TASK_NAME_MAP.put(FormCaravanGoal.class, "Playing");
+        TASK_NAME_MAP.put(RestrictOpenDoorGoal.class, "Prevented from opening door");
         TASK_NAME_MAP.put(AvoidSunlightGoal.class, "Avoiding sun");
         TASK_NAME_MAP.put(HorseBondWithPlayerGoal.class, "Running around like crazy");
         TASK_NAME_MAP.put(SitGoal.class, "Sitting");
-        TASK_NAME_MAP.put(class_2978.class, "Riding");
+        TASK_NAME_MAP.put(SkeletonTrapGoal.class, "Riding");
         TASK_NAME_MAP.put(SwimGoal.class, "Swimming");
         TASK_NAME_MAP.put(TrackTargetGoal.class, "Targeting");
-        TASK_NAME_MAP.put(FollowTargetIfTamedGoal.class, "Targeting untamed animal");
+        TASK_NAME_MAP.put(UntamedActiveTargetGoal.class, "Targeting untamed animal");
         TASK_NAME_MAP.put(TemptGoal.class, "Tempted by player");
         TASK_NAME_MAP.put(StopFollowingCustomerGoal.class, "Trading with player");
-        TASK_NAME_MAP.put(class_6496.class, "Interacting with villager");
-        TASK_NAME_MAP.put(class_6483.class, "Mating (Villagers)");
+        TASK_NAME_MAP.put(TradeWithVillagerGoal.class, "Interacting with villager");
+        TASK_NAME_MAP.put(VillagerMatingGoal.class, "Mating (Villagers)");
         TASK_NAME_MAP.put(WanderAroundGoal.class, "Wandering");
-        TASK_NAME_MAP.put(class_3133.class, "Wandering (Land)");
-        TASK_NAME_MAP.put(class_3379.class, "Wandering (Air)");
+        TASK_NAME_MAP.put(WaterAvoidingWanderAroundGoal.class, "Wandering (Land)");
+        TASK_NAME_MAP.put(FlyingWaterAvoidingWanderAroundGoal.class, "Wandering (Air)");
         TASK_NAME_MAP.put(LookAtEntityGoal.class, "Looking at closest entity");
-        TASK_NAME_MAP.put(ZombieAttackGoal.class, "Zombie attacking");*/
+        TASK_NAME_MAP.put(ZombieAttackGoal.class, "Zombie attacking");
     }
 
     public static Stream<Goal> getCurrentTasks(MobEntity e) {
@@ -124,8 +124,8 @@ public class AIHelper {
         return I18n.translate("entity." + id + ".name");
     }
 
-    public static Optional<String> formatCurrentTasks(MobEntity e, Map<Goal, Supplier<String>> details) {
-        return Optional.of(getCurrentTaskNames(e, details).collect(Collectors.joining(",")));
+    public static String formatCurrentTasks(MobEntity e, Map<Goal, Supplier<String>> details) {
+        return getCurrentTaskNames(e, details).collect(Collectors.joining(","));
     }
 
     @Nullable
@@ -145,9 +145,8 @@ public class AIHelper {
         MobEntity owner = getOwner(tasks);
         if (owner == null) return;
         Map<Goal, Supplier<String>> details = DETAILED_INFO.get(owner);
-        Optional<String> formatted = formatCurrentTasks(owner, details);
-        if (!formatted.isPresent()) return;
-        owner.setCustomName(formatted.get());
+        String formatted = formatCurrentTasks(owner, details);
+        owner.setCustomName(formatted);
     }
     public static void setDetailedInfo(MobEntity owner, Goal task, String info) {
         setDetailedInfo(owner, task, () -> info);

@@ -5,7 +5,7 @@ import carpet.helpers.OptimizedTNT;
 import carpet.mixin.accessors.ExplosionAccessor;
 import net.minecraft.world.explosion.Explosion;
 
-import carpet.mixin_accessors.loggers.LogableExplosion;
+import carpet.utils.extensions.ExtendedExplosion;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,9 +18,9 @@ public class ExplosionMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onExplosionA(CallbackInfo ci) {
+    private void damageEntities(CallbackInfo ci) {
         if (CarpetSettings.optimizedTNT) {
-            OptimizedTNT.doExplosionA((ExplosionAccessor) this);
+            OptimizedTNT.damageEntities((ExplosionAccessor) this);
             ci.cancel();
         }
     }
@@ -30,9 +30,9 @@ public class ExplosionMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onExplosionB(boolean spawnParticles, CallbackInfo ci) {
+    private void damageBlocks(boolean spawnParticles, CallbackInfo ci) {
         if (CarpetSettings.optimizedTNT) {
-            OptimizedTNT.doExplosionB((ExplosionAccessor) this, (LogableExplosion) this, spawnParticles);
+            OptimizedTNT.damageBlocks((ExplosionAccessor) this, (ExtendedExplosion) this, spawnParticles);
             ci.cancel();
         }
     }

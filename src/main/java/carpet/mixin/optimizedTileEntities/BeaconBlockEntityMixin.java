@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(BeaconBlockEntity.class)
 public abstract class BeaconBlockEntityMixin extends InventoryBlockEntity {
-    // If optimized and it canSeeSky, skip segment color calculations server-side by increasing the initial value of the loop counter
     @ModifyConstant(
             method = "updateLevels",
             constant = @Constant(
@@ -19,6 +18,7 @@ public abstract class BeaconBlockEntityMixin extends InventoryBlockEntity {
             )
     )
     private int optimizedTileEntitiesOffset(int origValue) {
+        // If optimized and it canSeeSky, skip segment color calculations server-side by increasing the initial value of the loop counter
         if (!CarpetSettings.optimizedTileEntities || world.isClient) return origValue;
         return world.dimension.isOverworld() && world.hasSkyAccess(pos) ? 256 : origValue;
     }

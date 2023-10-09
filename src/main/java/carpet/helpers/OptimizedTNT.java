@@ -3,8 +3,10 @@ package carpet.helpers;
 import carpet.CarpetSettings;
 import carpet.logging.LoggerRegistry;
 import carpet.mixin.accessors.ExplosionAccessor;
-import carpet.mixin_accessors.loggers.LogableExplosion;
+import carpet.utils.extensions.ExtendedExplosion;
 import carpet.utils.Messenger;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.floats.FloatList;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -36,7 +38,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.RoundingMode;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -56,11 +57,11 @@ public class OptimizedTNT {
 	private static ObjectOpenHashSet<BlockPos> affectedBlockPositionsSet = new ObjectOpenHashSet<>();
 	private static boolean firstRay;
 	private static boolean rayCalcDone;
-	private static ArrayList<Float> chances = new ArrayList<>();
+	private static final FloatList chances = new FloatArrayList();
 	private static BlockPos blastChanceLocation;
 	private static boolean minecartTNT;
 
-	public static void doExplosionA(ExplosionAccessor e) {
+	public static void damageEntities(ExplosionAccessor e) {
 		blastCalc(e);
 
 		if (!CarpetSettings.explosionNoBlockDamage) {
@@ -80,12 +81,12 @@ public class OptimizedTNT {
 		}
 
 		float f3 = e.getPower() * 2.0F;
-		int k1 = MathHelper.floor(e.getX() - (double) f3 - 1.0D);
-		int l1 = MathHelper.floor(e.getX() + (double) f3 + 1.0D);
-		int i2 = MathHelper.floor(e.getY() - (double) f3 - 1.0D);
-		int i1 = MathHelper.floor(e.getY() + (double) f3 + 1.0D);
-		int j2 = MathHelper.floor(e.getZ() - (double) f3 - 1.0D);
-		int j1 = MathHelper.floor(e.getZ() + (double) f3 + 1.0D);
+		int k1 = MathHelper.floor(e.getX() - f3 - 1.0D);
+		int l1 = MathHelper.floor(e.getX() + f3 + 1.0D);
+		int i2 = MathHelper.floor(e.getY() - f3 - 1.0D);
+		int i1 = MathHelper.floor(e.getY() + f3 + 1.0D);
+		int j2 = MathHelper.floor(e.getZ() - f3 - 1.0D);
+		int j1 = MathHelper.floor(e.getZ() + f3 + 1.0D);
 		Vec3d vec3d = new Vec3d(e.getX(), e.getY(), e.getZ());
 
 		if (vec3dmem == null || !vec3dmem.equals(vec3d) || tickmem != e.getWorld().getTime()) {
@@ -168,7 +169,7 @@ public class OptimizedTNT {
 		densityCache.clear();
 	}
 
-	public static void doExplosionB(ExplosionAccessor e, LogableExplosion e1, boolean spawnParticles) {
+	public static void damageBlocks(ExplosionAccessor e, ExtendedExplosion e1, boolean spawnParticles) {
 		World world = e.getWorld();
 		double posX = e.getX();
 		double posY = e.getY();
@@ -199,18 +200,18 @@ public class OptimizedTNT {
 				Block block = iblockstate.getBlock();
 
 				if (spawnParticles) {
-					double d0 = (double) ((float) blockpos.getX() + world.random.nextFloat());
-					double d1 = (double) ((float) blockpos.getY() + world.random.nextFloat());
-					double d2 = (double) ((float) blockpos.getZ() + world.random.nextFloat());
+					double d0 = (blockpos.getX() + world.random.nextFloat());
+					double d1 = (blockpos.getY() + world.random.nextFloat());
+					double d2 = (blockpos.getZ() + world.random.nextFloat());
 					double d3 = d0 - posX;
 					double d4 = d1 - posY;
 					double d5 = d2 - posZ;
-					double d6 = (double) MathHelper.sqrt(d3 * d3 + d4 * d4 + d5 * d5);
+					double d6 = MathHelper.sqrt(d3 * d3 + d4 * d4 + d5 * d5);
 					d3 = d3 / d6;
 					d4 = d4 / d6;
 					d5 = d5 / d6;
-					double d7 = 0.5D / (d6 / (double) e.getPower() + 0.1D);
-					d7 = d7 * (double) (world.random.nextFloat() * world.random.nextFloat() + 0.3F);
+					double d7 = 0.5D / (d6 / e.getPower() + 0.1D);
+					d7 = d7 * (world.random.nextFloat() * world.random.nextFloat() + 0.3F);
 					d3 = d3 * d7;
 					d4 = d4 * d7;
 					d5 = d5 * d7;
@@ -259,9 +260,9 @@ public class OptimizedTNT {
 			for (int k = 0; k < 16; ++k) {
 				for (int l = 0; l < 16; ++l) {
 					if (j == 0 || j == 15 || k == 0 || k == 15 || l == 0 || l == 15) {
-						double d0 = (double) ((float) j / 15.0F * 2.0F - 1.0F);
-						double d1 = (double) ((float) k / 15.0F * 2.0F - 1.0F);
-						double d2 = (double) ((float) l / 15.0F * 2.0F - 1.0F);
+						double d0 = (j / 15.0F * 2.0F - 1.0F);
+						double d1 = (k / 15.0F * 2.0F - 1.0F);
+						double d2 = (l / 15.0F * 2.0F - 1.0F);
 						double d3 = Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
 						d0 = d0 / d3;
 						d1 = d1 / d3;
@@ -304,14 +305,14 @@ public class OptimizedTNT {
 	}
 
 	private static void getAffectedPositionsOnPlaneX(ExplosionAccessor e, int x, int yStart, int yEnd, int zStart, int zEnd) {
-		if (rayCalcDone == false) {
-			final double xRel = (double) x / 15.0D * 2.0D - 1.0D;
+		if (!rayCalcDone) {
+			final double xRel = x / 15.0D * 2.0D - 1.0D;
 
 			for (int z = zStart; z <= zEnd; ++z) {
-				double zRel = (double) z / 15.0D * 2.0D - 1.0D;
+				double zRel = z / 15.0D * 2.0D - 1.0D;
 
 				for (int y = yStart; y <= yEnd; ++y) {
-					double yRel = (double) y / 15.0D * 2.0D - 1.0D;
+					double yRel = y / 15.0D * 2.0D - 1.0D;
 
 					if (checkAffectedPosition(e, xRel, yRel, zRel)) {
 						return;
@@ -322,14 +323,14 @@ public class OptimizedTNT {
 	}
 
 	private static void getAffectedPositionsOnPlaneY(ExplosionAccessor e, int y, int xStart, int xEnd, int zStart, int zEnd) {
-		if (rayCalcDone == false) {
-			final double yRel = (double) y / 15.0D * 2.0D - 1.0D;
+		if (!rayCalcDone) {
+			final double yRel = y / 15.0D * 2.0D - 1.0D;
 
 			for (int z = zStart; z <= zEnd; ++z) {
-				double zRel = (double) z / 15.0D * 2.0D - 1.0D;
+				double zRel = z / 15.0D * 2.0D - 1.0D;
 
 				for (int x = xStart; x <= xEnd; ++x) {
-					double xRel = (double) x / 15.0D * 2.0D - 1.0D;
+					double xRel = x / 15.0D * 2.0D - 1.0D;
 
 					if (checkAffectedPosition(e, xRel, yRel, zRel)) {
 						return;
@@ -340,14 +341,14 @@ public class OptimizedTNT {
 	}
 
 	private static void getAffectedPositionsOnPlaneZ(ExplosionAccessor e, int z, int xStart, int xEnd, int yStart, int yEnd) {
-		if (rayCalcDone == false) {
-			final double zRel = (double) z / 15.0D * 2.0D - 1.0D;
+		if (!rayCalcDone) {
+			final double zRel = z / 15.0D * 2.0D - 1.0D;
 
 			for (int x = xStart; x <= xEnd; ++x) {
-				double xRel = (double) x / 15.0D * 2.0D - 1.0D;
+				double xRel = x / 15.0D * 2.0D - 1.0D;
 
 				for (int y = yStart; y <= yEnd; ++y) {
-					double yRel = (double) y / 15.0D * 2.0D - 1.0D;
+					double yRel = y / 15.0D * 2.0D - 1.0D;
 
 					if (checkAffectedPosition(e, xRel, yRel, zRel)) {
 						return;
@@ -422,9 +423,9 @@ public class OptimizedTNT {
 			for (int k = 0; k < 16; ++k) {
 				for (int l = 0; l < 16; ++l) {
 					if (j == 0 || j == 15 || k == 0 || k == 15 || l == 0 || l == 15) {
-						double d0 = (double) ((float) j / 15.0F * 2.0F - 1.0F);
-						double d1 = (double) ((float) k / 15.0F * 2.0F - 1.0F);
-						double d2 = (double) ((float) l / 15.0F * 2.0F - 1.0F);
+						double d0 = (j / 15.0F * 2.0F - 1.0F);
+						double d1 = (k / 15.0F * 2.0F - 1.0F);
+						double d2 = (l / 15.0F * 2.0F - 1.0F);
 						double d3 = Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
 						d0 = d0 / d3;
 						d1 = d1 / d3;
@@ -514,6 +515,4 @@ public class OptimizedTNT {
 			);
 		}
 	}
-
-
 }

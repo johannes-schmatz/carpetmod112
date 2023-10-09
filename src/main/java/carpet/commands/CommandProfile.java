@@ -38,11 +38,11 @@ public class CommandProfile extends CommandCarpetBase {
 	@Override
 	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos) {
 		if (!CarpetSettings.commandProfile) {
-			return Collections.<String>emptyList();
+			return Collections.emptyList();
 		}
 		if (args.length == 1) {
 			return suggestMatching(args, "entities");
 		}
-		return Collections.<String>emptyList();
+		return Collections.emptyList();
 	}
 }

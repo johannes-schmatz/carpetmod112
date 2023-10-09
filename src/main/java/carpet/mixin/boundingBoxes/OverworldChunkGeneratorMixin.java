@@ -20,6 +20,7 @@ public class OverworldChunkGeneratorMixin implements BoundingBoxProvider {
     @Shadow @Final private OceanMonumentStructure oceanMonument;
     @Shadow @Final private MansionStructure mansion;
 
+    @Override
     public NbtList getBoundingBoxes(Entity entity) {
         NbtList boxes = new NbtList();
         boxes.add(CarpetClientMarkers.getBoundingBoxes(witchHut, entity, CarpetClientMarkers.TEMPLE));

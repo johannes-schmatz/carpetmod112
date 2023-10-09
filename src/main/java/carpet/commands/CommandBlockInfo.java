@@ -16,7 +16,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class CommandBlockInfo extends CommandCarpetBase {
-
 	@Override
 	public String getUsage(CommandSource sender) {
 		return "Usage: blockinfo <X> <Y> <Z>";
@@ -42,11 +41,11 @@ public class CommandBlockInfo extends CommandCarpetBase {
 	@Override
 	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos) {
 		if (!CarpetSettings.commandBlockInfo) {
-			return Collections.<String>emptyList();
+			return Collections.emptyList();
 		}
 		if (args.length > 0 && args.length <= 3) {
 			return suggestCoordinate(args, 0, pos);
 		}
-		return Collections.<String>emptyList();
+		return Collections.emptyList();
 	}
 }

@@ -5,7 +5,7 @@ public class PacketCounter {
 	public static long totalIn = 0;
 
 	public static void reset() {
-		totalIn = 0l;
+		totalIn = 0L;
 		totalOut = 0L;
 	}
 }

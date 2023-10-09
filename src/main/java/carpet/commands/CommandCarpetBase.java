@@ -40,10 +40,10 @@ public abstract class CommandCarpetBase extends AbstractCommand {
 			msg(sender, Messenger.m(null, "w Command is disabled in carpet settings"));
 			if (!(sender instanceof PlayerEntity)) return false;
 			if (CarpetSettings.locked) {
-				Messenger.m((PlayerEntity) sender, "gi Ask your admin to enable it server config");
+				Messenger.m(sender, "gi Ask your admin to enable it server config");
 			} else {
 				Messenger.m(
-						(PlayerEntity) sender,
+						sender,
 						"gi copy&pasta \"",
 						"gib /carpet " + command_name + " true",
 						"/carpet " + command_name + " true",
@@ -55,7 +55,7 @@ public abstract class CommandCarpetBase extends AbstractCommand {
 		return true;
 	}
 
-	protected int parseChunkPosition(String arg, int base) throws InvalidNumberException {
+	protected static int parseChunkPosition(String arg, int base) throws InvalidNumberException {
 		return arg.equals("~") ? base >> 4 : parseInt(arg);
 	}
 }

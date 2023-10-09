@@ -1,6 +1,7 @@
 package carpet.helpers;
 
 import carpet.CarpetSettings;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.*;
 import net.minecraft.block.state.BlockState;
@@ -23,17 +24,7 @@ public class BlockRotator {
 		return flip_block(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
 	}
 
-	public static BlockState placeBlockWithCactus(Block block, World worldIn, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, int meta,
-			LivingEntity placer) {
-		if (block instanceof ObserverBlock) {
-			return block.defaultState()
-					.set(FacingBlock.FACING, Direction.byId((int) hitX - 2))
-					.set(ObserverBlock.POWERED, CarpetSettings.observersDoNonUpdate);
-		}
-		return null;
-	}
-
-	public static BlockState alternativeBlockPlacement(Block block, World worldIn, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, int meta,
+	public static @Nullable BlockState alternativeBlockPlacement(Block block, World worldIn, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, int meta,
 			LivingEntity placer) {
 		//actual alternative block placement code
 		//

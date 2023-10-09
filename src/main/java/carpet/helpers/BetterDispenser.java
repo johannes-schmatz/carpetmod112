@@ -47,7 +47,7 @@ public class BetterDispenser {
 				if (!CarpetSettings.rotatorBlock) {
 					return this.dispenseBehavior.dispense(source, stack);
 				}
-				Direction sourceFace = (Direction) source.getBlockState().get(DispenserBlock.FACING);
+				Direction sourceFace = source.getBlockState().get(DispenserBlock.FACING);
 				World world = source.getWorld();
 				BlockPos blockpos = source.getPos().offset(sourceFace);
 				BlockState iblockstate = world.getBlockState(blockpos);

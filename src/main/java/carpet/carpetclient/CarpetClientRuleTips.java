@@ -4,7 +4,6 @@ import carpet.CarpetSettings;
 import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 
 public class CarpetClientRuleTips {
-
     public static void getInfoRuleTip(ServerPlayerEntity sender, String rule) {
         String value = getRuleTip(rule);
 

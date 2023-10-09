@@ -14,8 +14,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ObserverBlock.class)
 public class ObserverBlockMixin {
-    @Shadow @Final public static BooleanProperty POWERED;
-
     @Redirect(
             method = "getPlacementState",
             at = @At(
@@ -24,6 +22,6 @@ public class ObserverBlockMixin {
             )
     )
     private <T extends Comparable<T>, V extends T> BlockState noUpdateOnPlace(BlockState state, Property<T> property, V value) {
-        return state.set(property, value).set(POWERED, CarpetSettings.observersDoNonUpdate);
+        return state.set(property, value).set(ObserverBlock.POWERED, CarpetSettings.observersDoNonUpdate);
     }
 }

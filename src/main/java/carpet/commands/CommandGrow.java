@@ -37,9 +37,10 @@ public class CommandGrow extends CommandCarpetBase {
 			throw new IncorrectUsageException(this.getUsage(sender));
 		}
 
-		final int amount = args.length > 3 ? parseInt(args[3]) : 1;
-		final BlockPos pos = parseBlockPos(sender, args, 0, false);
-		final World world = sender.getSourceWorld();
+		int amount = args.length > 3 ? parseInt(args[3]) : 1;
+		BlockPos pos = parseBlockPos(sender, args, 0, false);
+		World world = sender.getSourceWorld();
+
         if (world.isChunkLoaded(pos)) {
             for (int i = 0; i < amount; ++i) {
                 DyeItem.fertilize(STACK, world, pos);

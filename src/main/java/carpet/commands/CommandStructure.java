@@ -40,7 +40,6 @@ import net.minecraft.world.gen.structure.template.StructurePlaceSettings;
 import net.minecraft.world.gen.structure.template.StructureTemplate;
 
 public class CommandStructure extends CommandCarpetBase {
-
 	private static final String USAGE = "/structure <load|save|list> ...";
 	private static final String USAGE_LOAD = "/structure load <name> [pos: x y z] [mirror] [rotation] [ignoreEntities] [integrity] [seed]";
 	private static final String USAGE_SAVE = "/structure save <name> <from: x y z> <to: x y z> [ignoreEntities]";

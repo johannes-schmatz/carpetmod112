@@ -29,22 +29,25 @@ import carpet.worldedit.WorldEditBridge;
 import org.jetbrains.annotations.Nullable;
 
 public class CommandColon extends AbstractCommand {
-
+	@Override
 	public String getName() {
 		return "colon";
 	}
 
 
+	@Override
 	public int getRequiredPermissionLevel() {
 		return 2;
 	}
 
 
+	@Override
 	public String getUsage(CommandSource sender) {
 		return "commands.clone.usage";
 	}
 
 
+	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (args.length < 9) {
 			throw new IncorrectUsageException("commands.clone.usage");
@@ -228,9 +231,7 @@ public class CommandColon extends AbstractCommand {
 		}
 	}
 
-	/**
-	 * Get a list of options for when the user presses the TAB key
-	 */
+	@Override
 	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
 		if (args.length > 0 && args.length <= 3) {
 			return suggestCoordinate(args, 0, targetPos);

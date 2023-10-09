@@ -37,7 +37,14 @@ public abstract class FallingBlockEntityMixin extends Entity {
             fallingBlock.move(type, x, y, z);
             return;
         }
-        if (!cacheMatching()) {
+        if (cacheMatching()) {
+            this.setPosition(cache[6], cache[7], cache[8]);
+            velocityX = cache[9];
+            velocityY = cache[10];
+            velocityZ = cache[11];
+            inCobweb = cacheBool[0];
+            onGround = cacheBool[1];
+        } else {
             cache[0] = x;
             cache[1] = y;
             cache[2] = z;
@@ -46,7 +53,9 @@ public abstract class FallingBlockEntityMixin extends Entity {
             cache[5] = velocityZ;
             cacheTime = getServer().getTicks();
             this.move(MoverType.SELF, this.velocityX, this.velocityY, this.velocityZ);
-            if (!removed) {
+            if (removed) {
+                cache[0] = Integer.MAX_VALUE;
+            } else {
                 cache[6] = x;
                 cache[7] = y;
                 cache[8] = z;
@@ -55,16 +64,7 @@ public abstract class FallingBlockEntityMixin extends Entity {
                 cache[11] = velocityZ;
                 cacheBool[0] = inCobweb;
                 cacheBool[1] = onGround;
-            } else {
-                cache[0] = Integer.MAX_VALUE;
             }
-        } else {
-            this.setPosition(cache[6], cache[7], cache[8]);
-            velocityX = cache[9];
-            velocityY = cache[10];
-            velocityZ = cache[11];
-            inCobweb = cacheBool[0];
-            onGround = cacheBool[1];
         }
     }
 }

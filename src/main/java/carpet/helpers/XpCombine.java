@@ -9,39 +9,40 @@ import net.minecraft.world.World;
 /**
  * @author Xcom
  */
-public class XPcombine {
-
+public class XpCombine {
 	public static void searchForOtherXPNearbyCarpet(XpOrbEntity first) {
-		for (XpOrbEntity entityxp : first.world.getEntities(XpOrbEntity.class, first.getShape().grow(0.5D, 0.0D, 0.5D))) {
-			combineItems(first, entityxp);
+		for (XpOrbEntity orb : first.world.getEntities(XpOrbEntity.class, first.getShape().grow(0.5D, 0.0D, 0.5D))) {
+			combineItems(first, orb);
 		}
 	}
 
+	private static boolean canCombine(XpOrbEntity first, XpOrbEntity other) {
+		return first.isAlive()
+				&& other.isAlive()
+				&& first.pickupDelay != 32767
+				&& other.pickupDelay != 32767
+				&& first.orbAge != -32768
+				&& other.orbAge != -32768
+				&& ((ExtendedExperienceOrbEntity) first).getDelayBeforeCombine() == 0
+				&& ((ExtendedExperienceOrbEntity) other).getDelayBeforeCombine() == 0;
+	}
+
 	private static boolean combineItems(XpOrbEntity first, XpOrbEntity other) {
-		if (other == first) {
+		if (first == other) {
 			return false;
-		} else if (other.isAlive() && first.isAlive()) {
-			if (first.pickupDelay != 32767 && other.pickupDelay != 32767) {
-				if (first.orbAge != -32768 && other.orbAge != -32768 && ((ExtendedExperienceOrbEntity) first).getDelayBeforeCombine() == 0 &&
-						((ExtendedExperienceOrbEntity) other).getDelayBeforeCombine() == 0) {
-					int size = getTextureByXP(other.getXp());
-					((ExperienceOrbEntityAccessor) other).setAmount(other.getXp() + first.getXp());
-					other.pickupDelay = Math.max(other.pickupDelay, first.pickupDelay);
-					other.orbAge = Math.min(other.orbAge, first.orbAge);
-					if (getTextureByXP(other.getXp()) != size) {
-						other.remove();
-						first.world.addEntity(newXPOrb(other.world, other.getXp(), other));
-					} else {
-						((ExtendedExperienceOrbEntity) other).setDelayBeforeCombine(50);
-					}
-					first.remove();
-					return true;
-				} else {
-					return false;
-				}
+		} else if (canCombine(first, other)) {
+			int size = getTextureByXP(other.getXp());
+			((ExperienceOrbEntityAccessor) other).setAmount(other.getXp() + first.getXp());
+			other.pickupDelay = Math.max(other.pickupDelay, first.pickupDelay);
+			other.orbAge = Math.min(other.orbAge, first.orbAge);
+			if (getTextureByXP(other.getXp()) == size) {
+				((ExtendedExperienceOrbEntity) other).setDelayBeforeCombine(50);
 			} else {
-				return false;
+				other.remove();
+				first.world.addEntity(newXPOrb(other.world, other.getXp(), other));
 			}
+			first.remove();
+			return true;
 		} else {
 			return false;
 		}

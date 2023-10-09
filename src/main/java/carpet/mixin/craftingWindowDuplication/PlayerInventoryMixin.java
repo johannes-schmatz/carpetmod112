@@ -16,7 +16,7 @@ public class PlayerInventoryMixin {
     @Shadow public PlayerEntity player;
 
     @Inject(
-            method = "putStackInInventory",
+            method = "putStackInInventory(Lnet/minecraft/item/ItemStack;)I",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/player/PlayerInventory;getEmptySlot()I",

@@ -31,36 +31,36 @@ public class ScheduledBlockEventSerializer extends SavedData {
 
 	@Override
 	public void readNbt(NbtCompound nbt) {
-		NbtList nbttaglist = nbt.getList("blockEvents", 10);
-		for (int i = 0; i < nbttaglist.size(); ++i) {
-			NbtCompound nbttagcompound = nbttaglist.getCompound(i);
-			BlockEvent blockeventdata = new BlockEvent(
-					new BlockPos(nbttagcompound.getInt("X"), nbttagcompound.getInt("Y"), nbttagcompound.getInt("Z")),
-					Block.byId(nbttagcompound.getInt("B") & 4095),
-					nbttagcompound.getInt("ID"),
-					nbttagcompound.getInt("P")
+		NbtList blockEvents = nbt.getList("blockEvents", 10);
+		for (int i = 0; i < blockEvents.size(); ++i) {
+			NbtCompound blockEventCompound = blockEvents.getCompound(i);
+			BlockEvent blockEvent = new BlockEvent(
+					new BlockPos(blockEventCompound.getInt("X"), blockEventCompound.getInt("Y"), blockEventCompound.getInt("Z")),
+					Block.byId(blockEventCompound.getInt("B") & 4095),
+					blockEventCompound.getInt("ID"),
+					blockEventCompound.getInt("P")
 			);
-			list.add(blockeventdata);
+			list.add(blockEvent);
 		}
 	}
 
 	@Override
-	public NbtCompound writeNbt(NbtCompound compound) {
-		NbtList nbttaglist = new NbtList();
+	public NbtCompound writeNbt(NbtCompound nbt) {
+		NbtList blockEvents = new NbtList();
 		if (CarpetSettings.blockEventSerializer) {
-			for (BlockEvent blockeventdata : getBlockEventQueue(world)) {
-				NbtCompound nbttagcompound = new NbtCompound();
-				nbttagcompound.putInt("X", blockeventdata.getPos().getX());
-				nbttagcompound.putInt("Y", blockeventdata.getPos().getY());
-				nbttagcompound.putInt("Z", blockeventdata.getPos().getZ());
-				nbttagcompound.putInt("B", Block.getId(blockeventdata.getBlock()) & 4095);
-				nbttagcompound.putInt("ID", blockeventdata.getType());
-				nbttagcompound.putInt("P", blockeventdata.getData());
-				nbttaglist.add(nbttagcompound);
+			for (BlockEvent blockEvent : getBlockEventQueue(world)) {
+				NbtCompound blockEventCompound = new NbtCompound();
+				blockEventCompound.putInt("X", blockEvent.getPos().getX());
+				blockEventCompound.putInt("Y", blockEvent.getPos().getY());
+				blockEventCompound.putInt("Z", blockEvent.getPos().getZ());
+				blockEventCompound.putInt("B", Block.getId(blockEvent.getBlock()) & 4095);
+				blockEventCompound.putInt("ID", blockEvent.getType());
+				blockEventCompound.putInt("P", blockEvent.getData());
+				blockEvents.add(blockEventCompound);
 			}
 		}
-		compound.put("blockEvents", nbttaglist);
-		return compound;
+		nbt.put("blockEvents", blockEvents);
+		return nbt;
 	}
 
 	public void setBlockEvents(ServerWorld world) {

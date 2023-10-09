@@ -27,17 +27,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class CommandLoadedChunks extends CommandCarpetBase {
+	@Override
 	public String getUsage(CommandSource sender) {
 		return "Usage: loadedChunks <size | key | value>";
 	}
 
+	@Override
 	public String getName() {
 		return "loadedChunks";
 	}
 
-	/**
-	 * Callback for when the command is executed
-	 */
+
+	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandLoadedChunks", sender)) return;
 		if (args.length == 0) throw new IncorrectUsageException(getUsage(sender));
@@ -81,7 +82,7 @@ public class CommandLoadedChunks extends CommandCarpetBase {
 
 	}
 
-	private Object getPrivateMethods(World world, String name) {
+	private static Object getPrivateMethods(World world, String name) {
 		ServerChunkCache provider = (ServerChunkCache) world.getChunkSource();
 		Long2ObjectOpenHashMap<WorldChunk> loadedChunks = (Long2ObjectOpenHashMap<WorldChunk>) ((ServerChunkProviderAccessor) provider).getLoadedChunksMap();
 		try {

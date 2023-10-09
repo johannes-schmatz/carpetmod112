@@ -1,7 +1,7 @@
-package carpet.mixin_accessors.loggers;
+package carpet.utils.extensions;
 
 import carpet.logging.logHelpers.ExplosionLogHelper;
 
-public interface LogableExplosion {
+public interface ExtendedExplosion {
 	ExplosionLogHelper getLogHelper();
 }

@@ -43,7 +43,7 @@ public abstract class LogHandler {
 	}
 
 	@FunctionalInterface
-	private static interface LogHandlerCreator {
+	private interface LogHandlerCreator {
 		LogHandler create(String... extraArgs);
 	}
 

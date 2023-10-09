@@ -15,7 +15,7 @@ import java.util.List;
 
 public class RandomTickOptimization {
 
-	private static List<Block> USELESS_RANDOMTICKS = new ArrayList<>();
+	private static final List<Block> USELESS_RANDOMTICKS = new ArrayList<>();
 	public static boolean needsWorldGenFix = false;
 
 	static {

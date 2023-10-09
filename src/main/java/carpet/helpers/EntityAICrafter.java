@@ -45,6 +45,7 @@ import carpet.mixin.accessors.VillagerEntityAccessor;
 import carpet.mixin.accessors.IngredientAccessor;
 import com.google.common.collect.Lists;
 import carpet.utils.Messenger;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.crafting.CraftingManager;
@@ -767,6 +768,7 @@ public class EntityAICrafter extends Goal {
 	/**
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
+	@Override
 	public boolean canStart() {
 		return true;
 	}
@@ -774,6 +776,7 @@ public class EntityAICrafter extends Goal {
 	/**
 	 * Returns whether an in-progress EntityAIBase should continue executing
 	 */
+	@Override
 	public boolean shouldContinue() {
 		return this.currentTask >= 0 && super.shouldContinue();
 	}
@@ -781,12 +784,14 @@ public class EntityAICrafter extends Goal {
 	/**
 	 * Execute a one shot task or start executing a continuous task
 	 */
+	@Override
 	public void start() {
 	}
 
 	/**
 	 * Updates the task
 	 */
+	@Override
 	public void tick() {
 		lookAtCraftingTables();
 
@@ -1104,7 +1109,7 @@ public class EntityAICrafter extends Goal {
 	 *
 	 * @return Returns true if the item stack type is in the list.
 	 */
-	private ItemStack itemIsInMap(Map<ItemStack, Integer> map, ItemStack itemstack) {
+	private @Nullable ItemStack itemIsInMap(Map<ItemStack, Integer> map, ItemStack itemstack) {
 		for (Map.Entry<ItemStack, Integer> entry : map.entrySet()) {
 			if (entry.getKey().getItem() == itemstack.getItem()) return entry.getKey();
 		}
@@ -1152,15 +1157,15 @@ public class EntityAICrafter extends Goal {
 			f2 = (float) (-(MathHelper.fastAtan2(d1, d3) * (180D / Math.PI)));
 		}
 
-		double d0 = villager.y - 0.30000001192092896D + (double) villager.getEyeHeight();
-		ItemEntity entityitem = new ItemEntity(villager.world, villager.x, d0, villager.z, itemstack);
+		double d0 = villager.y - 0.30000001192092896D + villager.getEyeHeight();
+		ItemEntity itemEntity = new ItemEntity(villager.world, villager.x, d0, villager.z, itemstack);
 		float f = 0.3F;
 
-		entityitem.velocityX = -MathHelper.sin(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
-		entityitem.velocityY = MathHelper.cos(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
-		entityitem.velocityZ = -MathHelper.sin(f2 * 0.017453292F) * 0.3F + 0.1F;
-		entityitem.setDefaultPickUpDelay();
-		villager.world.addEntity(entityitem);
+		itemEntity.velocityX = -MathHelper.sin(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
+		itemEntity.velocityY = MathHelper.cos(f1 * 0.017453292F) * MathHelper.cos(f2 * 0.017453292F) * f;
+		itemEntity.velocityZ = -MathHelper.sin(f2 * 0.017453292F) * 0.3F + 0.1F;
+		itemEntity.setDefaultPickUpDelay();
+		villager.world.addEntity(itemEntity);
 	}
 
 	/**

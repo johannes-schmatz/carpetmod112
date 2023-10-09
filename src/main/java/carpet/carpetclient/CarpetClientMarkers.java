@@ -20,7 +20,6 @@ import net.minecraft.world.gen.structure.StructureStart;
 import net.minecraft.world.village.Village;
 
 public class CarpetClientMarkers {
-
     public static final int OUTER_BOUNDING_BOX = 0;
     public static final int END_CITY = 1;
     public static final int FORTRESS = 2;
@@ -31,10 +30,10 @@ public class CarpetClientMarkers {
     public static final int MONUMENT = 7;
     public static final int MANSION = 8;
 
-    private static ArrayList<ServerPlayerEntity> playersVillageMarkers = new ArrayList<>();
+    private static final ArrayList<ServerPlayerEntity> playersVillageMarkers = new ArrayList<>();
 
     public static void updateClientVillageMarkers(World worldObj) {
-        if (playersVillageMarkers.size() == 0) {
+        if (playersVillageMarkers.isEmpty()) {
             return;
         }
         NbtList nbttaglist = new NbtList();

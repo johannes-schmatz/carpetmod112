@@ -5,30 +5,37 @@ import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 
+import java.util.Objects;
+
 public class TeleportHelper {
 
+	/**
+	 * Adapted from spectator teleport code {@link net.minecraft.server.network.handler.ServerPlayNetworkHandler#handlePlayerSpectate}
+	 * @param player
+	 * @param target
+	 */
 	public static void changeDimensions(ServerPlayerEntity player, ServerPlayerEntity target) {
-		// Adapted from spectator teleport code (NetHandlerPlayServer::handleSpectate)
-		double x = target.x;
-		double y = target.y;
-		double z = target.z;
 		MinecraftServer server = player.getServer();
-		assert server != null;
+		Objects.requireNonNull(server);
 
-		ServerWorld worldFrom = (ServerWorld) player.world;
-		ServerWorld worldTo = (ServerWorld) target.world;
+		ServerWorld worldFrom = player.getServerWorld();
+		ServerWorld worldTo = target.getServerWorld();
+
 		int dimension = worldTo.dimension.getType().getId();
 		player.dimensionId = dimension;
 
-		player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(dimension,
-				worldFrom.getDifficulty(),
-				worldFrom.getData().getGeneratorType(),
-				player.interactionManager.getGameMode()
-		));
+		player.networkHandler.sendPacket(
+				new PlayerRespawnS2CPacket(
+						dimension,
+						worldFrom.getDifficulty(),
+						worldFrom.getData().getGeneratorType(),
+					player.interactionManager.getGameMode()
+				)
+		);
 		server.getPlayerManager().updatePermissions(player);
 		worldFrom.removeEntityNow(player);
 		player.removed = false;
-		player.refreshPositionAndAngles(x, y, z, (float) target.yaw, (float) target.pitch);
+		player.refreshPositionAndAngles(target.x, target.y, target.z, target.yaw, target.pitch);
 
 		worldFrom.tickEntity(player, false);
 		worldTo.addEntity(player);
@@ -37,8 +44,9 @@ public class TeleportHelper {
 		player.setWorld(worldTo);
 		server.getPlayerManager().onChangedDimension(player, worldFrom);
 
-		player.teleport(x, y, z);
+		player.teleport(target.x, target.y, target.z);
 		player.interactionManager.setWorld(worldTo);
+
 		server.getPlayerManager().sendWorldInfo(player, worldTo);
 		server.getPlayerManager().sendPlayerInfo(player);
 	}

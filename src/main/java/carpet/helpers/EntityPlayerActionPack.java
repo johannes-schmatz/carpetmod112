@@ -4,6 +4,7 @@ import carpet.CarpetSettings;
 import carpet.mixin.accessors.EntityAccessor;
 import carpet.mixin.accessors.PlayerActionC2SPacketAccessor;
 import com.google.common.base.Predicate;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -24,7 +25,7 @@ import net.minecraft.world.*;
 import java.util.List;
 
 public class EntityPlayerActionPack {
-	private ServerPlayerEntity player;
+	private final ServerPlayerEntity player;
 
 	private boolean doesAttack;
 	private int attackInterval;
@@ -78,27 +79,38 @@ public class EntityPlayerActionPack {
 		strafing = other.strafing;
 	}
 
+	@Override
 	public String toString() {
-		return (doesAttack ? "t" : "f") + ":" + attackInterval + ":" + attackCooldown + ":" + (doesUse ? "t" : "f") + ":" + useInterval + ":" + useCooldown +
-				":" + (doesJump ? "t" : "f") + ":" + jumpInterval + ":" + jumpCooldown + ":" + (sneaking ? "t" : "f") + ":" + (sprinting ? "t" : "f") + ":" +
-				forward + ":" + strafing;
+		return (doesAttack ? "t" : "f")
+				+ ":" + attackInterval
+				+ ":" + attackCooldown
+				+ ":" + (doesUse ? "t" : "f")
+				+ ":" + useInterval
+				+ ":" + useCooldown
+				+ ":" + (doesJump ? "t" : "f")
+				+ ":" + jumpInterval
+				+ ":" + jumpCooldown
+				+ ":" + (sneaking ? "t" : "f")
+				+ ":" + (sprinting ? "t" : "f")
+				+ ":" + forward
+				+ ":" + strafing;
 	}
 
 	public void fromString(String s) {
 		String[] list = s.split(":");
 		doesAttack = list[0].equals("t");
-		attackInterval = Integer.valueOf(list[1]);
-		attackCooldown = Integer.valueOf(list[2]);
+		attackInterval = Integer.parseInt(list[1]);
+		attackCooldown = Integer.parseInt(list[2]);
 		doesUse = list[3].equals("t");
-		useInterval = Integer.valueOf(list[4]);
-		useCooldown = Integer.valueOf(list[5]);
+		useInterval = Integer.parseInt(list[4]);
+		useCooldown = Integer.parseInt(list[5]);
 		doesJump = list[6].equals("t");
-		jumpInterval = Integer.valueOf(list[7]);
-		jumpCooldown = Integer.valueOf(list[8]);
+		jumpInterval = Integer.parseInt(list[7]);
+		jumpCooldown = Integer.parseInt(list[8]);
 		sneaking = list[9].equals("t");
 		sprinting = list[10].equals("t");
-		forward = Float.valueOf(list[11]);
-		strafing = Float.valueOf(list[12]);
+		forward = Float.parseFloat(list[11]);
+		strafing = Float.parseFloat(list[12]);
 	}
 
 	public EntityPlayerActionPack setAttack(int interval, int offset) {
@@ -341,14 +353,14 @@ public class EntityPlayerActionPack {
 	}
 
 	public boolean useOnce() {
-		HitResult raytraceresult = mouseOver();
+		HitResult hitResult = mouseOver();
 		for (InteractionHand enumhand : InteractionHand.values()) {
 			ItemStack itemstack = this.player.getHandStack(enumhand);
-			if (raytraceresult != null) {
-				switch (raytraceresult.type) {
+			if (hitResult != null) {
+				switch (hitResult.type) {
 					case ENTITY:
-						Entity target = raytraceresult.entity;
-						Vec3d vec3d = new Vec3d(raytraceresult.offset.x - target.x, raytraceresult.offset.y - target.y, raytraceresult.offset.z - target.z);
+						Entity target = hitResult.entity;
+						Vec3d vec3d = new Vec3d(hitResult.offset.x - target.x, hitResult.offset.y - target.y, hitResult.offset.z - target.z);
 
 						double d0 = 36.0D;
 
@@ -370,20 +382,20 @@ public class EntityPlayerActionPack {
 					case MISS:
 						break;
 					case BLOCK:
-						BlockPos blockpos = raytraceresult.getPos();
+						BlockPos blockpos = hitResult.getPos();
 
 						if (player.getSourceWorld().getBlockState(blockpos).getMaterial() != Material.AIR) {
 							if (itemstack.isEmpty()) continue;
-							float x = (float) raytraceresult.offset.x;
-							float y = (float) raytraceresult.offset.y;
-							float z = (float) raytraceresult.offset.z;
+							float x = (float) hitResult.offset.x;
+							float y = (float) hitResult.offset.y;
+							float z = (float) hitResult.offset.z;
 
 							InteractionResult res = player.interactionManager.useBlock(player,
 									player.getSourceWorld(),
 									itemstack,
 									enumhand,
 									blockpos,
-									raytraceresult.face,
+									hitResult.face,
 									x,
 									y,
 									z
@@ -410,7 +422,7 @@ public class EntityPlayerActionPack {
 		return player.getSourceWorld().rayTrace(eyeVec, pointVec, false, false, true);
 	}
 
-	public HitResult mouseOver() {
+	public @Nullable HitResult mouseOver() {
 		World world = player.getSourceWorld();
 		if (world == null) return null;
 
@@ -438,27 +450,27 @@ public class EntityPlayerActionPack {
 
 		for (int j = 0; j < list.size(); ++j) {
 			Entity entity1 = list.get(j);
-			Box axisalignedbb = entity1.getShape().expand(entity1.getExtraHitboxSize());
-			HitResult raytraceresult = axisalignedbb.clip(eyeVec, pointVec);
+			Box box = entity1.getShape().expand(entity1.getExtraHitboxSize());
+			HitResult hitResult1 = box.clip(eyeVec, pointVec);
 
-			if (axisalignedbb.contains(eyeVec)) {
+			if (box.contains(eyeVec)) {
 				if (d2 >= 0.0D) {
 					pointedEntity = entity1;
-					field_26675 = raytraceresult == null ? eyeVec : raytraceresult.offset;
+					field_26675 = hitResult1 == null ? eyeVec : hitResult1.offset;
 					d2 = 0.0D;
 				}
-			} else if (raytraceresult != null) {
-				double d3 = eyeVec.distanceTo(raytraceresult.offset);
+			} else if (hitResult1 != null) {
+				double d3 = eyeVec.distanceTo(hitResult1.offset);
 
 				if (d3 < d2 || d2 == 0.0D) {
 					if (entity1.getVehicle() == player.getVehicle()) {
 						if (d2 == 0.0D) {
 							pointedEntity = entity1;
-							field_26675 = raytraceresult.offset;
+							field_26675 = hitResult1.offset;
 						}
 					} else {
 						pointedEntity = entity1;
-						field_26675 = raytraceresult.offset;
+						field_26675 = hitResult1.offset;
 						d2 = d3;
 					}
 				}
@@ -655,10 +667,9 @@ public class EntityPlayerActionPack {
 
 	private static PlayerHandActionC2SPacket createDiggingPacket(PlayerHandActionC2SPacket.Action action, BlockPos pos, Direction facing) {
 		PlayerHandActionC2SPacket p = new PlayerHandActionC2SPacket();
-		PlayerActionC2SPacketAccessor acc = (PlayerActionC2SPacketAccessor) p;
-		acc.setAction(action);
-		acc.setPos(pos);
-		acc.setDirection(facing);
+		((PlayerActionC2SPacketAccessor) p).setAction(action);
+		((PlayerActionC2SPacketAccessor) p).setPos(pos);
+		((PlayerActionC2SPacketAccessor) p).setDirection(facing);
 		return p;
 	}
 }

@@ -69,7 +69,7 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
     )
     private void writeOffersSorted(NbtCompound compound, CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader) {
-            compound.put("OffersSorted", autotraderAI.getRecipiesForSaving(sortedTradeList));
+            compound.put("OffersSorted", EntityAIAutotrader.getRecipiesForSaving(sortedTradeList));
         }
     }
 
@@ -83,7 +83,7 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
     )
     private void readOffersSorted(NbtCompound compound, CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader) {
-            autotraderAI.setRecipiesForSaving(compound.getCompound("OffersSorted"), sortedTradeList);
+            EntityAIAutotrader.setRecipiesForSaving(compound.getCompound("OffersSorted"), sortedTradeList);
         }
     }
 
@@ -93,7 +93,7 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
     )
     private void onSetCustomer(PlayerEntity player, CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader && player != null) {
-            autotraderAI.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
+            EntityAIAutotrader.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
         }
     }
 
@@ -106,9 +106,9 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
         if (CarpetSettings.villagerAutoTrader) {
             if (this.buyingListsorted == null) {
                 buyingListsorted = new TradeOffers();
-                autotraderAI.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
+                EntityAIAutotrader.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
             } else if (buyingListsorted.size() == 0) {
-                autotraderAI.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
+                EntityAIAutotrader.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
             }
             cir.setReturnValue(buyingListsorted);
         }
@@ -134,7 +134,7 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
     )
     private void onPopulateDone(CallbackInfo ci) {
         if (CarpetSettings.villagerAutoTrader) {
-            autotraderAI.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
+            EntityAIAutotrader.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
         }
     }
 
@@ -146,7 +146,7 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
         if (CarpetSettings.villagerAutoTrader && autotraderAI != null) {
             if (buyingListsorted == null) {
                 buyingListsorted = new TradeOffers();
-                autotraderAI.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
+                EntityAIAutotrader.sortRepopulatedSortedList(traderOffers, buyingListsorted, sortedTradeList);
             }
             if (!itemEntity.removed) {
                 autotraderAI.updateEquipment(itemEntity, buyingListsorted);
@@ -157,6 +157,6 @@ public abstract class VillagerEntityMixin extends PassiveEntity implements Autot
     @Override
     public void addToFirstList(TradeOffer merchantrecipe) {
         if(!CarpetSettings.villagerAutoTrader) return;
-        autotraderAI.addToFirstList(traderOffers, merchantrecipe, sortedTradeList);
+        EntityAIAutotrader.addToFirstList(traderOffers, merchantrecipe, sortedTradeList);
     }
 }

@@ -12,13 +12,13 @@ public class CameraData {
 	public float storePitch;
 	public int storedDim;
 	public boolean disableSpectatePlayers;
-	public boolean gamemodeCamera;
-	public boolean nightvision;
+	public boolean gameModeCamera;
+	public boolean nightVision;
 
 	public CameraData() {
 	}
 
-	public CameraData(ServerPlayerEntity player, boolean hasNightvision, boolean gamemodeCamera) {
+	public CameraData(ServerPlayerEntity player, boolean hasNightVision, boolean gameModeCamera) {
 		storeX = player.x;
 		storeY = player.y;
 		storeZ = player.z;
@@ -26,7 +26,7 @@ public class CameraData {
 		storePitch = player.pitch;
 		storedDim = player.dimensionId;
 		disableSpectatePlayers = CarpetSettings.cameraModeDisableSpectatePlayers;
-		nightvision = hasNightvision;
-		this.gamemodeCamera = gamemodeCamera;
+		nightVision = hasNightVision;
+		this.gameModeCamera = gameModeCamera;
 	}
 }

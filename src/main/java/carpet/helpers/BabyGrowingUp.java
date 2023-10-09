@@ -11,7 +11,6 @@ import net.minecraft.util.math.Box;
  * @author Xcom
  */
 public class BabyGrowingUp {
-
 	public static void carpetSetSize(Entity entity, float width, float height) {
 		float f = entity.width;
 		entity.width = width;

@@ -13,9 +13,9 @@ import net.minecraft.util.math.MathHelper;
 
 public class TickSpeed {
 	public static final int PLAYER_GRACE = 2;
-	public static float tickrate = 20.0f;
-	public static long mspt = 50l;
-	public static long warp_temp_mspt = 1l;
+	public static float tickRate = 20.0f;
+	public static long mspt = 50L;
+	public static long warp_temp_mspt = 1L;
 	public static long time_bias = 0;
 	public static long time_warp_start_time = 0;
 	public static long time_warp_scheduled_ticks = 0;
@@ -27,7 +27,7 @@ public class TickSpeed {
 	public static boolean is_paused = false;
 	public static boolean is_superHot = false;
 
-	private static final PubSubInfoProvider<Float> PUBSUB_TICKRATE = new PubSubInfoProvider<>(CarpetMod.PUBSUB, "carpet.tick.rate", 0, () -> tickrate);
+	private static final PubSubInfoProvider<Float> PUBSUB_TICKRATE = new PubSubInfoProvider<>(CarpetMod.PUBSUB, "carpet.tick.rate", 0, () -> tickRate);
 
 	static {
 		new PubSubInfoProvider<>(CarpetMod.PUBSUB, "minecraft.performance.mspt", 20, TickSpeed::getMSPT);
@@ -44,12 +44,12 @@ public class TickSpeed {
 		player_active_timeout = PLAYER_GRACE + ticks;
 	}
 
-	public static void tickrate(float rate) {
-		tickrate = rate;
-		mspt = (long) (1000.0 / tickrate);
+	public static void tickRate(float rate) {
+		tickRate = rate;
+		mspt = (long) (1000.0 / tickRate);
 		if (mspt <= 0) {
-			mspt = 1l;
-			tickrate = 1000.0f;
+			mspt = 1L;
+			tickRate = 1000.0f;
 		}
 		PUBSUB_TICKRATE.publish();
 	}
@@ -82,13 +82,13 @@ public class TickSpeed {
 		}
 		milis_to_complete /= 1000000.0;
 		int tps = (int) (1000.0D * completed_ticks / milis_to_complete);
-		double mspt = (1.0 * milis_to_complete) / completed_ticks;
+		double mspt = milis_to_complete / completed_ticks;
 		time_warp_scheduled_ticks = 0;
 		time_warp_start_time = 0;
 		if (tick_warp_callback != null) {
-			CommandHandler icommandmanager = tick_warp_sender.getServer().getCommandHandler();
+			CommandHandler commandHandler = tick_warp_sender.getServer().getCommandHandler();
 			try {
-				int j = icommandmanager.run(tick_warp_sender, tick_warp_callback);
+				int j = commandHandler.run(tick_warp_sender, tick_warp_callback);
 
 				if (j < 1) {
 					if (time_advancerer != null) {
@@ -110,7 +110,6 @@ public class TickSpeed {
 			Messenger.print_server_message(CarpetServer.getMinecraftServer(), String.format("... Time warp completed with %d tps, or %.2f mspt", tps, mspt));
 		}
 		time_bias = 0;
-
 	}
 
 	public static boolean continueWarp() {

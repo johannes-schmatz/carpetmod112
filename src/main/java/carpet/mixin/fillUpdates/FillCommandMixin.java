@@ -18,7 +18,7 @@ public class FillCommandMixin {
             constant = @Constant(intValue = 2)
     )
     private int changeFlags(int flags) {
-        return flags | (CarpetSettings.fillUpdates ? 0 : 1024);
+        return flags | (CarpetSettings.fillUpdates ? 0 : CarpetSettings.NO_UPDATES);
     }
 
     @Redirect(

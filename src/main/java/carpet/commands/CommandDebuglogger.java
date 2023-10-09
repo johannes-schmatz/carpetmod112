@@ -3,7 +3,6 @@ package carpet.commands;
 import net.minecraft.server.command.source.CommandSource;
 
 public class CommandDebuglogger extends CommandLog {
-
 	@Override
 	public String getName() {
 		return "logdebug";

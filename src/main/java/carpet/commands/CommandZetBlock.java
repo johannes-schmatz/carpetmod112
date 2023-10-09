@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class CommandZetBlock extends SetBlockCommand {
+	@Override
 	public String getName() {
 		return "zetblock";
 	}
@@ -37,6 +38,7 @@ public class CommandZetBlock extends SetBlockCommand {
 	 * - there's a mixin for SetBlockCommand (which should not affect us then!)
 	 * - we don't care about loaded chunks
 	 */
+	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (args.length < 4) {
 			throw new IncorrectUsageException("commands.setblock.usage");
@@ -44,12 +46,12 @@ public class CommandZetBlock extends SetBlockCommand {
 			sender.addResult(CommandResults.Type.AFFECTED_BLOCKS, 0);
 			BlockPos blockpos = parseBlockPos(sender, args, 0, false);
 			Block block = parseBlock(sender, args[3]);
-			BlockState iblockstate;
 
+			BlockState state;
 			if (args.length >= 5) {
-				iblockstate = parseBlockState(block, args[4]);
+				state = parseBlockState(block, args[4]);
 			} else {
-				iblockstate = block.defaultState();
+				state = block.defaultState();
 			}
 
 			World world = sender.getSourceWorld();
@@ -94,28 +96,28 @@ public class CommandZetBlock extends SetBlockCommand {
 				}
 			}
 
-			WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos, iblockstate, worldEditTag);
+			WorldEditBridge.recordBlockEdit(worldEditPlayer, world, blockpos, state, worldEditTag);
 
-			BlockEntity tileentity1 = world.getBlockEntity(blockpos);
+			BlockEntity blockEntity = world.getBlockEntity(blockpos);
 
-			if (tileentity1 instanceof Inventory) {
-				((Inventory) tileentity1).clear();
+			if (blockEntity instanceof Inventory) {
+				((Inventory) blockEntity).clear();
 			}
 
-			if (world.setBlockState(blockpos, iblockstate, 2 | (updates ? 0 : CarpetSettings.NO_UPDATES))) {
+			if (world.setBlockState(blockpos, state, 2 | (updates ? 0 : CarpetSettings.NO_UPDATES))) {
 				if (flag) {
-					BlockEntity tileentity = world.getBlockEntity(blockpos);
+					BlockEntity blockEntity1 = world.getBlockEntity(blockpos);
 
-					if (tileentity != null) {
+					if (blockEntity1 != null) {
 						nbttagcompound.putInt("x", blockpos.getX());
 						nbttagcompound.putInt("y", blockpos.getY());
 						nbttagcompound.putInt("z", blockpos.getZ());
-						tileentity.readNbt(nbttagcompound);
+						blockEntity1.readNbt(nbttagcompound);
 					}
 				}
 
 				if (updates) {
-					world.onBlockChanged(blockpos, iblockstate.getBlock(), false);
+					world.onBlockChanged(blockpos, state.getBlock(), false);
 				}
 				sender.addResult(CommandResults.Type.AFFECTED_BLOCKS, 1);
 				sendSuccess(sender, this, "commands.setblock.success");

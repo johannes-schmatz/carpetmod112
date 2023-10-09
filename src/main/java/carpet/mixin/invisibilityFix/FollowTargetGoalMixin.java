@@ -47,7 +47,7 @@ public abstract class FollowTargetGoalMixin<T extends LivingEntity> extends Trac
 
         return (E) this.entity.world.getClosestPlayer(
                 this.entity.x,
-                this.entity.y + (double) this.entity.getEyeHeight(),
+                this.entity.y + this.entity.getEyeHeight(),
                 this.entity.z,
                 this.getFollowRange(),
                 this.getFollowRange(),

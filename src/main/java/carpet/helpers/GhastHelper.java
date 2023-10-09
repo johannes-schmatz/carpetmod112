@@ -2,6 +2,7 @@ package carpet.helpers;
 
 import carpet.CarpetSettings;
 import carpet.mixin.accessors.LivingEntityAccessor;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.control.MovementControl;
@@ -21,7 +22,7 @@ public class GhastHelper {
 	/*target selector to make sure no player with names is chosen
 	 */
 	public static class GhastEntityAIFindEntityNearestPlayer extends MobEntityPlayerTargetGoal {
-		private MobEntity entity;
+		private final MobEntity entity;
 
 		public GhastEntityAIFindEntityNearestPlayer(MobEntity entityLivingIn) {
 			super(entityLivingIn);
@@ -57,16 +58,16 @@ public class GhastHelper {
 
 	/*sets off fireball on demand
 	 */
-	public static void set_off_fball(GhastEntity ghast, World world, PlayerEntity player) {
+	public static void setOffFireBall(GhastEntity ghast, World world, PlayerEntity player) {
 		world.doEvent(null, 1015, new BlockPos(ghast), 0);
 		Vec3d vec3d = player.getRotationVec(1.0F);
 		world.doEvent(null, 1016, new BlockPos(ghast), 0);
-		FireballEntity entitylargefireball = new FireballEntity(world, player, 30.0 * vec3d.x, 30.0 * vec3d.y, 30.0 * vec3d.z);
-		entitylargefireball.explosionPower = ghast.m_2353420();
-		entitylargefireball.x = ghast.x + vec3d.x * 4.0D;
-		entitylargefireball.y = ghast.y + (double) (ghast.height / 2.0F) + vec3d.y * 4.0D + 0.5D;
-		entitylargefireball.z = ghast.z + vec3d.z * 4.0D;
-		world.addEntity(entitylargefireball);
+		FireballEntity fireball = new FireballEntity(world, player, 30.0 * vec3d.x, 30.0 * vec3d.y, 30.0 * vec3d.z);
+		fireball.explosionPower = ghast.m_2353420();
+		fireball.x = ghast.x + vec3d.x * 4.0D;
+		fireball.y = ghast.y + (ghast.height / 2.0F) + vec3d.y * 4.0D + 0.5D;
+		fireball.z = ghast.z + vec3d.z * 4.0D;
+		world.addEntity(fireball);
 	}
 
 	/*rided ghast follows rider's tear clues
@@ -93,7 +94,6 @@ public class GhastHelper {
 				}
 			}
 			return false;
-			//return (this.parentEntity.isBeingRidden() && this.parentEntity.getPassengers().get(0) instanceof EntityPlayer);
 		}
 
 		public void start() {
@@ -104,11 +104,6 @@ public class GhastHelper {
 			this.rider = null;
 		}
 
-		//private Vec3d look_left(Vec3d v)
-		//{
-		//return new Vec3d(v.zCoord+v.yCoord, -v.zCoord+v.xCoord, -v.yCoord-v.xCoord);
-		//return new Vec3d(v.zCoord+v.yCoord, 0.0, -v.yCoord-v.xCoord);
-		//}
 		public void tick() {
 			float strafe = rider.sidewaysSpeed;
 			float forward = rider.forwardSpeed;
@@ -123,11 +118,6 @@ public class GhastHelper {
 				}
 			}
 			if (strafe != 0.0f) {
-				//Vec3d strafe_vec = rider.getLook(1.0F).rotateYaw((float)Math.PI / 2F).rotatePitch(-rider.rotationPitch).scale(strafe);
-				//Vec3d strafe_vec = this.look_left(rider.getLook(1.0F)).scale(strafe);
-
-				//strafe_vec = new Vec3d(strafe_vec.xCoord, 0.0f, strafe_vec.zCoord);
-				//vec3d = vec3d.add(strafe_vec);
 				float c = MathHelper.cos(rider.yaw * 0.017453292F);
 				float s = MathHelper.sin(rider.yaw * 0.017453292F);
 				vec3d = new Vec3d(vec3d.x + c * strafe, vec3d.y, vec3d.z + s * strafe);
@@ -135,11 +125,11 @@ public class GhastHelper {
 			if (((LivingEntityAccessor) rider).isJumping()) {
 				vec3d = new Vec3d(vec3d.x, vec3d.y + 1.0D, vec3d.z);
 			}
-			if (!(vec3d.equals(Vec3d.ZERO))) {
+			if (vec3d.equals(Vec3d.ZERO)) {
+				this.parentEntity.getMovementControl().operation = MovementControl.Operation.WAIT;
+			} else {
 				this.parentEntity.getMovementControl()
 						.update(this.parentEntity.x + vec3d.x, this.parentEntity.y + vec3d.y, this.parentEntity.z + vec3d.z, 1.0D);
-			} else {
-				this.parentEntity.getMovementControl().operation = MovementControl.Operation.WAIT;
 			}
 		}
 	}
@@ -155,7 +145,7 @@ public class GhastHelper {
 			this.setControls(1);
 		}
 
-		private PlayerEntity findOwner() {
+		private @Nullable PlayerEntity findOwner() {
 			if (!this.parentEntity.hasPassengers() && this.parentEntity.hasCustomName()) {
 				PlayerEntity player = this.parentEntity.getSourceWorld().getServer().getPlayerManager().get(this.parentEntity.getCustomName());
 				if (player != null && player.dimensionId == this.parentEntity.dimensionId && this.parentEntity.getSquaredDistanceTo(player) < 300.0D * 300.0D) {
@@ -182,10 +172,7 @@ public class GhastHelper {
 			}
 
 			owner = findOwner();
-			if (owner == null) {
-				return false;
-			}
-			return true;
+			return owner != null;
 		}
 
 		public void start() {

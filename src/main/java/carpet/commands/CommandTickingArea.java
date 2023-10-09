@@ -19,7 +19,6 @@ import net.minecraft.world.World;
 import net.minecraft.server.command.exception.IncorrectUsageException;
 
 public class CommandTickingArea extends CommandCarpetBase {
-
 	private static final String USAGE = "/tickingarea <add|remove|remove_all|list> ...";
 	private static final String USAGE_ADD = "/tickingarea add [square|circle|spawnChunks] ...";
 	private static final String USAGE_ADD_SQUARE = "/tickingarea add [square] <fromChunk: x z> <toChunk: x z> [name]";
@@ -150,12 +149,14 @@ public class CommandTickingArea extends CommandCarpetBase {
 		sender.sendMessage(new LiteralText("Ticking areas in " + world.dimension.getType().getKey() + ":"));
 
 		for (TickingArea area : TickingArea.getTickingAreas(world)) {
-			String msg = "- ";
-			if (area.getName() != null) msg += area.getName() + ": ";
+			StringBuilder builder = new StringBuilder("- ");
+			if (area.getName() != null) {
+				builder.append(area.getName()).append(": ");
+			}
 
-			msg += area.format();
+			builder.append(area.format());
 
-			sender.sendMessage(new LiteralText(msg));
+			sender.sendMessage(new LiteralText(builder.toString()));
 		}
 	}
 

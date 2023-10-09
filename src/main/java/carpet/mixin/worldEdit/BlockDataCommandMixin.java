@@ -27,8 +27,8 @@ public class BlockDataCommandMixin {
             locals = LocalCapture.CAPTURE_FAILHARD
     )
     private void recordBlockEdit(MinecraftServer server, CommandSource sender, String[] args, CallbackInfo ci,
-                                 BlockPos pos, World world, BlockState state, BlockEntity te, NbtCompound tag) {
+                                 BlockPos pos, World world, BlockState state, BlockEntity blockEntity, NbtCompound nbt) {
         ServerPlayerEntity worldEditPlayer = sender instanceof ServerPlayerEntity ? (ServerPlayerEntity) sender : null;
-        WorldEditBridge.recordBlockEdit(worldEditPlayer, world, pos, state, tag);
+        WorldEditBridge.recordBlockEdit(worldEditPlayer, world, pos, state, nbt);
     }
 }

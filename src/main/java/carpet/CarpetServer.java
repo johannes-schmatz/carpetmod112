@@ -52,8 +52,8 @@ public class CarpetServer {
 		wecuiChannel = new ToggleableChannelHandler(pluginChannels, WorldEditBridge.createChannelHandler(), false);
 	}
 
-	public static CarpetServer init(MinecraftServer server) {
-		return instance = new CarpetServer(server);
+	public static void init(MinecraftServer server) {
+		instance = new CarpetServer(server);
 	}
 
 	public static CarpetServer getInstance() {

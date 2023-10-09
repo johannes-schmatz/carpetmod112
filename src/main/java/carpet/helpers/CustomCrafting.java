@@ -31,8 +31,8 @@ import net.minecraft.util.JsonUtils;
 public class CustomCrafting {
 	private static final Logger LOGGER = LogManager.getLogger();
 	private static final String CARPET_DIRECTORY_RECIPES = "carpet/recipes";
-	private static ArrayList<Pair<String, JsonObject>> recipeList = new ArrayList<>();
-	private static HashSet<Recipe> recipes = new HashSet<Recipe>();
+	private static final ArrayList<Pair<String, JsonObject>> recipeList = new ArrayList<>();
+	private static final HashSet<Recipe> recipes = new HashSet<>();
 
 	public static boolean registerCustomRecipes(boolean result) throws IOException {
 		if (!result) {
@@ -40,12 +40,11 @@ public class CustomCrafting {
 		}
 
 		Gson gson = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
-		File carpetDirectory = new File(CARPET_DIRECTORY_RECIPES);
-		if (!carpetDirectory.exists()) {
-			carpetDirectory.mkdirs();
+		Path path = Paths.get(CARPET_DIRECTORY_RECIPES);
+		if (!Files.isDirectory(path)) {
+			Files.createDirectories(path);
 		}
 
-		Path path = Paths.get(CARPET_DIRECTORY_RECIPES);
 		Iterator<Path> iterator = Files.walk(path).iterator();
 
 		while (iterator.hasNext()) {

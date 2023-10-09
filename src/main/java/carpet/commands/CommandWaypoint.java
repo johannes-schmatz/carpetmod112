@@ -48,7 +48,7 @@ public class CommandWaypoint extends CommandCarpetBase {
 		if (!command_enabled("commandWaypoint", sender)) return;
 
 		if (args.length < 1) {
-			throw new IncorrectUsageException(USAGE);
+			throw new IncorrectUsageException(getUsage(sender));
 		}
 
 		switch (args[0]) {
@@ -62,11 +62,11 @@ public class CommandWaypoint extends CommandCarpetBase {
 				listWaypoints(sender, args);
 				break;
 			default:
-				throw new IncorrectUsageException(USAGE);
+				throw new IncorrectUsageException(getUsage(sender));
 		}
 	}
 
-	public static ServerWorld getDimension(CommandSource sender, String[] args, int offset) {
+	public static @Nullable ServerWorld getDimension(CommandSource sender, String[] args, int offset) {
 		if (args.length <= offset) return (ServerWorld) sender.getSourceWorld();
 		String id = args[offset];
 		MinecraftServer server = sender.getServer();
@@ -173,7 +173,6 @@ public class CommandWaypoint extends CommandCarpetBase {
 						if (args[1].equalsIgnoreCase(wp.creator)) waypoints.add(wp);
 					}
 				}
-
 			}
 		} else {
 			printDimension = false;

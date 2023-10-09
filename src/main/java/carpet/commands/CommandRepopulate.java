@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class CommandRepopulate extends CommandCarpetBase {
-
     @Override
 	public String getName() {
 		return "repopulate";
@@ -60,5 +59,4 @@ public class CommandRepopulate extends CommandCarpetBase {
 			return Collections.emptyList();
 		}
 	}
-
 }

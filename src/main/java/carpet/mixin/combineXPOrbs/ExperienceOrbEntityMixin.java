@@ -1,7 +1,7 @@
 package carpet.mixin.combineXPOrbs;
 
 import carpet.CarpetSettings;
-import carpet.helpers.XPcombine;
+import carpet.helpers.XpCombine;
 import net.minecraft.entity.XpOrbEntity;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,7 +26,7 @@ public class ExperienceOrbEntityMixin {
             if (this.delayBeforeCombine > 0) {
                 --this.delayBeforeCombine;
             }
-            XPcombine.searchForOtherXPNearbyCarpet((XpOrbEntity) (Object) this);
+            XpCombine.searchForOtherXPNearbyCarpet((XpOrbEntity) (Object) this);
         }
     }
 }

@@ -2,7 +2,7 @@ package carpet.mixin.loggers;
 
 import carpet.logging.LoggerRegistry;
 import carpet.logging.logHelpers.ExplosionLogHelper;
-import carpet.mixin_accessors.loggers.LogableExplosion;
+import carpet.utils.extensions.ExtendedExplosion;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,7 +15,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 
 @Mixin(Explosion.class)
-public class ExplosionMixin implements LogableExplosion {
+public class ExplosionMixin implements ExtendedExplosion {
 	public ExplosionLogHelper logHelper = null;
 	@Shadow @Final private World world;
 

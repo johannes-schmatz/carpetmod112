@@ -26,7 +26,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 public class CommandLog extends CommandCarpetBase {
-
     @Override
 	public String getName() {
 		return "log";

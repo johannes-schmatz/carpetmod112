@@ -20,11 +20,12 @@ import java.util.List;
 
 
 public class CommandLazyChunkBehavior extends CommandCarpetBase {
-
+	@Override
 	public String getUsage(CommandSource sender) {
 		return "Usage: lazychunkbehavior <add, removeAll, remove, list> <X> <Z>";
 	}
 
+	@Override
 	public String getName() {
 		return "lazychunkbehavior";
 	}
@@ -80,6 +81,7 @@ public class CommandLazyChunkBehavior extends CommandCarpetBase {
 	}
 
 
+	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("CommandLazyChunkBehavior", sender)) return;
 
@@ -102,6 +104,7 @@ public class CommandLazyChunkBehavior extends CommandCarpetBase {
 		}
 	}
 
+	@Override
 	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
 
 		int chunkX = sender.getSourceBlockPos().getX() >> 4;

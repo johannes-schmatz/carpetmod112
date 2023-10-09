@@ -11,7 +11,6 @@ import net.minecraft.scoreboard.ScoreboardScore;
 import net.minecraft.server.MinecraftServer;
 
 public class ScoreboardDelta {
-
 	public static void update() {
 		MinecraftServer server = CarpetServer.getMinecraftServer();
 		for (int i = 0; i < 2; i++) {

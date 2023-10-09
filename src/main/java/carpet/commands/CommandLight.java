@@ -1,6 +1,5 @@
 package carpet.commands;
 
-import net.minecraft.server.command.Command;
 import net.minecraft.server.command.exception.IncorrectUsageException;
 import net.minecraft.server.command.source.CommandSource;
 import net.minecraft.server.command.exception.CommandException;
@@ -84,7 +83,7 @@ public class CommandLight extends CommandCarpetBase {
 		}
 	}
 
-	private void fillLightInArea(World world, LightType type, int x1, int y1, int z1, int x2, int y2, int z2, int lightLevel) {
+	private static void fillLightInArea(World world, LightType type, int x1, int y1, int z1, int x2, int y2, int z2, int lightLevel) {
 		for (int z = z1; z <= z2; z++) {
 			for (int y = y1; y <= y2; y++) {
 				for (int x = x1; x <= x2; x++) {

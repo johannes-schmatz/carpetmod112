@@ -17,8 +17,8 @@ public class EndChunkGeneratorMixin implements BoundingBoxProvider {
 
     @Override
     public NbtList getBoundingBoxes(Entity entity) {
-        NbtList nbttaglist = new NbtList();
-        nbttaglist.add(CarpetClientMarkers.getBoundingBoxes(endCity, entity, CarpetClientMarkers.END_CITY));
-        return nbttaglist;
+        NbtList boxes = new NbtList();
+        boxes.add(CarpetClientMarkers.getBoundingBoxes(endCity, entity, CarpetClientMarkers.END_CITY));
+        return boxes;
     }
 }

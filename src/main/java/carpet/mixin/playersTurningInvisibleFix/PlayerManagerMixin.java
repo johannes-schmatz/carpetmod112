@@ -24,7 +24,9 @@ public class PlayerManagerMixin {
     )
     private void removeFromChunk(ServerPlayerEntity player, int dimension, boolean conqueredEnd, CallbackInfoReturnable<ServerPlayerEntity> cir) {
         if (CarpetSettings.playersTurningInvisibleFix) {
-            player.getServerWorld().getChunkAt(player.chunkX, player.chunkZ).removeEntity(player, player.chunkY);
+            player.getServerWorld()
+                    .getChunkAt(player.chunkX, player.chunkZ)
+                    .removeEntity(player, player.chunkY);
         }
     }
 
@@ -55,7 +57,8 @@ public class PlayerManagerMixin {
         // Players pulling disappear act when using portals. Fix for MC-92916 CARPET-XCOM
         if (CarpetSettings.playersTurningInvisibleFix && entityIn.isLoaded && ((WorldAccessor) oldWorldIn).invokeIsChunkLoaded(entityIn.chunkX, entityIn.chunkZ, true)) {
             if (entityIn.isLoaded && ((WorldAccessor) oldWorldIn).invokeIsChunkLoaded(entityIn.chunkX, entityIn.chunkZ, true)) {
-                oldWorldIn.getChunkAt(entityIn.chunkX, entityIn.chunkZ).removeEntity(entityIn, entityIn.chunkY);
+                oldWorldIn.getChunkAt(entityIn.chunkX, entityIn.chunkZ)
+                        .removeEntity(entityIn, entityIn.chunkY);
             }
         }
     }

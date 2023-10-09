@@ -11,14 +11,13 @@ import net.minecraft.server.entity.living.player.ServerPlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 
 public class CarpetClientRuleChanger {
-
     // Minor rule changing packet names
     private static final int CHANGE_RULE = 0;
     private static final int CHANGE_TEXT_RULE = 1;
     private static final int RESET_RULE = 2;
     private static final int REQUEST_RULE_TIP = 3;
 
-    private static Map<String, Integer> valueIndex = new HashMap<>();
+    private static final Map<String, Integer> valueIndex = new HashMap<>();
 
     static void ruleChanger(ServerPlayerEntity sender, PacketByteBuf data) {
         int type = data.readInt();

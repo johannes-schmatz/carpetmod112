@@ -1,26 +1,22 @@
 package carpet.commands;
 
-import java.util.Collections;
-import java.util.List;
-
-import carpet.logging.LoggerRegistry;
-import org.jetbrains.annotations.Nullable;
-
 import carpet.CarpetSettings;
+import carpet.logging.LoggerRegistry;
 import carpet.mixin.accessors.EntityAccessor;
 import carpet.utils.extensions.CameraPlayer;
 
-import net.minecraft.server.command.exception.CommandException;
-import net.minecraft.server.command.source.CommandSource;
-import net.minecraft.server.command.exception.IncorrectUsageException;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.entity.living.player.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.GameMode;
 import net.minecraft.entity.living.effect.StatusEffect;
 import net.minecraft.entity.living.effect.StatusEffectInstance;
 import net.minecraft.entity.living.mob.hostile.HostileEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.exception.CommandException;
+import net.minecraft.server.command.exception.IncorrectUsageException;
+import net.minecraft.server.command.source.CommandSource;
+import net.minecraft.server.entity.living.player.ServerPlayerEntity;
+import net.minecraft.util.math.Box;
+import net.minecraft.world.GameMode;
+
+import java.util.List;
 
 public class CommandGMC extends CommandCarpetBase {
 	@Override

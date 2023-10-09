@@ -67,7 +67,7 @@ public class CarpetClientMessageHandler {
         NbtCompound chunkData = new NbtCompound();
 
         chunkData.putString("carpetVersion", Build.VERSION);
-        chunkData.putFloat("tickrate", TickSpeed.tickrate);
+        chunkData.putFloat("tickrate", TickSpeed.tickRate);
         chunkData.putInt("netVersion", NET_VERSION);
         NbtList listNBT = new NbtList();
         for (String rule : list) {
@@ -87,7 +87,7 @@ public class CarpetClientMessageHandler {
 
         try {
             data.writeNbtCompound(chunkData);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         CarpetClientServer.sender(data, sender);
@@ -114,7 +114,7 @@ public class CarpetClientMessageHandler {
     public static void sendTickRateChanges() {
         PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
         data.writeInt(CarpetClientMessageHandler.TICKRATE_CHANGES);
-        data.writeFloat(TickSpeed.tickrate);
+        data.writeFloat(TickSpeed.tickRate);
 
         CarpetClientServer.sender(data);
     }
@@ -125,7 +125,7 @@ public class CarpetClientMessageHandler {
         data.writeInt(dataType);
         try {
             data.writeNbtCompound(compound);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         CarpetClientServer.sender(data, sender);
     }
@@ -142,13 +142,13 @@ public class CarpetClientMessageHandler {
         data.writeInt(CarpetClientMessageHandler.RANDOMTICK_DISPLAY);
         try {
             data.writeNbtCompound(compound);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         CarpetClientServer.sender(data, sender);
     }
 
     public static void sendCustomRecipes(ServerPlayerEntity sender) {
-        if (CustomCrafting.getRecipeList().size() == 0) return;
+        if (CustomCrafting.getRecipeList().isEmpty()) return;
         PacketByteBuf data = new PacketByteBuf(Unpooled.buffer());
         data.writeInt(CUSTOM_RECIPES);
 
@@ -165,7 +165,7 @@ public class CarpetClientMessageHandler {
 
         try {
             data.writeNbtCompound(chunkData);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         CarpetClientServer.sender(data, sender);

@@ -38,14 +38,14 @@ public abstract class LivingEntityMixin {
     )
     private void combinePotions(StatusEffectInstance added, CallbackInfo ci, StatusEffectInstance current) {
         StatusEffectInstance newEffect = ((ExtendedStatusEffectInstance) current).combine(added);
-        if (newEffect != current) {
+        if (newEffect == current) {
+            // vanilla
+            this.onStatusEffectUpgraded(newEffect, true);
+        } else {
             // carpet
             this.statusEffects.put(newEffect.getEffect(), newEffect);
             this.onStatusEffectRemoved(current);
             this.onStatusEffectApplied(newEffect);
-        } else {
-            // vanilla
-            this.onStatusEffectUpgraded(newEffect, true);
         }
         ci.cancel();
     }
