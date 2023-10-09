@@ -1,11 +1,4 @@
 package carpet.carpetclient;
-/*
- *  Authors: Xcom and 0x53ee71ebe11e
- *
- *  Backend for the the carpetclient chunk debugging tool by
- *  Earthcomputer, Xcom and 0x53ee71ebe11e
- *
- */
 
 import carpet.CarpetSettings;
 import carpet.mixin.accessors.ServerChunkProviderAccessor;
@@ -33,35 +26,38 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Supplier;
 
+/**
+ *  Backend for the carpet client chunk debugging tool by
+ *  Earthcomputer, Xcom and 0x53ee71ebe11e
+ *
+ *  @author Xcom
+ *  @author 0x53ee71ebe11e
+ */
 public class CarpetClientChunkLogger {
     public static CarpetClientChunkLogger logger = new CarpetClientChunkLogger();
 
     public boolean enabled = true;
-    StackTraces stackTraces = new StackTraces();
+    private final StackTraces stackTraces = new StackTraces();
     private final ChunkLoggerSerializer clients = new ChunkLoggerSerializer();
-    private final ArrayList<ChunkLog> eventsThisGametick = new ArrayList<>();
-    public static String reason = null;
-    public static String oldReason = null;
+    private final ArrayList<ChunkLog> eventsThisGameTick = new ArrayList<>();
+    private static String reason = null;
+    private static String oldReason = null;
 
     private static final int MAX_STACKTRACE_SIZE = 60;
 
     public enum Event {
-        NONE,
-        UNLOADING,
-        LOADING,
+        NONE(null),
+        UNLOADING(null),
+        LOADING(null),
         PLAYER_ENTERS("Player added to chunk"),
         PLAYER_LEAVES("Player removed from chunk"),
-        QUEUE_UNLOAD,
-        CANCEL_UNLOAD,
-        GENERATING,
+        QUEUE_UNLOAD(null),
+        CANCEL_UNLOAD(null),
+        GENERATING(null),
         POPULATING("Populating chunk"),
         GENERATING_STRUCTURES("Generating structure");
 
         public final @Nullable String reason;
-
-        Event() {
-            this.reason = null;
-        }
 
         Event(@Nullable String reason) {
             this.reason = reason;
@@ -142,7 +138,7 @@ public class CarpetClientChunkLogger {
      */
     public void sendAll() {
         clients.sendUpdates();
-        this.eventsThisGametick.clear();
+        this.eventsThisGameTick.clear();
     }
 
     /*
@@ -152,7 +148,7 @@ public class CarpetClientChunkLogger {
     public void disable() {
         enabled = false;
         clients.kickAllPlayers();
-        this.eventsThisGametick.clear();
+        this.eventsThisGameTick.clear();
     }
 
     /*
@@ -169,11 +165,11 @@ public class CarpetClientChunkLogger {
         clients.unregisterPlayer(player);
     }
 
-    private ArrayList<ChunkLog> getInitialChunksForNewClient(MinecraftServer server) {
+    private static ArrayList<ChunkLog> getInitialChunksForNewClient(MinecraftServer server) {
         ArrayList<ChunkLog> forNewClient = new ArrayList<>();
         int dimension = -1;
-        for (World w : server.worlds) {
-            ServerChunkCache provider = (ServerChunkCache) (w.getChunkSource());
+        for (ServerWorld w : server.worlds) {
+            ServerChunkCache provider = w.getChunkSource();
             dimension++;
             for (WorldChunk c : provider.getLoadedChunks()) {
                 forNewClient.add(new ChunkLog(c.chunkX, c.chunkZ, dimension, Event.LOADING, null, null));
@@ -184,7 +180,7 @@ public class CarpetClientChunkLogger {
                     }
                 }
             }
-            ChunkMap chunkmap = ((ServerWorld) w).getChunkMap();
+            ChunkMap chunkmap = w.getChunkMap();
             Iterator<ChunkPos> i = carpetGetAllChunkCoordinates(chunkmap);
             while (i.hasNext()) {
                 ChunkPos pos = i.next();
@@ -198,32 +194,32 @@ public class CarpetClientChunkLogger {
      * Gets the coordinates of all chunks
      */
     private static Iterator<ChunkPos> carpetGetAllChunkCoordinates(ChunkMap map){
-        return new AbstractIterator<ChunkPos>() {
-            final Iterator<ChunkHolder> allChunks = Iterators.concat(((PlayerChunkMapAccessor) map).getEntries().iterator(),
+        return new Iterator<ChunkPos>() {
+            private final Iterator<ChunkHolder> allChunks = Iterators.concat(((PlayerChunkMapAccessor) map).getEntries().iterator(),
                     ((PlayerChunkMapAccessor) map).getEntriesWithoutChunks().iterator());
+            @Override
+            public boolean hasNext() {
+                return allChunks.hasNext();
+            }
 
             @Override
-            protected ChunkPos computeNext() {
-                if (allChunks.hasNext()) {
-                    return allChunks.next().getPos();
-                } else {
-                    return this.endOfData();
-                }
+            public ChunkPos next() {
+                return allChunks.next().getPos();
             }
         };
     }
 
-    private ArrayList<ChunkLog> getEventsThisGametick() {
-        return this.eventsThisGametick;
+    private ArrayList<ChunkLog> getEventsThisGameTick() {
+        return this.eventsThisGameTick;
     }
 
     private void log(int x, int z, int d, Event event, InternedString stackTrace, InternedString reasonID) {
-        this.eventsThisGametick.add(new ChunkLog(x, z, d, event, stackTrace, reasonID));
+        this.eventsThisGameTick.add(new ChunkLog(x, z, d, event, stackTrace, reasonID));
     }
 
     private static int getWorldIndex(World w) {
         int i = 0;
-        for (World o : w.getServer().worlds) {
+        for (World o : Objects.requireNonNull(w.getServer()).worlds) {
             if (o == w) {
                 return i;
             }
@@ -259,7 +255,7 @@ public class CarpetClientChunkLogger {
         private final Map<String, InternedString> internedStrings = new LRUCache<>(128); // 64 ~ 98%, 128+ > 99%
         private int nextId = 1;
 
-        private InternedString internString(String s) {
+        private @Nullable InternedString internString(String s) {
             if (s == null) return null;
             InternedString internedString = internedStrings.get(s);
             if (internedString == null) {
@@ -336,6 +332,7 @@ public class CarpetClientChunkLogger {
 
         private void sendInitalChunks(ServerPlayerEntity sender) {
             MinecraftServer server = sender.getServer();
+            Objects.requireNonNull(server);
             ArrayList<ChunkLog> logs = getInitialChunksForNewClient(server);
             sendMissingStackTracesForPlayer(sender, logs);
             for (int i = 0; i < logs.size(); i += LOGS_BATCH_SIZE) {
@@ -353,7 +350,7 @@ public class CarpetClientChunkLogger {
                 return;
             }
 
-            ArrayList<ChunkLog> logs = getEventsThisGametick();
+            ArrayList<ChunkLog> logs = getEventsThisGameTick();
             MinecraftServer server = this.sentTracesForPlayer.keySet().iterator().next().server;
 
             for (ServerPlayerEntity client : this.sentTracesForPlayer.keySet()) {
@@ -400,7 +397,7 @@ public class CarpetClientChunkLogger {
             }
         }
 
-        private NbtCompound serializeEvents(List<ChunkLog> events, int gametick, int dataOffset, boolean complete) {
+        private @Nullable NbtCompound serializeEvents(List<ChunkLog> events, int gameTick, int dataOffset, boolean complete) {
             if (events.isEmpty()) {
                 return null;
             }
@@ -418,12 +415,12 @@ public class CarpetClientChunkLogger {
             chunkData.putInt("size", events.size());
             chunkData.putIntArray("data", data);
             chunkData.putInt("offset", dataOffset);
-            chunkData.putInt("time", gametick);
+            chunkData.putInt("time", gameTick);
             chunkData.putBoolean("complete", complete);
             return chunkData;
         }
 
-        private NbtCompound serializeStackTraces(List<InternedString> strings) {
+        private @Nullable NbtCompound serializeStackTraces(List<InternedString> strings) {
             if (strings.isEmpty()) {
                 return null;
             }

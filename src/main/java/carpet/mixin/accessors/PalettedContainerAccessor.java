@@ -8,8 +8,8 @@ import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
 
 @Mixin(PalettedContainer.class)
-public interface class_2743Accessor {
+public interface PalettedContainerAccessor {
 	@Accessor("bits") int getBitsPerBlock();
 	@Accessor("palette") Palette getPalette();
-	@Accessor("storage") BitStorage getPaletteData();
+	@Accessor("storage") BitStorage getStorage();
 }

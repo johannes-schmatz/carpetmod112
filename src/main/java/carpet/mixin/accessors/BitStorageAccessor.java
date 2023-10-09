@@ -6,6 +6,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import net.minecraft.util.BitStorage;
 
 @Mixin(BitStorage.class)
-public interface PaletteDataAccessor {
+public interface BitStorageAccessor {
 	@Accessor("bits") int getBitsPerBlock();
 }

@@ -19,7 +19,7 @@ import java.util.Random;
 //@NotThreadSafe
 @Mixin(FlowingLiquidBlock.class)
 public class FlowingFluidBlockMixin {
-    private int level = 8; // Thread safety: needs to be thread local for multi-threaded dimensions
+    private int level = 8; // Thread safety: needs to be thread local for multithreaded dimensions
 
     @Inject(
             method = "tick",
