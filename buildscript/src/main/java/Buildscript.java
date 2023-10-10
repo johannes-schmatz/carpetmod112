@@ -56,13 +56,6 @@ public class Buildscript extends LegacyFabricProject {
 		o.template("src", "template", "java");
 
 		o.templateMap("version", getVersion());
-		o.templateMap("timestamp", getBuildDate("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-		o.templateMap("branch", GitHelper.BRANCH);
-		o.templateMap("commit", GitHelper.COMMIT);
-		o.templateMap("working_dir_clean", GitHelper.STATUS);
-		o.templateMap("minecraft_version", DefaultVersions.MINECRAFT);
-		//o.templateMap("yarn_mappings", DefaultVersions.LEGACY_YARN.mavenId.version);
-		//o.templateMap("yarn_jar_url", DefaultVersions.LEGACY_YARN.asUrlString());
 
 		String quilt_maven = "https://maven.quiltmc.org/repository/release";
 		String ornithe_maven = "https://maven.ornithemc.net/releases";
