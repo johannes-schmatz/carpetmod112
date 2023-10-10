@@ -28,27 +28,35 @@ public class CommandGMS extends CommandCarpetBase {
 		if (args.length > 0) {
 			throw new IncorrectUsageException(getUsage(sender));
 		} else {
-			ServerPlayerEntity entityplayer = asPlayer(sender);
-			setPlayerToSurvival(server, entityplayer, false);
+			ServerPlayerEntity player = asPlayer(sender);
+			setPlayerToSurvival(server, player, false);
 		}
 	}
 
 	public static void setPlayerToSurvival(MinecraftServer server, ServerPlayerEntity entityplayer, boolean alwaysPutPlayerInSurvival) {
-		GameMode gametype = server.getDefaultGameMode();
+		GameMode gameMode = server.getDefaultGameMode();
+
 		if (entityplayer.interactionManager.getGameMode() != GameMode.SURVIVAL) {
 			DebugLogHelper.invisDebug(() -> "s1: " + entityplayer.world.players.contains(entityplayer));
+
 			if (((CameraPlayer) entityplayer).moveToStoredCameraData() && !alwaysPutPlayerInSurvival) {
 				DebugLogHelper.invisDebug(() -> "s7: " + entityplayer.world.players.contains(entityplayer));
 				return;
 			}
 			entityplayer.fallDistance = 0;
+
 			DebugLogHelper.invisDebug(() -> "s5: " + entityplayer.world.players.contains(entityplayer));
-			if (gametype == GameMode.SPECTATOR) {
+
+			if (gameMode == GameMode.SPECTATOR) {
 				entityplayer.setGameMode(GameMode.SURVIVAL);
 			} else {
-				entityplayer.setGameMode(gametype);
+				entityplayer.setGameMode(gameMode);
 			}
-			if (!((CameraPlayer) entityplayer).hadNightvision()) entityplayer.removeStatusEffect(StatusEffects.NIGHT_VISION);
+
+			if (!((CameraPlayer) entityplayer).hadNightVision()) {
+				entityplayer.removeStatusEffect(StatusEffects.NIGHT_VISION);
+			}
+
 			DebugLogHelper.invisDebug(() -> "s6: " + entityplayer.world.players.contains(entityplayer));
 		}
 	}

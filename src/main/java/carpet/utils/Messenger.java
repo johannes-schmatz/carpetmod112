@@ -16,8 +16,10 @@ import net.minecraft.text.Text;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Messenger {
+	private static final Pattern MSG_DESC_SPLITTER = Pattern.compile("\\s");
 
     /*
      messsage: "desc me ssa ge"
@@ -98,24 +100,22 @@ public class Messenger {
 	}
 
 	private static Text _getChatComponentFromDesc(String message, Text previous_message) {
-		String parts[] = message.split("\\s", 2);
+		String[] parts = MSG_DESC_SPLITTER.split(message, 2);
 		String desc = parts[0];
+		char ch = desc.charAt(0);
+
 		String str = "";
 		if (parts.length > 1) str = parts[1];
-		if (desc.charAt(0) == '/') // deprecated
-		{
+		if (ch == '/') { // deprecated
 			if (previous_message != null) previous_message.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, message));
 			return previous_message;
-		}
-		if (desc.charAt(0) == '?') {
+		} else if (ch == '?') {
 			if (previous_message != null) previous_message.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, message.substring(1)));
 			return previous_message;
-		}
-		if (desc.charAt(0) == '!') {
+		} else if (ch == '!') {
 			if (previous_message != null) previous_message.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, message.substring(1)));
 			return previous_message;
-		}
-		if (desc.charAt(0) == '^') {
+		} else if (ch == '^') {
 			if (previous_message != null)
 				previous_message.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Messenger.m(null, message.substring(1))));
 			return previous_message;
@@ -146,22 +146,6 @@ public class Messenger {
 		return m(null, text, command);
 	}
 
-	/// to be continued
-	public static Text dbl(String style, double double_value) {
-		return m(null, String.format("%s %.1f", style, double_value), String.format("^w %f", double_value));
-	}
-
-	public static Text dbls(String style, double... doubles) {
-		StringBuilder str = new StringBuilder(style + " [ ");
-		String prefix = "";
-		for (double dbl : doubles) {
-			str.append(String.format("%s%.1f", prefix, dbl));
-			prefix = ", ";
-		}
-		str.append(" ]");
-		return m(null, str.toString());
-	}
-
 	public static Text dblf(String style, double... doubles) {
 		StringBuilder str = new StringBuilder(style + " [ ");
 		String prefix = "";
@@ -184,7 +168,6 @@ public class Messenger {
 			components.add("^w " + dbl);
 			prefix = ", ";
 		}
-		//components.remove(components.size()-1);
 		components.add(style + "  ]");
 		return m(null, components.toArray(new Object[0]));
 	}
@@ -202,8 +185,8 @@ public class Messenger {
 		return m(null, text, command);
 	}
 
-	/*
-	builds single line, multicomponent message, optionally returns it to sender, and returns as one chat messagge
+	/**
+	 * Builds single line, multi-component message, optionally returns it to sender, and returns as one chat message.
 	 */
 	public static Text m(CommandSource receiver, Object... fields) {
 		Text message = new LiteralText("");
@@ -222,6 +205,10 @@ public class Messenger {
 		}
 		if (receiver != null) receiver.sendMessage(message);
 		return message;
+	}
+
+	public static Text mL(CommandSource receiver, List<Object> fields) {
+		return m(receiver, fields.toArray());
 	}
 
 	public static Text s(CommandSource receiver, String text) {
@@ -249,14 +236,6 @@ public class Messenger {
 		Text txt = m(null, "gi " + message);
 		for (PlayerEntity player : server.getPlayerManager().getAll()) {
 			player.sendMessage(txt);
-		}
-	}
-
-	public static void print_server_message(MinecraftServer server, Text message) {
-		if (server == null) CarpetSettings.LOG.error("Message not delivered: {}", message.buildString());
-		server.sendMessage(message);
-		for (PlayerEntity player : server.getPlayerManager().getAll()) {
-			player.sendMessage(message);
 		}
 	}
 }

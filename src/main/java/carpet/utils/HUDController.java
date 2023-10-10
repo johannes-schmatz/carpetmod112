@@ -27,10 +27,10 @@ public class HUDController {
 	public static Map<PlayerEntity, List<Text>> player_huds = new HashMap<>();
 
 	public static void addMessage(PlayerEntity player, Text hudMessage) {
-		if (!player_huds.containsKey(player)) {
-			player_huds.put(player, new ArrayList<>());
-		} else {
+		if (player_huds.containsKey(player)) {
 			player_huds.get(player).add(new LiteralText("\n"));
+		} else {
+			player_huds.put(player, new ArrayList<>());
 		}
 		player_huds.get(player).add(hudMessage);
 	}
@@ -78,7 +78,7 @@ public class HUDController {
 		}
 		int next = 900 - previous;
 		String color = Messenger.heatmap_color(previous, 860);
-		Text[] message = new Text[]{
+		Text[] message = {
 				Messenger.m(null, "g Prev: ", String.format(Locale.US, "%s %d", color, previous), "g  Next: ", String.format(Locale.US, "%s %d", color, next))
 		};
 		LoggerRegistry.getLogger("autosave").log(() -> message, "Prev", previous, "Next", next);
@@ -150,7 +150,7 @@ public class HUDController {
 	}
 
 	private static Text[] packetCounter() {
-		Text[] ret = new Text[]{Messenger.m(null, "w I/" + PacketCounter.totalIn + " O/" + PacketCounter.totalOut),
+		Text[] ret = {Messenger.m(null, "w I/" + PacketCounter.totalIn + " O/" + PacketCounter.totalOut),
 		};
 		PacketCounter.reset();
 		return ret;

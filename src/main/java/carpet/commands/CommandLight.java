@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class CommandLight extends CommandCarpetBase {
-	public static final String USAGE = "/light [x1 y1 z1] [x2 y2 z2] <sky/block> <value>";
 
 	@Override
 	public String getName() {
@@ -21,30 +20,30 @@ public class CommandLight extends CommandCarpetBase {
 
 	@Override
 	public String getUsage(CommandSource sender) {
-		return USAGE;
+		return "/light [x1 y1 z1] [x2 y2 z2] <sky/block> <value>";
 	}
 
 	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandLight", sender)) return;
 
-		int x1, y1, z1, x2, y2, z2, lightLevel;
-		String type;
 		if (args.length > 7) {
-			if (args.length > 8) throw new IncorrectUsageException(USAGE);
-			x1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getCoordinate());
-			y1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getY(), args[1], false).getCoordinate());
-			z1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[2], false).getCoordinate());
+			if (args.length > 8) throw new IncorrectUsageException(getUsage(sender));
 
-			x2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[3], false).getCoordinate());
-			y2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getY(), args[4], false).getCoordinate());
-			z2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[5], false).getCoordinate());
+			int x1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[0], false).getCoordinate());
+			int y1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getY(), args[1], false).getCoordinate());
+			int z1 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[2], false).getCoordinate());
 
-			type = args[6];
+			int x2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getX(), args[3], false).getCoordinate());
+			int y2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getY(), args[4], false).getCoordinate());
+			int z2 = (int) Math.round(parseTeleportCoordinate(sender.getSourceBlockPos().getZ(), args[5], false).getCoordinate());
+
+			String type = args[6];
+			int lightLevel;
 			try {
 				lightLevel = Integer.parseInt(args[7]);
 			} catch (Exception e) {
-				throw new IncorrectUsageException(USAGE);
+				throw new IncorrectUsageException(getUsage(sender));
 			}
 
 			if (x1 > x2) {
@@ -64,14 +63,14 @@ public class CommandLight extends CommandCarpetBase {
 			}
 
 			LightType t;
-
 			if (type.equals("sky")) {
 				t = LightType.SKY;
 			} else if (type.equals("block")) {
 				t = LightType.BLOCK;
 			} else {
-				throw new IncorrectUsageException(USAGE);
+				throw new IncorrectUsageException(getUsage(sender));
 			}
+
 			fillLightInArea(sender.getSourceWorld(), t, x1, y1, z1, x2, y2, z2, lightLevel);
 
 			sendSuccess(sender,
@@ -79,7 +78,7 @@ public class CommandLight extends CommandCarpetBase {
 					String.format("Changing light level of %s to %d from:[%d %d %d] to:[%d %d %d]", type, lightLevel, x1, y1, z1, x2, y2, z2)
 			);
 		} else {
-			throw new IncorrectUsageException(USAGE);
+			throw new IncorrectUsageException(getUsage(sender));
 		}
 	}
 

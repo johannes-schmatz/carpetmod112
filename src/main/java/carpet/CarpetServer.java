@@ -123,7 +123,7 @@ public class CarpetServer {
 	}
 
 	public void tick() {
-		TickSpeed.tick(server);
+		TickSpeed.tick();
 		HUDController.update_hud(server);
 		WorldEditBridge.onStartTick();
 		CarpetMod.PUBSUB.update(server.getTicks());
@@ -139,8 +139,8 @@ public class CarpetServer {
 		LoggerRegistry.playerDisconnected(player);
 	}
 
-	public Random setRandomSeed(int p_72843_1_, int p_72843_2_, int p_72843_3_) {
-		long i = (long) p_72843_1_ * 341873128712L + (long) p_72843_2_ * 132897987541L + server.worlds[0].getData().getSeed() + (long) p_72843_3_;
+	public Random setRandomSeed(int x, int z, int seed) {
+		long i = x * 341873128712L + z * 132897987541L + server.worlds[0].getData().getSeed() + seed;
 		CarpetMod.rand.setSeed(i);
 		return CarpetMod.rand;
 	}
@@ -149,18 +149,19 @@ public class CarpetServer {
 		try {
 			File settings_file = server.getWorldStorageSource().getFile(server.getWorldSaveName(), "bot.conf");
 			BufferedReader b = new BufferedReader(new FileReader(settings_file));
-			String line = "";
 			boolean temp = CarpetSettings.removeFakePlayerSkins;
 			CarpetSettings.removeFakePlayerSkins = true;
+
+			String line;
 			while ((line = b.readLine()) != null) {
 				FakeServerPlayerEntity.create(line, server);
 			}
+
 			b.close();
+
 			CarpetSettings.removeFakePlayerSkins = temp;
-		} catch (FileNotFoundException e) {
-			System.out.println(e);
 		} catch (IOException e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 

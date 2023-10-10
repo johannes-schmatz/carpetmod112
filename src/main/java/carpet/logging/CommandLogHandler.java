@@ -8,7 +8,7 @@ import net.minecraft.text.Text;
 
 public class CommandLogHandler extends LogHandler {
 
-	private String[] command;
+	private final String[] command;
 
 	public CommandLogHandler(String... extraArgs) {
 		this.command = extraArgs;

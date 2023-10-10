@@ -38,34 +38,59 @@ public class CommandGMC extends CommandCarpetBase {
 			if (!CarpetSettings.commandCameramode) {
 				sendSuccess(sender, this, "Quick gamemode switching is disabled");
 			}
-			ServerPlayerEntity entityplayer = asPlayer(sender);
-			if (entityplayer.isSpectator()) return;
-			if (CarpetSettings.cameraModeSurvivalRestrictions && entityplayer.interactionManager.getGameMode() == GameMode.SURVIVAL) {
-				List<HostileEntity> hostiles = sender.getSourceWorld().getEntities(HostileEntity.class, new Box(entityplayer.x - 8.0D,
-						entityplayer.y - 5.0D,
-						entityplayer.z - 8.0D,
-						entityplayer.x + 8.0D,
-						entityplayer.y + 5.0D,
-						entityplayer.z + 8.0D
-				), mob -> mob.isAngryAt(entityplayer));
-				StatusEffectInstance fireresist = entityplayer.getEffectInstance(StatusEffect.get("fire_resistance"));
-				if (!entityplayer.onGround || entityplayer.isFallFlying() || (((EntityAccessor) entityplayer).getFireTicks() > 0 &&
-						(fireresist == null || fireresist.getDuration() < ((EntityAccessor) entityplayer).getFireTicks())) || entityplayer.getBreath() != 300 ||
-						!hostiles.isEmpty()) {
+
+			ServerPlayerEntity player = asPlayer(sender);
+
+			if (player.isSpectator()) return;
+			if (CarpetSettings.cameraModeSurvivalRestrictions && player.interactionManager.getGameMode() == GameMode.SURVIVAL) {
+				if (!isUnrestricted(sender, player)) {
 					sendSuccess(sender, this, "Restricted use to: on ground, not in water, not on fire, not flying/falling, not near hostile mobs.");
 					return;
 				}
 			}
-			StatusEffect nightvision = StatusEffect.get("night_vision");
-			boolean hasNightvision = entityplayer.getEffectInstance(nightvision) != null;
-			((CameraPlayer) entityplayer).storeCameraData(hasNightvision);
-			GameMode gametype = GameMode.SPECTATOR;
-			entityplayer.setGameMode(gametype);
-			if (!hasNightvision && !LoggerRegistry.getLogger("normalCameraVision").subscribed(entityplayer)) {
-				StatusEffectInstance potioneffect = new StatusEffectInstance(nightvision, 999999, 0, false, false);
-				entityplayer.addStatusEffect(potioneffect);
+
+			StatusEffect nightVision = StatusEffect.get("night_vision");
+
+			boolean hasNightVision = player.getEffectInstance(nightVision) != null;
+			((CameraPlayer) player).storeCameraData(hasNightVision);
+
+			player.setGameMode(GameMode.SPECTATOR);
+
+			if (hasNightVision || LoggerRegistry.getLogger("normalCameraVision").subscribed(player)) {
+				StatusEffectInstance effect = new StatusEffectInstance(nightVision, 999999, 0, false, false);
+				player.addStatusEffect(effect);
 			}
-			((CameraPlayer) entityplayer).setGamemodeCamera();
+
+			((CameraPlayer) player).setGameModeCamera();
 		}
+	}
+
+	private static boolean isUnrestricted(CommandSource sender, ServerPlayerEntity player) {
+		List<HostileEntity> hostiles = sender.getSourceWorld()
+				.getEntities(
+						HostileEntity.class,
+						new Box(
+								player.x - 8.0D,
+								player.y - 5.0D,
+								player.z - 8.0D,
+								player.x + 8.0D,
+								player.y + 5.0D,
+								player.z + 8.0D
+						),
+						mob -> mob.isAngryAt(player)
+				);
+
+		StatusEffectInstance fireResistance = player.getEffectInstance(StatusEffect.get("fire_resistance"));
+
+		int fireTicks = ((EntityAccessor) player).getFireTicks();
+
+		return player.onGround
+				&& !player.isFallFlying()
+				&& (
+						fireTicks <= 0 ||
+						(fireResistance != null && fireResistance.getDuration() >= fireTicks)
+				)
+				&& player.getBreath() == 300
+				&& hostiles.isEmpty();
 	}
 }

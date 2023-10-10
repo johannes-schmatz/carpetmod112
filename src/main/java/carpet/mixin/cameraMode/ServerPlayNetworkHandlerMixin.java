@@ -32,7 +32,7 @@ public class ServerPlayNetworkHandlerMixin {
     )
     private void onLogout(Text reason, CallbackInfo ci) {
         // Fix exploit related to camera mode and logging out CARPET-XCOM
-        if(CarpetSettings.cameraModeRestoreLocation && ((CameraPlayer) player).getGamemodeCamera()){
+        if(CarpetSettings.cameraModeRestoreLocation && ((CameraPlayer) player).getGameModeCamera()){
             setPlayerToSurvival(server, player,true);
         }
     }

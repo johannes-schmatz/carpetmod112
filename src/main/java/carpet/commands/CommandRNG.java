@@ -19,7 +19,6 @@ import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entities;
 import net.minecraft.entity.living.mob.MobCategory;
 import net.minecraft.entity.living.mob.MobEntity;
@@ -58,7 +57,7 @@ public class CommandRNG extends CommandCarpetBase {
 	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandRNG", sender)) return;
-		if (args.length <= 0) throw new IncorrectUsageException(getUsage(sender));
+		if (args.length == 0) throw new IncorrectUsageException(getUsage(sender));
 		if ("seed".equalsIgnoreCase(args[0])) {
 			try {
 				World world = sender.getSourceWorld();
@@ -108,19 +107,22 @@ public class CommandRNG extends CommandCarpetBase {
 				sendSuccess(sender, this, "rng setSeed <seed>, default seed to 0 for turning off RNG.");
 			}
 		} else if ("getMobspawningChunk".equalsIgnoreCase(args[0])) {
-			long seed;
 			int chunkNum;
-			int playerSize;
 			try {
 				chunkNum = Integer.parseInt(args[2]);
 			} catch (Exception e) {
 				chunkNum = 1;
 			}
+
+			// TODO: helper method!
+			int playerSize;
 			try {
 				playerSize = Integer.parseInt(args[3]);
 			} catch (Exception e) {
 				playerSize = 1;
 			}
+
+			long seed;
 			try {
 				seed = Long.parseLong(args[1]);
 			} catch (NumberFormatException e) {
@@ -332,7 +334,7 @@ public class CommandRNG extends CommandCarpetBase {
 		return Collections.emptyList();
 	}
 
-	public static List<String> getTabComplet(String[] inputArgs, int index, @Nullable BlockPos lookedPos) {
+	private static List<String> getTabComplet(String[] inputArgs, int index, @Nullable BlockPos lookedPos) {
 		if (lookedPos == null) {
 			return Lists.newArrayList("~");
 		} else {
@@ -367,7 +369,7 @@ public class CommandRNG extends CommandCarpetBase {
 
 	}
 
-	public void displayMobSpawningChunkInfo(ServerWorld worldServerIn, CommandSource sender, long seed, int chunkNum, int playerSize) {
+	private void displayMobSpawningChunkInfo(ServerWorld worldServerIn, CommandSource sender, long seed, int chunkNum, int playerSize) {
 		PlayerEntity entityplayer = (PlayerEntity) sender;
 		Set<ChunkPos> eligibleChunksForSpawning = Sets.newHashSet();
 
@@ -412,7 +414,9 @@ public class CommandRNG extends CommandCarpetBase {
 			int k1 = blockpos.getX();
 			int l1 = blockpos.getY();
 			int i2 = blockpos.getZ();
+
 			BlockState blockState = worldServerIn.getBlockState(blockpos);
+
 			chunkCount++;
 
 			if (chunkNum == chunkCount) {
@@ -500,35 +504,9 @@ public class CommandRNG extends CommandCarpetBase {
 		}
 	}
 
-	public Biome.SpawnEntry getSpawnListEntryForTypeAt(ServerWorld worldServerIn, Random rand, MobCategory creatureType, BlockPos pos) {
+	private static Biome.SpawnEntry getSpawnListEntryForTypeAt(ServerWorld worldServerIn, Random rand, MobCategory creatureType, BlockPos pos) {
 		List<Biome.SpawnEntry> list = worldServerIn.getChunkSource().getSpawnEntries(creatureType, pos);
 		return list != null && !list.isEmpty() ? WeightedPicker.pick(rand, list) : null;
-	}
-
-	public static boolean canCreatureTypeSpawnAtLocation(MobEntity.SpawnEnvironment spawnEnvironment, World world, BlockPos pos) {
-		if (!world.getWorldBorder().contains(pos)) {
-			return false;
-		}
-		BlockState state = world.getBlockState(pos);
-
-		if (spawnEnvironment == MobEntity.SpawnEnvironment.IN_WATER) {
-			return state.getMaterial() == Material.WATER && world.getBlockState(pos.down()).getMaterial() == Material.WATER &&
-					!world.getBlockState(pos.up()).isConductor();
-		} else {
-			BlockPos posBelow = pos.down();
-
-			if (world.getBlockState(posBelow).isFullBlock()) {
-				Block block = world.getBlockState(posBelow).getBlock();
-				boolean flag = block != Blocks.BEDROCK && block != Blocks.BARRIER;
-				return flag && isValidEmptySpawnBlock(state) && isValidEmptySpawnBlock(world.getBlockState(pos.up()));
-			} else {
-				return false;
-			}
-		}
-	}
-
-	public static boolean isValidEmptySpawnBlock(BlockState state) {
-		return !state.blocksAmbientLight() && !state.isSignalSource() && !state.getMaterial().isLiquid() && !AbstractRailBlock.isRail(state);
 	}
 
 	private static BlockPos getRandomChunkPosition(World world, Random random, int x, int z) {

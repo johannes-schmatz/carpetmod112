@@ -87,7 +87,7 @@ public class FakeServerPlayerEntity extends ServerPlayerEntity {
 	}
 
 	public static FakeServerPlayerEntity createShadow(MinecraftServer server, ServerPlayerEntity player) {
-		if (CarpetSettings.cameraModeRestoreLocation && ((CameraPlayer) player).getGamemodeCamera()) {
+		if (CarpetSettings.cameraModeRestoreLocation && ((CameraPlayer) player).getGameModeCamera()) {
 			GameMode gametype = server.getDefaultGameMode();
 			((CameraPlayer) player).moveToStoredCameraData();
 			player.setGameMode(gametype);
@@ -136,10 +136,10 @@ public class FakeServerPlayerEntity extends ServerPlayerEntity {
 		setShouldFixMinecart(false);
 		if (instance.dimensionId != 0) //player was logged in in a different dimension
 		{
-			worldIn = server.getWorld(instance.dimensionId);
-			instance.setWorld(worldIn);
-			server.getPlayerManager().onChangedDimension(instance, worldIn);
-			instance.interactionManager.setWorld(worldIn);
+			ServerWorld world = server.getWorld(instance.dimensionId);
+			instance.setWorld(world);
+			server.getPlayerManager().onChangedDimension(instance, world);
+			instance.interactionManager.setWorld(world);
 		}
 		instance.removed = false;
 		instance.stepHeight = 0.6F;

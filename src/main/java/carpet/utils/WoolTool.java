@@ -2,6 +2,7 @@ package carpet.utils;
 
 import carpet.CarpetSettings;
 import carpet.helpers.HopperCounter;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.state.BlockState;
 import net.minecraft.block.Blocks;
@@ -58,7 +59,7 @@ public class WoolTool {
 		}
 	}
 
-	public static DyeColor getWoolColorAtPosition(World worldIn, BlockPos pos) {
+	public static @Nullable DyeColor getWoolColorAtPosition(World worldIn, BlockPos pos) {
 		BlockState state = worldIn.getBlockState(pos);
 		if (state.getBlock() != Blocks.WOOL) return null;
 		return state.get(ColoredBlock.COLOR);

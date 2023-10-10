@@ -33,187 +33,244 @@ public class CommandLog extends CommandCarpetBase {
 
 	@Override
 	public String getUsage(CommandSource sender) {
-        return "/log (interactive menu) OR /log <logName> [?option] [player] [handler ...] OR /log <logName> clear [player] OR /log defaults (interactive menu) OR /log setDefault <logName> [?option] [handler ...] OR /log removeDefault <logName>";
+        return "/log (interactive menu) OR "
+			+ "/log <logName> [?option] [player] [handler ...] OR "
+			+ "/log <logName> clear [player] OR "
+			+ "/log defaults (interactive menu) OR "
+			+ "/log setDefault <logName> [?option] [handler ...] OR "
+			+ "/log removeDefault <logName>";
 	}
 
 	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandLog", sender)) return;
+
+		if (args.length == 0) {
+			interactive(sender);
+		} else {
+			switch (args[0]) {
+				case "reset":
+					reset(server, sender, args);
+					break;
+				case "defaults":
+					defaults(sender);
+					break;
+				case "setDefault":
+					setDefault(server, sender, args);
+					break;
+				case "removeDefault":
+					removeDefault(server, sender, args);
+					break;
+				default:
+					defaultCase(server, sender, args);
+					break;
+			}
+		}
+	}
+
+	private void interactive(CommandSource sender) {
 		PlayerEntity player = null;
 		if (sender instanceof PlayerEntity) {
 			player = (PlayerEntity) sender;
 		}
-
-		if (args.length == 0) {
-			if (player == null) {
-				return;
-			}
-			Map<String, LoggerOptions> subs = LoggerRegistry.getPlayerSubscriptions(player.getName());
-			if (subs == null) {
-				subs = new HashMap<>();
-			}
-			List<String> all_logs = Arrays.asList(LoggerRegistry.getLoggerNames(classType()));
-			Collections.sort(all_logs);
-			Messenger.m(player, "w _____________________");
-			Messenger.m(player, "w Available logging options:");
-			for (String lname : all_logs) {
-				List<Object> comp = new ArrayList<>();
-				String color = subs.containsKey(lname) ? "w" : "g";
-				comp.add("w  - " + lname + ": ");
-				Logger logger = LoggerRegistry.getLogger(lname);
-				String[] options = logger.getOptions();
-				if (options == null) {
-					if (subs.containsKey(lname)) {
-						comp.add("l Subscribed ");
-					} else {
-						comp.add(color + " [Subscribe] ");
-						comp.add("^w toggle subscription to " + lname);
-						comp.add("!/log " + lname);
-					}
-				} else {
-					for (String option : logger.getOptions()) {
-						if (subs.containsKey(lname) && subs.get(lname).option.equalsIgnoreCase(option)) {
-							comp.add("l [" + option + "] ");
-						} else {
-							comp.add(color + " [" + option + "] ");
-							comp.add("^w toggle subscription to " + lname + " " + option);
-							comp.add("!/log " + lname + " " + option);
-						}
-
-					}
-				}
-				if (subs.containsKey(lname)) {
-					comp.add("nb [X]");
-					comp.add("^w Click to toggle subscription");
-					comp.add("!/log " + lname);
-				}
-				Messenger.m(player, comp.toArray(new Object[0]));
-			}
+		if (player == null) {
 			return;
 		}
+		Map<String, LoggerOptions> subs = LoggerRegistry.getPlayerSubscriptions(player.getName());
+		if (subs == null) {
+			subs = new HashMap<>();
+		}
+		List<String> loggerNames = LoggerRegistry.getLoggerNames(classType());
+		Collections.sort(loggerNames);
+		Messenger.m(player, "w _____________________");
+		Messenger.m(player, "w Available logging options:");
+		for (String loggerName : loggerNames) {
+			List<Object> comp = new ArrayList<>();
+			comp.add("w  - " + loggerName + ": ");
+			String color = subs.containsKey(loggerName) ? "w" : "g";
 
+			Logger logger = LoggerRegistry.getLogger(loggerName);
+
+			List<String> options = logger.getOptions();
+			if (options.isEmpty()) {
+				if (subs.containsKey(loggerName)) {
+					comp.add("l Subscribed ");
+				} else {
+					comp.add(color + " [Subscribe] ");
+					comp.add("^w toggle subscription to " + loggerName);
+					comp.add("!/log " + loggerName);
+				}
+			} else {
+				for (String option : options) {
+					if (subs.containsKey(loggerName) && subs.get(loggerName).option.equalsIgnoreCase(option)) {
+						comp.add("l [" + option + "] ");
+					} else {
+						comp.add(color + " [" + option + "] ");
+						comp.add("^w toggle subscription to " + loggerName + " " + option);
+						comp.add("!/log " + loggerName + " " + option);
+					}
+
+				}
+			}
+			if (subs.containsKey(loggerName)) {
+				comp.add("nb [X]");
+				comp.add("^w Click to toggle subscription");
+				comp.add("!/log " + loggerName);
+			}
+			Messenger.mL(player, comp);
+		}
+	}
+
+	private void reset(MinecraftServer server, CommandSource sender, String[] args) throws IncorrectUsageException {
 		// toggle to default
-		if ("reset".equalsIgnoreCase(args[0])) {
-			if (args.length > 1) {
-				player = server.getPlayerManager().get(args[1]);
-			}
-			if (player == null) {
-				throw new IncorrectUsageException("No player specified");
-			}
-			LoggerRegistry.resetSubscriptions(server, player.getName());
-			sendSuccess(sender, this, "Unsubscribed from all logs and restored default subscriptions");
+		PlayerEntity player = null;
+		if (sender instanceof PlayerEntity) {
+			player = (PlayerEntity) sender;
+		}
+		if (args.length > 1) {
+			player = server.getPlayerManager().get(args[1]);
+		}
+
+		if (player == null) {
+			throw new IncorrectUsageException("No player specified");
+		}
+
+		LoggerRegistry.resetSubscriptions(server, player.getName());
+		sendSuccess(sender, this, "Unsubscribed from all logs and restored default subscriptions");
+	}
+
+	private void defaults(CommandSource sender) {
+		PlayerEntity player;
+		if (sender instanceof PlayerEntity) {
+			player = (PlayerEntity) sender;
+		} else {
 			return;
 		}
 
-		if ("defaults".equalsIgnoreCase(args[0])) {
-			if (player == null) {
-				return;
-			}
-			Map<String, LoggerOptions> subs = LoggerRegistry.getDefaultSubscriptions();
+		Map<String, LoggerOptions> subs = LoggerRegistry.getDefaultSubscriptions();
 
-			List<String> all_logs = Arrays.asList(LoggerRegistry.getLoggerNames(classType()));
-			Collections.sort(all_logs);
+		List<String> loggerNames = LoggerRegistry.getLoggerNames(classType());
+		Collections.sort(loggerNames);
 
-			Messenger.m(player, "w _____________________");
-			Messenger.m(player, "w Available logging options:");
-			for (String lname : all_logs) {
-				List<Object> comp = new ArrayList<>();
-				String color = subs.containsKey(lname) ? "w" : "g";
-				comp.add("w  - " + lname + ": ");
-				Logger logger = LoggerRegistry.getLogger(lname);
-				String[] options = logger.getOptions();
-				if (options == null) {
-					if (subs.containsKey(lname)) {
-						comp.add("l Subscribed ");
+		Messenger.m(player, "w _____________________");
+		Messenger.m(player, "w Available logging options:");
+		for (String loggerName : loggerNames) {
+			List<Object> comp = new ArrayList<>();
+			String color = subs.containsKey(loggerName) ? "w" : "g";
+			comp.add("w  - " + loggerName + ": ");
+			Logger logger = LoggerRegistry.getLogger(loggerName);
+
+			List<String> options = logger.getOptions();
+			if (options.isEmpty()) {
+				if (subs.containsKey(loggerName)) {
+					comp.add("l Subscribed ");
+				} else {
+					comp.add(color + " [Subscribe] ");
+					comp.add("^w set default subscription to " + loggerName);
+					comp.add("!/log setDefault " + loggerName);
+				}
+			} else {
+				for (String option : options) {
+					if (subs.containsKey(loggerName) && subs.get(loggerName).option.equalsIgnoreCase(option)) {
+						comp.add("l [" + option + "] ");
 					} else {
-						comp.add(color + " [Subscribe] ");
-						comp.add("^w set default subscription to " + lname);
-						comp.add("!/log setDefault " + lname);
-					}
-				} else {
-					for (String option : logger.getOptions()) {
-						if (subs.containsKey(lname) && subs.get(lname).option.equalsIgnoreCase(option)) {
-							comp.add("l [" + option + "] ");
-						} else {
-							comp.add(color + " [" + option + "] ");
-							comp.add("^w set default subscription to " + lname + " " + option);
-							comp.add("!/log setDefault " + lname + " " + option);
-						}
-
+						comp.add(color + " [" + option + "] ");
+						comp.add("^w set default subscription to " + loggerName + " " + option);
+						comp.add("!/log setDefault " + loggerName + " " + option);
 					}
 				}
-				if (subs.containsKey(lname)) {
-					comp.add("nb [X]");
-					comp.add("^w Click to remove default subscription");
-					comp.add("!/log removeDefault " + lname);
-				}
-				Messenger.m(player, comp.toArray(new Object[0]));
 			}
-			return;
+			if (subs.containsKey(loggerName)) {
+				comp.add("nb [X]");
+				comp.add("^w Click to remove default subscription");
+				comp.add("!/log removeDefault " + loggerName);
+			}
+			Messenger.mL(player, comp);
+		}
+	}
+	private static void setDefault(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
+		PlayerEntity player;
+		if (sender instanceof PlayerEntity) {
+			player = (PlayerEntity) sender;
+		} else {
+			player = null;
 		}
 
-		if ("setDefault".equalsIgnoreCase(args[0])) {
-			if (args.length >= 2) {
-				Logger logger = LoggerRegistry.getLogger(args[1]);
-				if (logger != null) {
-					String option = logger.getDefault();
-					if (args.length >= 3) {
-						option = logger.getAcceptedOption(args[2]);
-					}
 
-					LogHandler handler = null;
-					if (args.length >= 4) {
-						handler = LogHandler.createHandler(args[3], ArrayUtils.subarray(args, 4, args.length));
-						if (handler == null) {
-							throw new CommandException("Invalid handler");
-						}
-					}
+		if (args.length >= 2) {
+			Logger logger = LoggerRegistry.getLogger(args[1]);
+			if (logger != null) {
 
-					LoggerRegistry.setDefault(server, args[1], option, handler);
-					Messenger.m(player, "gi Added " + logger.getLogName() + " to default subscriptions.");
-					return;
+				String option;
+				if (args.length >= 3) {
+					option = logger.getAcceptedOption(args[2]);
 				} else {
-					throw new IncorrectUsageException("No logger named " + args[1] + ".");
+					option = logger.getDefault();
 				}
+
+				LogHandler handler = null;
+				if (args.length >= 4) {
+					handler = LogHandler.createHandler(args[3], ArrayUtils.subarray(args, 4, args.length));
+				}
+
+				LoggerRegistry.setDefault(server, args[1], option, handler);
+
+				Messenger.m(player, "gi Added " + logger.getLogName() + " to default subscriptions.");
 			} else {
-				throw new IncorrectUsageException("No logger specified.");
+				throw new IncorrectUsageException("No logger named " + args[1] + ".");
 			}
+		} else {
+			throw new IncorrectUsageException("No logger specified.");
+		}
+	}
+	private static void removeDefault(MinecraftServer server, CommandSource sender, String[] args) throws IncorrectUsageException {
+		PlayerEntity player;
+		if (sender instanceof PlayerEntity) {
+			player = (PlayerEntity) sender;
+		} else {
+			player = null;
 		}
 
-		if ("removeDefault".equalsIgnoreCase(args[0])) {
-			if (args.length > 1) {
-				Logger logger = LoggerRegistry.getLogger(args[1]);
-				if (logger != null) {
-					LoggerRegistry.removeDefault(server, args[1]);
-					Messenger.m(player, "gi Removed " + logger.getLogName() + " from default subscriptions.");
-					return;
-				} else {
-					throw new IncorrectUsageException("No logger named " + args[1] + ".");
-				}
+		if (args.length > 1) {
+			Logger logger = LoggerRegistry.getLogger(args[1]);
+			if (logger != null) {
+				LoggerRegistry.removeDefault(server, args[1]);
+				Messenger.m(player, "gi Removed " + logger.getLogName() + " from default subscriptions.");
 			} else {
-				throw new IncorrectUsageException("No logger specified.");
+				throw new IncorrectUsageException("No logger named " + args[1] + ".");
 			}
+		} else {
+			throw new IncorrectUsageException("No logger specified.");
 		}
+	}
 
+	private static void defaultCase(MinecraftServer server, CommandSource sender, String[] args) throws IncorrectUsageException {
 		Logger logger = LoggerRegistry.getLogger(args[0]);
 		if (logger != null) {
 			String option = null;
 			if (args.length >= 2) {
 				option = logger.getAcceptedOption(args[1]);
 			}
+
+			PlayerEntity player;
+			if (sender instanceof PlayerEntity) {
+				player = (PlayerEntity) sender;
+			} else {
+				player = null;
+			}
+
 			if (args.length >= 3) {
 				player = server.getPlayerManager().get(args[2]);
 			}
 			if (player == null) {
 				throw new IncorrectUsageException("No player specified");
 			}
+
 			LogHandler handler = null;
 			if (args.length >= 4) {
 				handler = LogHandler.createHandler(args[3], ArrayUtils.subarray(args, 4, args.length));
-				if (handler == null) {
-					throw new CommandException("Invalid handler");
-				}
 			}
+
 			boolean subscribed = true;
 			if (args.length >= 2 && "clear".equalsIgnoreCase(args[1])) {
 				LoggerRegistry.unsubscribePlayer(server, player.getName(), logger.getLogName());
@@ -223,6 +280,7 @@ public class CommandLog extends CommandCarpetBase {
 			} else {
 				LoggerRegistry.subscribePlayer(server, player.getName(), logger.getLogName(), option, handler);
 			}
+
 			if (subscribed) {
 				Messenger.m(player, "gi Subscribed to " + logger.getLogName() + ".");
 			} else {
@@ -236,10 +294,10 @@ public class CommandLog extends CommandCarpetBase {
 	@Override
 	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, BlockPos targetPos) {
 		if (!CarpetSettings.commandLog) {
-			return Collections.<String>emptyList();
+			return Collections.emptyList();
 		}
 		if (args.length == 1) {
-			Set<String> options = new HashSet<String>(Arrays.asList(LoggerRegistry.getLoggerNames(classType())));
+			Set<String> options = new HashSet<>(LoggerRegistry.getLoggerNames(classType()));
 			options.add("clear");
 			options.add("defaults");
 			options.add("setDefault");
@@ -247,43 +305,39 @@ public class CommandLog extends CommandCarpetBase {
 			return suggestMatching(args, options);
 		} else if (args.length == 2) {
 			if ("clear".equalsIgnoreCase(args[0])) {
-				List<String> players = Arrays.asList(server.getPlayerNames());
-				return suggestMatching(args, players.toArray(new String[0]));
-			}
-
-			if ("setDefault".equalsIgnoreCase(args[0]) || "removeDefault".equalsIgnoreCase(args[0])) {
-				Set<String> options = new HashSet<String>(Arrays.asList(LoggerRegistry.getLoggerNames(classType())));
-				return suggestMatching(args, options);
+				return suggestMatching(args, server.getPlayerNames());
+			} else if ("setDefault".equalsIgnoreCase(args[0]) || "removeDefault".equalsIgnoreCase(args[0])) {
+				return suggestMatching(args, LoggerRegistry.getLoggerNames(classType()));
 			}
 
 			Logger logger = LoggerRegistry.getLogger(args[0]);
 			if (logger != null) {
-				String[] opts = logger.getOptions();
 				List<String> options = new ArrayList<>();
 				options.add("clear");
-				if (opts != null) options.addAll(Arrays.asList(opts));
-				else options.add("on");
-				return suggestMatching(args, options.toArray(new String[0]));
+
+				List<String> opts = logger.getOptions();
+				if (opts.isEmpty()) {
+					options.addAll(opts);
+				} else {
+					options.add("on");
+				}
+
+				return suggestMatching(args, options);
 			}
 		} else if (args.length == 3) {
 			if ("setDefault".equalsIgnoreCase(args[0])) {
 				Logger logger = LoggerRegistry.getLogger(args[1]);
 				if (logger != null) {
-					String[] opts = logger.getOptions();
-					List<String> options = new ArrayList<>();
-					if (opts != null) options.addAll(Arrays.asList(opts));
-
-					return suggestMatching(args, options.toArray(new String[0]));
+					return suggestMatching(args, logger.getOptions());
 				}
 			}
 
-			List<String> players = Arrays.asList(server.getPlayerNames());
-			return suggestMatching(args, players.toArray(new String[0]));
+			return suggestMatching(args, server.getPlayerNames());
 		} else if (args.length == 4) {
 			return suggestMatching(args, LogHandler.getHandlerNames());
 		}
 
-		return Collections.<String>emptyList();
+		return Collections.emptyList();
 	}
 
 	private int classType() {

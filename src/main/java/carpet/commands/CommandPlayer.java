@@ -32,7 +32,8 @@ public class CommandPlayer extends CommandCarpetBase {
 
 	@Override
 	public String getUsage(CommandSource sender) {
-		return "player <spawn|kill|stop|drop|swapHands|mount|dismount> <player_name>  OR /player <use|attack|jump> <player_name> <once|continuous|interval.. ticks>";
+		return "player <spawn|kill|stop|drop|swapHands|mount|dismount> <player_name> OR "
+			+ "/player <use|attack|jump> <player_name> <once|continuous|interval.. ticks>";
 	}
 
 	@Override

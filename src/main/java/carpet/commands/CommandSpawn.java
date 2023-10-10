@@ -38,6 +38,7 @@ public class CommandSpawn extends CommandCarpetBase {
 	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandSpawn", sender)) return;
+
 		if (args.length == 0) {
 			throw new IncorrectUsageException(getUsage(sender));
 		}
@@ -176,11 +177,10 @@ public class CommandSpawn extends CommandCarpetBase {
 		} else if ("entities".equalsIgnoreCase(args[0])) {
 			if (args.length == 1) {
 				msg(sender, SpawnReporter.print_general_mobcaps(world));
-				return;
 			} else {
 				msg(sender, SpawnReporter.printEntitiesByType(args[1], world));
-				return;
 			}
+			return;
 		}
 		throw new IncorrectUsageException(getUsage(sender));
 

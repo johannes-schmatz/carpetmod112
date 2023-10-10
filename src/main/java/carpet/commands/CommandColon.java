@@ -34,18 +34,15 @@ public class CommandColon extends AbstractCommand {
 		return "colon";
 	}
 
-
 	@Override
 	public int getRequiredPermissionLevel() {
 		return 2;
 	}
 
-
 	@Override
 	public String getUsage(CommandSource sender) {
 		return "commands.clone.usage";
 	}
-
 
 	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {

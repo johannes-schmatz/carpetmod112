@@ -60,7 +60,7 @@ public class CommandStructure extends CommandCarpetBase {
 			return;
 
 		if (args.length < 1)
-			throw new IncorrectUsageException(USAGE);
+			throw new IncorrectUsageException(getUsage(sender));
 
 		switch (args[0]) {
 			case "load":
@@ -73,7 +73,7 @@ public class CommandStructure extends CommandCarpetBase {
 				listStructure(server, sender, args);
 				break;
 			default:
-				throw new IncorrectUsageException(USAGE);
+				throw new IncorrectUsageException(getUsage(sender));
 		}
 	}
 
@@ -330,15 +330,19 @@ public class CommandStructure extends CommandCarpetBase {
 	}
 
 	private static String[] replaceQuotes(String[] args) throws CommandException {
-		String structureName = args[1];
-		if (structureName.startsWith("\"")) {
+		if (args[1].startsWith("\"")) {
+			StringBuilder sb = new StringBuilder(args[1]);
+
 			int i = 2;
-			while (!structureName.endsWith("\"") && i < args.length) {
-				structureName += " " + args[i++];
+			while (!sb.toString().endsWith("\"") && i < args.length) {
+				sb.append(" ").append(args[i++]);
 			}
-			if (!structureName.endsWith("\""))
+
+			if (!sb.toString().endsWith("\""))
 				throw new CommandException("Unbalanced \"\" quotes");
-			structureName = structureName.substring(1, structureName.length() - 1);
+
+			String structureName = sb.substring(1, sb.length() - 1);
+
 			String[] newArgs = new String[args.length - (i - 2)];
 			newArgs[0] = args[0];
 			newArgs[1] = structureName;

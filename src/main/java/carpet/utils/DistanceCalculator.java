@@ -16,9 +16,11 @@ public class DistanceCalculator {
 		int dx = MathHelper.abs(pos1.getX() - pos2.getX());
 		int dy = MathHelper.abs(pos1.getY() - pos2.getY());
 		int dz = MathHelper.abs(pos1.getZ() - pos2.getZ());
+
 		int manhattan = dx + dy + dz;
 		double spherical = MathHelper.sqrt(dx * dx + dy * dy + dz * dz);
 		double cylindrical = MathHelper.sqrt(dx * dx + dz * dz);
+
 		List<Text> res = new ArrayList<>();
 		res.add(Messenger.m(null, "w Distance between ", Messenger.tp("b", pos1), "w and ", Messenger.tp("b", pos2), "w :"));
 		res.add(Messenger.m(null, "w  - Manhattan: ", String.format("wb %d", manhattan)));

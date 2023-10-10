@@ -28,18 +28,18 @@ public class BlockInfo
 {
     public static String getSoundName(BlockSounds stype)
     {
-        if (stype == BlockSounds.WOOD   ) { return "WOOD"  ;   }
-        if (stype == BlockSounds.GRAVEL ) { return "GRAVEL";   }
-        if (stype == BlockSounds.GRASS  ) { return "GRASS" ;   }
-        if (stype == BlockSounds.STONE  ) { return "STONE" ;   }
-        if (stype == BlockSounds.METAL  ) { return "METAL" ;   }
-        if (stype == BlockSounds.GLASS  ) { return "GLASS" ;   }
-        if (stype == BlockSounds.CLOTH  ) { return "WOOL"  ;   }
-        if (stype == BlockSounds.SAND   ) { return "SAND"  ;   }
-        if (stype == BlockSounds.SNOW   ) { return "SNOW"  ;   }
-        if (stype == BlockSounds.LADDER ) { return "LADDER";   }
-        if (stype == BlockSounds.ANVIL  ) { return "ANVIL" ;   }
-        if (stype == BlockSounds.SLIME  ) { return "SLIME" ;   }
+        if (stype == BlockSounds.WOOD   ) { return "WOOD"  ; }
+        if (stype == BlockSounds.GRAVEL ) { return "GRAVEL"; }
+        if (stype == BlockSounds.GRASS  ) { return "GRASS" ; }
+        if (stype == BlockSounds.STONE  ) { return "STONE" ; }
+        if (stype == BlockSounds.METAL  ) { return "METAL" ; }
+        if (stype == BlockSounds.GLASS  ) { return "GLASS" ; }
+        if (stype == BlockSounds.CLOTH  ) { return "WOOL"  ; }
+        if (stype == BlockSounds.SAND   ) { return "SAND"  ; }
+        if (stype == BlockSounds.SNOW   ) { return "SNOW"  ; }
+        if (stype == BlockSounds.LADDER ) { return "LADDER"; }
+        if (stype == BlockSounds.ANVIL  ) { return "ANVIL" ; }
+        if (stype == BlockSounds.SLIME  ) { return "SLIME" ; }
         return "Something new";
     }
 

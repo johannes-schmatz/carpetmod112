@@ -13,21 +13,24 @@ import org.apache.logging.log4j.LogManager;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LoggerRegistry {
 	private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
 
-	// Map from logger names to loggers.
-	private static Map<String, Logger> loggerRegistry = new HashMap<>();
+	/** Map from logger names to loggers. */
+	private static final Map<String, Logger> loggerRegistry = new HashMap<>();
 
-	// List of default subscriptions
-	private static Map<String, LoggerOptions> defaultSubscriptions = new HashMap<>();
-	// Map from player names to the set of names of the logs that player is subscribed to.
-	private static Map<String, Map<String, LoggerOptions>> playerSubscriptions = new HashMap<>();
+	/** List of default subscriptions */
+	private static final Map<String, LoggerOptions> defaultSubscriptions = new HashMap<>();
+	/** Map from player names to the set of names of the logs that player is subscribed to. */
+	private static final Map<String, Map<String, LoggerOptions>> playerSubscriptions = new HashMap<>();
 
-	//statics to quickly assess if its worth even to call each one
+	/* statics to quickly assess if its worth even to call each one */
 	public static boolean __tnt;
 	public static boolean __projectiles;
 	public static boolean __fallingBlocks;
@@ -122,10 +125,10 @@ public class LoggerRegistry {
 
 					playerSubscriptions.put(username, subs);
 				}
-			} catch (IOException ioexception) {
-				LOGGER.error("Couldn't read default logger file {}", logData, ioexception);
-			} catch (JsonParseException jsonparseexception) {
-				LOGGER.error("Couldn't parse default logger file {}", logData, jsonparseexception);
+			} catch (IOException e) {
+				LOGGER.error("Couldn't read default logger file {}", logData, e);
+			} catch (JsonParseException e) {
+				LOGGER.error("Couldn't parse default logger file {}", logData, e);
 			}
 		}
 	}
@@ -154,8 +157,8 @@ public class LoggerRegistry {
 			root.add("players", playerList);
 
 			FileUtils.writeStringToFile(logData, root.toString(), Charsets.UTF_8);
-		} catch (IOException ioexception) {
-			LOGGER.error("Couldn't save stats", (Throwable) ioexception);
+		} catch (IOException e) {
+			LOGGER.error("Couldn't save stats", e);
 		}
 	}
 
@@ -177,8 +180,12 @@ public class LoggerRegistry {
 	/**
 	 * Gets the set of logger names.
 	 */
-	public static String[] getLoggerNames(int filter) {
-		return loggerRegistry.entrySet().stream().filter(s -> s.getValue().debuggerFilter(filter)).map(Map.Entry::getKey).toArray(String[]::new);
+	public static List<String> getLoggerNames(int filter) {
+		return loggerRegistry.entrySet()
+				.stream()
+				.filter(s -> s.getValue().debuggerFilter(filter))
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	/**
@@ -309,6 +316,7 @@ public class LoggerRegistry {
 	}
 
 	protected static void setAccess(Logger logger) {
+		// TODO: reflection at its finest
 		String name = logger.getLogName();
 		boolean value = logger.hasSubscribers();
 		try {

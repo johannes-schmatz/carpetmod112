@@ -36,10 +36,10 @@ public class CommandRepopulate extends CommandCarpetBase {
 		}
 		int chunkX = parseInt(args[0]);
 		int chunkZ = parseInt(args[1]);
-		boolean isloaded = ((WorldAccessor) sender.getSourceWorld()).invokeIsChunkLoaded(chunkX, chunkZ, false);
+		boolean isLoaded = ((WorldAccessor) sender.getSourceWorld()).invokeIsChunkLoaded(chunkX, chunkZ, false);
 		WorldChunk chunk = sender.getSourceWorld().getChunkAt(chunkX, chunkZ);
 		((RepopulatableChunk) chunk).setUnpopulated();
-		if (isloaded) {
+		if (isLoaded) {
 			sender.sendMessage(new LiteralText("Marked currently loaded chunk " + chunkX + " " + chunkZ + " for repopulation!"));
 		} else {
 			sender.sendMessage(new LiteralText("Marked chunk " + chunkX + " " + chunkZ + " for repopulation!"));

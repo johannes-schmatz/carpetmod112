@@ -58,22 +58,22 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Ca
     }
 
     @Override
-    public void storeCameraData(boolean hasNightvision) {
-        cameraData = new CameraData(asPlayer(), hasNightvision, cameraData.gameModeCamera);
+    public void storeCameraData(boolean hasNightVision) {
+        cameraData = new CameraData(asPlayer(), hasNightVision, cameraData.gameModeCamera);
     }
 
     @Override
-    public void setGamemodeCamera() {
+    public void setGameModeCamera() {
         cameraData.gameModeCamera = true;
     }
 
     @Override
-    public boolean getGamemodeCamera() {
+    public boolean getGameModeCamera() {
         return cameraData.gameModeCamera;
     }
 
     @Override
-    public boolean hadNightvision() {
+    public boolean hadNightVision() {
         return cameraData.nightVision;
     }
 

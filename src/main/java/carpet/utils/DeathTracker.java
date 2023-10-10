@@ -17,9 +17,9 @@ public class DeathTracker {
 
 	public static boolean active = false;
 	private static long start_tick;
-	private static EvictingQueue<DeathCertificate, Integer> lastDeaths = new EvictingQueue<>();
-	private static EvictingQueue<DeathCertificate, Integer> longestDeaths = new EvictingQueue<>();
-	private static EvictingQueue<DeathCertificate, Integer> shortestDeaths = new EvictingQueue<>();
+	private static final EvictingQueue<DeathCertificate, Integer> lastDeaths = new EvictingQueue<>();
+	private static final EvictingQueue<DeathCertificate, Integer> longestDeaths = new EvictingQueue<>();
+	private static final EvictingQueue<DeathCertificate, Integer> shortestDeaths = new EvictingQueue<>();
 
 	private static void clean_results() {
 		lastDeaths.clear();

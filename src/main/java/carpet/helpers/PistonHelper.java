@@ -16,8 +16,12 @@ public final class PistonHelper {
 	// Movable Tile entity fix CARPET-2No2Name
 	public static boolean isPushableTileEntityBlock(Block block) {
 		//Making PISTON_EXTENSION (BlockPistonMoving) pushable would not work as its createNewTileEntity()-method returns null
-		return block != Blocks.ENDER_CHEST && block != Blocks.ENCHANTING_TABLE && block != Blocks.END_GATEWAY && block != Blocks.END_PORTAL &&
-				block != Blocks.MOB_SPAWNER && block != Blocks.MOVING_BLOCK;
+		return block != Blocks.ENDER_CHEST
+				&& block != Blocks.ENCHANTING_TABLE
+				&& block != Blocks.END_GATEWAY
+				&& block != Blocks.END_PORTAL
+				&& block != Blocks.MOB_SPAWNER
+				&& block != Blocks.MOVING_BLOCK;
 	}
 
 	// Added method for checking if block is being pushed for duping fixes CARPET-XCOM

@@ -47,29 +47,26 @@ public class EntityInfo {
 	}
 
 	private static String display_item(ItemStack item) {
-		if (item == null) {
+		if (item == null || item.isEmpty()) {
 			return null;
 		}
-		if (item.isEmpty()) // func_190926_b()
-		{
-			return null;
-		} // func_190916_E()
+
 		String stackname = item.getSize() > 1 ? String.format("%dx%s", item.getSize(), item.getHoverName()) : item.getHoverName();
+		StringBuilder sb = new StringBuilder(stackname);
 		if (item.isDamaged()) {
-			stackname += String.format(" %d/%d", item.getMaxDamage() - item.getDamage(), item.getMaxDamage());
+			sb.append(String.format(" %d/%d", item.getMaxDamage() - item.getDamage(), item.getMaxDamage()));
 		}
 		if (item.hasEnchantments()) {
-			stackname += " ( ";
+			sb.append(" ( ");
 			Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(item);
 			for (Enchantment e : enchants.keySet()) {
 				int level = enchants.get(e);
 				String enstring = e.getName(level);
-				stackname += enstring;
-				stackname += " ";
+				sb.append(enstring).append(" ");
 			}
-			stackname += ")";
+			sb.append(")");
 		}
-		return stackname;
+		return sb.toString();
 	}
 
 	public static String entity_short_string(Entity e) {
@@ -201,7 +198,7 @@ public class EntityInfo {
 					armour += String.format("\n   * %s", display_item(armourpiece));
 				}
 			}
-			if (!("".equals(armour))) {
+			if (!(armour.isEmpty())) {
 				lst.add(String.format(" - Armour:%s", armour));
 			}
 			if (e instanceof MobEntity) {
@@ -224,12 +221,12 @@ public class EntityInfo {
 
 				if (e instanceof WitherEntity) {
 					WitherEntity ew = (WitherEntity) e;
-					Entity etarget = world.getEntity(ew.getTrackedEntityId(0));
-					lst.add(String.format(" - Head 1 target: %s", entity_short_string(etarget)));
-					etarget = world.getEntity(ew.getTrackedEntityId(1));
-					lst.add(String.format(" - Head 2 target: %s", entity_short_string(etarget)));
-					etarget = world.getEntity(ew.getTrackedEntityId(2));
-					lst.add(String.format(" - Head 3 target: %s", entity_short_string(etarget)));
+					Entity etarget0 = world.getEntity(ew.getTrackedEntityId(0));
+					lst.add(String.format(" - Head 1 target: %s", entity_short_string(etarget0)));
+					Entity etarget1 = world.getEntity(ew.getTrackedEntityId(1));
+					lst.add(String.format(" - Head 2 target: %s", entity_short_string(etarget1)));
+					Entity etarget2 = world.getEntity(ew.getTrackedEntityId(2));
+					lst.add(String.format(" - Head 3 target: %s", entity_short_string(etarget2)));
 				}
 				if (e instanceof PathAwareEntity) {
 					PathAwareEntity ec = (PathAwareEntity) e;
@@ -307,7 +304,6 @@ public class EntityInfo {
 				server.getCommandHandler().run(player, "entityinfo @e[r=5,c=5,type=!player]");
 			} catch (Throwable ignored) {
 			}
-			;
 		}
 	}
 }

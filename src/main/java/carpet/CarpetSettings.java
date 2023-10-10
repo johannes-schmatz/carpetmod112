@@ -285,7 +285,7 @@ public final class CarpetSettings {
     @CreativeDefault
     @SurvivalDefault
     public static HopperCounters hopperCounters = HopperCounters.off;
-    public static enum HopperCounters
+    public enum HopperCounters
     {
         off, wool, all
     }
@@ -483,16 +483,16 @@ public final class CarpetSettings {
     @Rule(desc = "Disables player entity collision.", category = {CREATIVE, EXPERIMENTAL})
     public static boolean disablePlayerCollision = false;
 
-    @Rule(desc = "Enables randomtick indexing on carpet client.", category = {CREATIVE})
+    @Rule(desc = "Enables randomtick indexing on carpet client.", category = CREATIVE)
     public static boolean randomtickingChunkUpdates = false;
 
-    @Rule(desc = "Disables snow, ice and lightning in nether and end for stable LCG.", category = {CREATIVE})
+    @Rule(desc = "Disables snow, ice and lightning in nether and end for stable LCG.", category = CREATIVE)
     public static boolean enableStableLCGNetherEnd = false;
 
-    @Rule(desc = "Enable creative player no-clip.", category = {CREATIVE})
+    @Rule(desc = "Enable creative player no-clip.", category = CREATIVE)
     public static boolean creativeNoClip = false;
 
-    @Rule(desc = "Allows players to place blocks inside entity's.", category = {CREATIVE})
+    @Rule(desc = "Allows players to place blocks inside entity's.", category = CREATIVE)
     public static boolean ignoreEntityWhenPlacing = false;
 
     public static enum WhereToChunkSavestate {
@@ -568,9 +568,7 @@ public final class CarpetSettings {
     @BugFixDefault
     public static boolean optimizedCollisionCancellations = false;
 
-    @Rule(desc = "Nether portals correctly place entities going through", category = FIX, extra = {
-            "Entities shouldn't suffocate in obsidian"
-    })
+    @Rule(desc = "Nether portals correctly place entities going through", category = FIX, extra = "Entities shouldn't suffocate in obsidian")
     @BugFixDefault
     public static boolean portalSuffocationFix = false;
 
@@ -596,9 +594,8 @@ public final class CarpetSettings {
     @BugFixDefault
     public static boolean invisibilityFix = false;
 
-    @Rule(desc = "Allows mobs with potion effects to despawn outside of player range", category = FIX, extra = {
-            "Specifically effective to let witches drinking their own stuffs despawn"
-    })
+    @Rule(desc = "Allows mobs with potion effects to despawn outside of player range", category = FIX,
+            extra = "Specifically effective to let witches drinking their own stuffs despawn")
     @BugFixDefault
     public static boolean potionsDespawnFix = false;
 
@@ -630,7 +627,7 @@ public final class CarpetSettings {
             "Random redstone dust to test if your contraption is locational"
     })
     public static RedstoneDustAlgorithm redstoneDustAlgorithm = RedstoneDustAlgorithm.vanilla;
-    public static enum RedstoneDustAlgorithm {
+    public enum RedstoneDustAlgorithm {
         vanilla, fast, random
     }
 
@@ -718,14 +715,14 @@ public final class CarpetSettings {
     )
     @BugFixDefault
     public static PistonGhostBlocksFix pistonGhostBlocksFix = PistonGhostBlocksFix.off;
-    public static enum PistonGhostBlocksFix
+    public enum PistonGhostBlocksFix
     {
         off, serverOnly, clientAndServer
     }
 
     @Rule(desc = "fixes water flowing issues", category = OPTIMIZATIONS)
     public static WaterFlow waterFlow = WaterFlow.vanilla;
-    public static enum WaterFlow {
+    public enum WaterFlow {
         vanilla, optimized, correct
     }
 
@@ -743,7 +740,7 @@ public final class CarpetSettings {
     @Rule(desc = "Fixes to leashes.", category = FIX)
     @BugFixDefault
     public static LeashFix leashFix = LeashFix.off;
-    public static enum LeashFix {
+    public enum LeashFix {
         off, casual, cool
     }
 
@@ -1033,7 +1030,7 @@ public final class CarpetSettings {
      */
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
-    private static @interface Rule {
+    private @interface Rule {
         /**
          * The rule name, by default the same as the field name
          */
@@ -1069,23 +1066,23 @@ public final class CarpetSettings {
 
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
-    private static @interface CreativeDefault {
+    private @interface CreativeDefault {
         String value() default "true";
     }
 
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
-    private static @interface SurvivalDefault {
+    private @interface SurvivalDefault {
         String value() default "true";
     }
 
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
-    private static @interface BugFixDefault {
+    private @interface BugFixDefault {
         String value() default "true";
     }
 
-    public static enum RuleCategory {
+    public enum RuleCategory {
         TNT, FIX, SURVIVAL, CREATIVE, EXPERIMENTAL, OPTIMIZATIONS, FEATURE, COMMANDS
     }
 
@@ -1394,10 +1391,11 @@ public final class CarpetSettings {
             LOG.info("[CM]: Carpet Mod is locked by the administrator");
         }
         for (String key : conf.keySet()) {
-            if (!set(key, conf.get(key)))
-                LOG.error("[CM]: The value of " + conf.get(key) + " for " + key + " is not valid - ignoring...");
-            else
+            if (set(key, conf.get(key))) {
                 LOG.info("[CM]: loaded setting " + key + " as " + conf.get(key) + " from carpet.conf");
+            } else {
+                LOG.error("[CM]: The value of " + conf.get(key) + " for " + key + " is not valid - ignoring...");
+            }
         }
         locked = is_locked;
     }
@@ -1473,7 +1471,7 @@ public final class CarpetSettings {
     }
 
     public static String[] findStartupOverrides(MinecraftServer server) {
-        ArrayList<String> res = new ArrayList<String>();
+        ArrayList<String> res = new ArrayList<>();
         if (locked) return res.toArray(new String[0]);
         Map<String, String> defaults = readConf(server);
         for (String rule : rules.keySet().stream().sorted().collect(Collectors.toList())) {

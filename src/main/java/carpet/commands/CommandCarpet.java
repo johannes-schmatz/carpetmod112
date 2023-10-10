@@ -111,29 +111,26 @@ public class CommandCarpet extends CommandCarpetBase {
 				sendSuccess(sender, this, Build.NAME + " version: " + Build.VERSION);
 				return;
 			}
-			if ("use".equalsIgnoreCase(args[0])) // empty tag
-			{
-				if ("default".equalsIgnoreCase(args[1])) {
-					CarpetSettings.resetToUserDefaults(server);
-					return;
+			if ("use".equalsIgnoreCase(args[0])) {// empty tag
+				switch (args[1].toLowerCase()) {
+					case "default":
+						CarpetSettings.resetToUserDefaults(server);
+						return;
+					case "vanilla":
+						CarpetSettings.resetToVanilla();
+						return;
+					case "survival":
+						CarpetSettings.resetToSurvival();
+						return;
+					case "creative":
+						CarpetSettings.resetToCreative();
+						return;
+					case "bugfixes":
+						CarpetSettings.resetToBugFixes();
+						return;
+					default:
+						throw new IncorrectUsageException(getUsage(sender));
 				}
-				if ("vanilla".equalsIgnoreCase(args[1])) {
-					CarpetSettings.resetToVanilla();
-					return;
-				}
-				if ("survival".equalsIgnoreCase(args[1])) {
-					CarpetSettings.resetToSurvival();
-					return;
-				}
-				if ("creative".equalsIgnoreCase(args[1])) {
-					CarpetSettings.resetToCreative();
-					return;
-				}
-				if ("bugfixes".equalsIgnoreCase(args[1])) {
-					CarpetSettings.resetToBugFixes();
-					return;
-				}
-				throw new IncorrectUsageException(getUsage(sender), new Object[0]);
 			}
 
 			if (args.length >= 2 && "list".equalsIgnoreCase(args[0])) {
@@ -236,11 +233,13 @@ public class CommandCarpet extends CommandCarpetBase {
 	@Override
 	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos pos) {
 		if (CarpetSettings.locked) {
-			return Collections.<String>emptyList();
+			return Collections.emptyList();
 		}
 		if (args.length == 2 && "list".equalsIgnoreCase(args[0])) {
 			return suggestMatching(args,
-					Arrays.stream(CarpetSettings.RuleCategory.values()).map(v -> v.name().toLowerCase(Locale.ENGLISH)).toArray(String[]::new)
+					Arrays.stream(CarpetSettings.RuleCategory.values())
+							.map(v -> v.name().toLowerCase(Locale.ENGLISH))
+							.toArray(String[]::new)
 			);
 		}
 		if (args.length == 2 && "use".equalsIgnoreCase(args[0])) {
@@ -263,7 +262,7 @@ public class CommandCarpet extends CommandCarpetBase {
 				lst.add("use");
 				lst.add("list");
 			}
-			return suggestMatching(args, lst.toArray(new String[0]));
+			return suggestMatching(args, lst);
 		}
 		if (args.length == 2) {
 			if ("setDefault".equalsIgnoreCase(args[0]) || "removeDefault".equalsIgnoreCase(args[0])) {
@@ -274,6 +273,6 @@ public class CommandCarpet extends CommandCarpetBase {
 		if (args.length == 3 && "setDefault".equalsIgnoreCase(args[0])) {
 			return suggestMatching(args, CarpetSettings.getOptions(args[1]));
 		}
-		return Collections.<String>emptyList();
+		return Collections.emptyList();
 	}
 }

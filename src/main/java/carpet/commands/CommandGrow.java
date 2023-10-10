@@ -46,7 +46,7 @@ public class CommandGrow extends CommandCarpetBase {
                 DyeItem.fertilize(STACK, world, pos);
             }
         } else {
-//            throw new class_6175("Position is not loaded!");
+            throw new IncorrectUsageException("Position is not loaded!");
         }
 	}
 

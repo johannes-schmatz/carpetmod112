@@ -2,9 +2,7 @@ package carpet.logging;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 import net.minecraft.entity.living.player.PlayerEntity;
@@ -22,9 +20,10 @@ public class Logger {
 	/** The logName of this log. Gets prepended to logged messages. */
 	private final String logName;
 
-	private final String default_option;
+	@Nullable
+	private final String defaultOption;
 
-	private final String[] options;
+	private final List<String> options;
 
 	private final LogHandler defaultHandler;
 
@@ -34,21 +33,26 @@ public class Logger {
 	private boolean debugger = false;
 	private boolean generic = false;
 
-	public Logger(MinecraftServer server, String logName, String def, String[] options, LogHandler defaultHandler) {
+	public Logger(MinecraftServer server, String logName, @Nullable String def, @Nullable String[] options, LogHandler defaultHandler) {
 		this.server = server;
 		this.subscribedPlayers = new HashMap<>();
 		this.logName = logName;
-		this.default_option = def;
-		this.options = options;
+		this.defaultOption = def;
+		if (options == null) {
+			this.options = Collections.emptyList();
+		} else {
+			this.options = Arrays.asList(options);
+		}
 		this.defaultHandler = defaultHandler;
         this.handlers = new HashMap<>();
 	}
 
+	@Nullable
 	public String getDefault() {
-		return default_option;
+		return defaultOption;
 	}
 
-	public String[] getOptions() {
+	public List<String> getOptions() {
 		return options;
 	}
 
@@ -203,7 +207,7 @@ public class Logger {
 	// ----- Event Handlers ----- //
 
 	public @Nullable String getAcceptedOption(String arg) {
-		if (options != null && Arrays.asList(options).contains(arg)) return arg;
+		if (options.contains(arg)) return arg;
 		return null;
 	}
 }

@@ -39,7 +39,7 @@ public class CommandTickingArea extends CommandCarpetBase {
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("tickingAreas", sender)) return;
 
-		if (args.length < 1) throw new IncorrectUsageException(USAGE);
+		if (args.length < 1) throw new IncorrectUsageException(getUsage(sender));
 
 		switch (args[0]) {
 			case "add":
@@ -55,7 +55,7 @@ public class CommandTickingArea extends CommandCarpetBase {
 				listTickingAreas(sender, args);
 				break;
 			default:
-				throw new IncorrectUsageException(USAGE);
+				throw new IncorrectUsageException(getUsage(sender));
 		}
 	}
 

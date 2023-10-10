@@ -46,17 +46,17 @@ public class ChunkLoading {
 
 	public static List<String> test_save_chunks(ServerWorld server, BlockPos pos, boolean verbose) {
 
-		ServerChunkCache chunkproviderserver = server.getChunkSource();
+		ServerChunkCache serverChunkCache = server.getChunkSource();
 
-		if (chunkproviderserver.canSave()) {
+		if (serverChunkCache.canSave()) {
 
-			chunkproviderserver.save(true);
+			serverChunkCache.save(true);
 
-			ChunkMap pcm = server.getChunkMap();
+			ChunkMap chunkMap = server.getChunkMap();
 
-			for (WorldChunk chunk : Lists.newArrayList(chunkproviderserver.getLoadedChunks())) {
-				if (chunk != null && !pcm.hasChunk(chunk.chunkX, chunk.chunkZ)) {
-					chunkproviderserver.scheduleUnload(chunk);
+			for (WorldChunk chunk : Lists.newArrayList(serverChunkCache.getLoadedChunks())) {
+				if (chunk != null && !chunkMap.hasChunk(chunk.chunkX, chunk.chunkZ)) {
+					serverChunkCache.scheduleUnload(chunk);
 				}
 			}
 			return ChunkLoading.tick_reportive_no_action(server, pos, verbose);
@@ -69,17 +69,17 @@ public class ChunkLoading {
 
 	public static List<String> test_save_chunks_113(ServerWorld server, BlockPos pos, boolean verbose) {
 
-		ServerChunkCache chunkproviderserver = server.getChunkSource();
+		ServerChunkCache serverChunkCache = server.getChunkSource();
 
-		if (chunkproviderserver.canSave()) {
+		if (serverChunkCache.canSave()) {
 
-			chunkproviderserver.save(true);
+			serverChunkCache.save(true);
 
-			ChunkMap pcm = server.getChunkMap();
+			ChunkMap chunkMap = server.getChunkMap();
 
-			for (WorldChunk chunk : Lists.newArrayList(chunkproviderserver.getLoadedChunks())) {
-				if (chunk != null && !pcm.hasChunk(chunk.chunkX, chunk.chunkZ)) {
-					queueUnload113(server, chunkproviderserver, chunk);
+			for (WorldChunk chunk : Lists.newArrayList(serverChunkCache.getLoadedChunks())) {
+				if (chunk != null && !chunkMap.hasChunk(chunk.chunkX, chunk.chunkZ)) {
+					queueUnload113(server, serverChunkCache, chunk);
 				}
 			}
 			List<String> rep = ChunkLoading.tick_reportive_no_action_113(server, pos, verbose);
@@ -92,15 +92,15 @@ public class ChunkLoading {
 
 
 	public static int getCurrentHashSize(ServerWorld server) {
-		ServerChunkCache chunkproviderserver = server.getChunkSource();
+		ServerChunkCache serverChunkCache = server.getChunkSource();
 		try {
-			Set<Long> droppedChunks = ((ServerChunkProviderAccessor) chunkproviderserver).getDroppedChunks();
-			Field field = droppedChunks.getClass().getDeclaredField("map");
+			Set<Long> droppedChunks = ((ServerChunkProviderAccessor) serverChunkCache).getDroppedChunks();
+			Field field = droppedChunks.getClass().getDeclaredField("map"); // TODO: reflection!
 			field.setAccessible(true);
 			HashMap<?, ?> map = (HashMap<?, ?>) field.get(droppedChunks);
-			field = map.getClass().getDeclaredField("table");
-			field.setAccessible(true);
-			Object[] table = (Object[]) field.get(map);
+			Field tableField = map.getClass().getDeclaredField("table");
+			tableField.setAccessible(true);
+			Object[] table = (Object[]) tableField.get(map);
 			if (table == null) return 2;
 			return table.length;
 		} catch (NoSuchFieldException | IllegalAccessException e) {
@@ -115,9 +115,7 @@ public class ChunkLoading {
 			field.setAccessible(true);
 			int n = field.getInt(droppedChunksSet_new);
 			return n;
-		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
+		} catch (NoSuchFieldException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
 		return -1;
@@ -151,14 +149,14 @@ public class ChunkLoading {
 		}
 		ChunkPos chpos1 = new ChunkPos(pos);
 		ChunkPos chpos2 = new ChunkPos(pos1);
-		int minx = (chpos1.x < chpos2.x) ? chpos1.x : chpos2.x;
-		int maxx = (chpos1.x > chpos2.x) ? chpos1.x : chpos2.x;
-		int minz = (chpos1.z < chpos2.z) ? chpos1.z : chpos2.z;
-		int maxz = (chpos1.z > chpos2.z) ? chpos1.z : chpos2.z;
+		int minX = Math.min(chpos1.x, chpos2.x);
+		int maxX = Math.max(chpos1.x, chpos2.x);
+		int minZ = Math.min(chpos1.z, chpos2.z);
+		int maxZ = Math.max(chpos1.z, chpos2.z);
 		HashMap<Integer, Integer> stat = new HashMap<>();
 		int total = 0;
-		for (int chposx = minx; chposx <= maxx; chposx++) {
-			for (int chposz = minz; chposz <= maxz; chposz++) {
+		for (int chposx = minX; chposx <= maxX; chposx++) {
+			for (int chposz = minZ; chposz <= maxZ; chposz++) {
 				int o1 = getChunkOrder(new ChunkPos(chposx, chposz), size);
 				int count = stat.containsKey(o1) ? stat.get(o1) : 0;
 				stat.put(o1, count + 1);
@@ -187,16 +185,16 @@ public class ChunkLoading {
 		}
 		ChunkPos chpos1 = new ChunkPos(pos);
 		ChunkPos chpos2 = new ChunkPos(pos1);
-		int minx = (chpos1.x < chpos2.x) ? chpos1.x : chpos2.x;
-		int maxx = (chpos1.x > chpos2.x) ? chpos1.x : chpos2.x;
-		int minz = (chpos1.z < chpos2.z) ? chpos1.z : chpos2.z;
-		int maxz = (chpos1.z > chpos2.z) ? chpos1.z : chpos2.z;
+		int minX = Math.min(chpos1.x, chpos2.x);
+		int maxX = Math.max(chpos1.x, chpos2.x);
+		int minZ = Math.min(chpos1.z, chpos2.z);
+		int maxZ = Math.max(chpos1.z, chpos2.z);
 		HashMap<Integer, Integer> stat = new HashMap<>();
 		int total = 0;
-		for (int chposx = minx; chposx <= maxx; chposx++) {
-			for (int chposz = minz; chposz <= maxz; chposz++) {
+		for (int chposx = minX; chposx <= maxX; chposx++) {
+			for (int chposz = minZ; chposz <= maxZ; chposz++) {
 				int o1 = (int) get_chunk_order_113(new ChunkPos(chposx, chposz), size);
-				int count = stat.containsKey(o1) ? stat.get(o1) : 0;
+				int count = stat.getOrDefault(o1, 0);
 				stat.put(o1, count + 1);
 				total++;
 			}
@@ -225,16 +223,16 @@ public class ChunkLoading {
 		}
 		ChunkPos chpos1 = new ChunkPos(pos);
 		ChunkPos chpos2 = new ChunkPos(pos1);
-		int minx = (chpos1.x < chpos2.x) ? chpos1.x : chpos2.x;
-		int maxx = (chpos1.x > chpos2.x) ? chpos1.x : chpos2.x;
-		int minz = (chpos1.z < chpos2.z) ? chpos1.z : chpos2.z;
-		int maxz = (chpos1.z > chpos2.z) ? chpos1.z : chpos2.z;
-		int lenx = maxx - minx + 1;
-		int lenz = maxz - minz + 1;
+		int minX = Math.min(chpos1.x, chpos2.x);
+		int maxX = Math.max(chpos1.x, chpos2.x);
+		int minZ = Math.min(chpos1.z, chpos2.z);
+		int maxZ = Math.max(chpos1.z, chpos2.z);
+		int lenx = maxX - minX + 1;
+		int lenz = maxZ - minZ + 1;
 		HashMap<Integer, Integer> stat = new HashMap<>();
 		int total = 0;
-		for (int chposx = minx; chposx <= maxx; chposx++) {
-			for (int chposz = minz; chposz <= maxz; chposz++) {
+		for (int chposx = minX; chposx <= maxX; chposx++) {
+			for (int chposz = minZ; chposz <= maxZ; chposz++) {
 				int o1 = (int) get_chunk_order_113(new ChunkPos(chposx, chposz), size);
 				int count = stat.containsKey(o1) ? stat.get(o1) : 0;
 				stat.put(o1, count + 1);
@@ -264,10 +262,10 @@ public class ChunkLoading {
 					for (int ez = 1; ez < protect_limit; ez++) {
 						if ((lenx + ex) * (lenz + ez) > protect_limit) break;
 						if ((lenx + ex) * (lenz + ez) > best_config_chunks) break;
-						int cminx = xdir < 0 ? minx - ex : minx;
-						int cminz = zdir < 0 ? minz - ez : minz;
-						int cmaxx = xdir < 0 ? maxx : maxx + ex;
-						int cmaxz = zdir < 0 ? maxz : maxz + ez;
+						int cminx = xdir < 0 ? minX - ex : minX;
+						int cminz = zdir < 0 ? minZ - ez : minZ;
+						int cmaxx = xdir < 0 ? maxX : maxX + ex;
+						int cmaxz = zdir < 0 ? maxZ : maxZ + ez;
 						int protecting_chunks = 0;
 						for (int cx = cminx; cx <= cmaxx; cx++) {
 							for (int cz = cminz; cz <= cmaxz; cz++) {

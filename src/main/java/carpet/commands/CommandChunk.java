@@ -35,14 +35,17 @@ import java.util.Collections;
 import java.util.List;
 
 public class CommandChunk extends CommandCarpetBase {
+	@Override
 	public String getUsage(CommandSource sender) {
 		return "Usage: chunk <load | info | unload | regen | repop | asyncrepop | delete> <X> <Z>";
 	}
 
+	@Override
 	public String getName() {
 		return "chunk";
 	}
 
+	@Override
 	public void run(MinecraftServer server, CommandSource sender, String[] args) throws CommandException {
 		if (!command_enabled("commandChunk", sender)) return;
 
@@ -147,7 +150,7 @@ public class CommandChunk extends CommandCarpetBase {
 		});
 	}
 
-	protected static void info(World world, CommandSource sender, int x, int z) throws NoSuchFieldException, IllegalAccessException {
+	private static void info(World world, CommandSource sender, int x, int z) throws NoSuchFieldException, IllegalAccessException {
 		if (!((WorldAccessor) world).invokeIsChunkLoaded(x, z, false)) {
 			sender.sendMessage(new LiteralText(("Chunk is not loaded")));
 		}
@@ -160,7 +163,7 @@ public class CommandChunk extends CommandCarpetBase {
 		if (world.isSpawnChunk(x, z)) sender.sendMessage(new LiteralText(("Spawn Chunk")));
 	}
 
-	protected static void unload(World world, CommandSource sender, int x, int z) {
+	private static void unload(World world, CommandSource sender, int x, int z) {
 		if (!((WorldAccessor) world).invokeIsChunkLoaded(x, z, false)) {
 			sender.sendMessage(new LiteralText(("Chunk is not loaded")));
 			return;
@@ -217,6 +220,7 @@ public class CommandChunk extends CommandCarpetBase {
 		}
 	}
 
+	@Override
 	public List<String> getSuggestions(MinecraftServer server, CommandSource sender, String[] args, @Nullable BlockPos targetPos) {
 		int chunkX = sender.getSourceBlockPos().getX() >> 4;
 		int chunkZ = sender.getSourceBlockPos().getZ() >> 4;

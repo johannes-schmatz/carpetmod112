@@ -15,7 +15,6 @@ public class TickSpeed {
 	public static final int PLAYER_GRACE = 2;
 	public static float tickRate = 20.0f;
 	public static long mspt = 50L;
-	public static long warp_temp_mspt = 1L;
 	public static long time_bias = 0;
 	public static long time_warp_start_time = 0;
 	public static long time_warp_scheduled_ticks = 0;
@@ -126,7 +125,7 @@ public class TickSpeed {
 		}
 	}
 
-	public static void tick(MinecraftServer server) {
+	public static void tick() {
 		process_entities = true;
 		if (player_active_timeout > 0) {
 			player_active_timeout--;
