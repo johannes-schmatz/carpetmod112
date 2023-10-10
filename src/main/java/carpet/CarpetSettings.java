@@ -607,20 +607,10 @@ public final class CarpetSettings {
     @BugFixDefault
     public static boolean growingUpWallJumpFix = false;
 
-//    @Rule(desc = "Won't let mobs glitch into blocks when reloaded.", category = {FIX, EXPERIMENTAL}, validator = "validateReloadSuffocationFix", extra = {
-//            "Can cause slight differences in mobs behaviour"
-//    })
     @Rule(desc = "Won't let mobs glitch into blocks when reloaded.", category = FIX)
     @BugFixDefault
     public static boolean reloadSuffocationFix = false;
     // Mixins: AxisAlignedBB.margin was removed since it was unused
-//    private static boolean validateReloadSuffocationFix(boolean value) {
-//        if (value)
-//            AxisAlignedBB.margin = 1.0 / (1L << 27);
-//        else
-//            AxisAlignedBB.margin = 0;
-//        return true;
-//    }
 
     @Rule(desc = "Redstone dust algorithm", category = {EXPERIMENTAL, OPTIMIZATIONS}, extra = {
             "Fast redstone dust by Theosib",
@@ -787,25 +777,6 @@ public final class CarpetSettings {
 
     @Rule(desc = "Fixes double tile tick scheduling", category = FIX)
     public static boolean doubleTileTickSchedulingFix = false;
-//    private static boolean validateDoubleTileTickSchedulingFix(boolean value) {
-//        if (CarpetServer.minecraft_server.worlds == null)
-//            return true;
-//        @SuppressWarnings("unchecked")
-//        ArrayList<NextTickListEntry>[] tileTicks = new ArrayList[3];
-//        for (int dim = 0; dim < 3; dim++) {
-//            WorldServer world = CarpetServer.minecraft_server.worlds[dim];
-//            tileTicks[dim] = new ArrayList<>(world.pendingTickListEntriesHashSet);
-//            world.pendingTickListEntriesHashSet.clear();
-//            world.pendingTickListEntriesTreeSet.clear();
-//        }
-//        doubleTileTickSchedulingFix = value; // set this early
-//        for (int dim = 0; dim < 3; dim++) {
-//            WorldServer world = CarpetServer.minecraft_server.worlds[dim];
-//            world.pendingTickListEntriesHashSet.addAll(tileTicks[dim]);
-//            world.pendingTickListEntriesTreeSet.addAll(tileTicks[dim]);
-//        }
-//        return true;
-//    }
 
     @Rule(desc = "Fixes player position truncation causing chunks to load with one block offset to chunk boarders in negative coordinates.", category = FIX)
     public static boolean playerChunkLoadingFix = false;
