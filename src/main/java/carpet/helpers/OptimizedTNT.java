@@ -471,7 +471,8 @@ public class OptimizedTNT {
 		boolean fullyBlownUp = false;
 		boolean first = true;
 		int rays = 0;
-		for (float f3 : chances) {
+		for (int i = 0; i < chances.size(); i++) {
+			float f3 = chances.getFloat(i);
 			rays++;
 			double calc = f3 - randMax;
 			if (calc > 0) fullyBlownUp = true;
