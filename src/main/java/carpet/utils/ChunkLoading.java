@@ -111,6 +111,7 @@ public class ChunkLoading {
 
 	public static int getCurrentHashSize_113() {
 		try {
+			// TODO: reflection!
 			Field field = droppedChunksSet_new.getClass().getDeclaredField("n");
 			field.setAccessible(true);
 			int n = field.getInt(droppedChunksSet_new);
@@ -124,7 +125,7 @@ public class ChunkLoading {
 
 	public static int getChunkOrder(ChunkPos chpos, int hashsize) {
 		//return HashMap_hash(Long.hashCode(ChunkPos.asLong(chpos.chunkXPos, chpos.chunkZPos)));
-		try {
+		try { // TODO: reflection!
 			Method method = HashMap.class.getDeclaredMethod("hash", Object.class);
 			method.setAccessible(true);
 			return (Integer) method.invoke(null, Long.hashCode(ChunkPos.toLong(chpos.x, chpos.z))) & (hashsize - 1);

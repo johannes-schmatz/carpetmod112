@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.HashMap;
 
 @Mixin(NbtCompound.class)
-public class CompoundTagMixin {
+public class CompoundTagMixin { // TODO: move to "optimisation" package
     @Redirect(
             method = "<init>",
             at = @At(

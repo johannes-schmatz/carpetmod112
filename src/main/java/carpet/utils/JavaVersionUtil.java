@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 public final class JavaVersionUtil {
+	// TODO: hopefully we can get rid of this once we go to java 9+...
 	public static final int JAVA_VERSION = getJavaVersion();
 
 	private JavaVersionUtil() {
